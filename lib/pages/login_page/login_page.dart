@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/pages/signup_page/signup_page.dart';
 
 class LoginPage extends StatelessWidget {
   var _emailController = TextEditingController();
@@ -9,9 +10,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tuks Divide'),
-      ),
+      appBar: AppBar(title: const Text('Tuks Divide')),
       body: Column(
         children: [
           Padding(
@@ -33,12 +32,12 @@ class LoginPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(15.0, 18.0, 15.0, 30.0),
             child: ElevatedButton(
               onPressed: () {},
-              child: const Text("INICIAR SESIÓN"),
               style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(1.0),
                   )),
+              child: const Text("INICIAR SESIÓN"),
             ),
           ),
           Padding(
@@ -85,7 +84,12 @@ class LoginPage extends StatelessWidget {
               children: [
                 const Text("¿No tienes una cuenta? "),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignupPage()),
+                    );
+                  },
                   child: const Text(
                     "Crear una cuenta",
                     style: TextStyle(color: Colors.blue),
