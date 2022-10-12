@@ -3,8 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/pages/signup_page/signup_page.dart';
 
 class LoginPage extends StatelessWidget {
-  var _emailController = TextEditingController();
-  var _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   LoginPage({super.key});
 
   @override

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SignupPage extends StatelessWidget {
-  var _nameController = TextEditingController();
-  var _lastNameController = TextEditingController();
-  var _emailController = TextEditingController();
-  var _passwordController = TextEditingController();
-  var _repeatPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _repeatPasswordController =
+      TextEditingController();
   SignupPage({super.key});
 
   @override
