@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/components/avatar_widget.dart';
 
 class MemberItem extends StatelessWidget {
   final String memberName;
@@ -19,13 +19,7 @@ class MemberItem extends StatelessWidget {
             ? CircleAvatar(
                 child: Image.network(profilePicture!),
               )
-            : const CircleAvatar(
-                child: FaIcon(
-                  FontAwesomeIcons.userAstronaut,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ), // TODO: Add logic to put user profile image or default user avatar
+            : const AvatarWidget(iconSize: 20),
         title: Text("$memberName $memberLastName"),
         trailing: const Icon(Icons.delete),
       ),

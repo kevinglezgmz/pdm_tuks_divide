@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/components/add_picture_widget.dart';
+import 'package:tuks_divide/components/elevated_button_with_icon.dart';
 import 'package:tuks_divide/pages/create_group_page/member_list.dart';
 
 class CreateGroupPage extends StatelessWidget {
@@ -35,32 +37,15 @@ class CreateGroupPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
           child: Row(children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Stack(clipBehavior: Clip.none, children: [
-                const CircleAvatar(
+                padding: const EdgeInsets.all(8.0),
+                child: AddPictureWidget(
                   backgroundColor: Colors.grey,
-                  radius: 45,
-                  child: FaIcon(
-                    FontAwesomeIcons.userAstronaut,
-                    color: Colors.white,
-                    size: 45,
-                  ),
-                ),
-                Positioned(
-                  height: 45,
-                  width: 45,
-                  right: -10.0,
-                  bottom: -10.0,
-                  child: FloatingActionButton(
-                    onPressed: () => {},
-                    child: const Icon(
-                      Icons.add_a_photo_outlined,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
-              ]),
-            ),
+                  radius: 45.0,
+                  iconSize: 45,
+                  height: 45.0,
+                  width: 45.0,
+                  onPressed: () {},
+                )),
             Container(
               width: MediaQuery.of(context).size.width / 1.49,
               padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
@@ -90,18 +75,13 @@ class CreateGroupPage extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
-          child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const FaIcon(FontAwesomeIcons.userPlus),
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(1.0),
-                )),
-            label: const Text("AÑADIR MIEMBRO"),
-          ),
-        ),
+            padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
+            child: ElevatedButtonWithIcon(
+              icon: const FaIcon(FontAwesomeIcons.userPlus),
+              onPressed: () {},
+              label: "AÑADIR MIEMBRO",
+              backgroundColor: null,
+            )),
         MemberList()
       ]),
     );

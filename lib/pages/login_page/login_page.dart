@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/components/basic_elevated_button.dart';
+import 'package:tuks_divide/components/elevated_button_with_icon.dart';
+import 'package:tuks_divide/components/text_input_field.dart';
 import 'package:tuks_divide/pages/signup_page/signup_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -13,73 +16,50 @@ class LoginPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Tuks Divide')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 35.0, 15.0, 8.0),
-            child: TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(label: Text("Email")),
-            ),
+          _addWidgetWithPadding(
+            35.0,
+            8.0,
+            TextInputField(inputController: _emailController, label: "Email"),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(label: Text("Contraseña")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 18.0, 15.0, 30.0),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(1.0),
-                  )),
-              child: const Text("INICIAR SESIÓN"),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 30.0),
-            child: Row(
+          _addWidgetWithPadding(
+              8.0,
+              8.0,
+              TextInputField(
+                  inputController: _passwordController,
+                  label: "Contraseña",
+                  obscureText: true)),
+          _addWidgetWithPadding(
+              18.0,
+              30.0,
+              BasicElevatedButton(
+                label: "INICIAR SESIÓN",
+                onPressed: () {},
+              )),
+          _addWidgetWithPadding(
+            8.0,
+            30.0,
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Flexible(
-                  child: Divider(
-                    thickness: 1,
-                    indent: MediaQuery.of(context).size.width / 20,
-                    endIndent: MediaQuery.of(context).size.width / 20,
-                  ),
-                ),
+                _createDivider(context),
                 const Text("O"),
-                Flexible(
-                  child: Divider(
-                    thickness: 1,
-                    indent: MediaQuery.of(context).size.width / 20,
-                    endIndent: MediaQuery.of(context).size.width / 20,
-                  ),
-                )
+                _createDivider(context)
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const FaIcon(FontAwesomeIcons.google),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: const Color.fromARGB(0xFF, 0xDC, 0x4E, 0x41),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(1.0),
-                  )),
-              label: const Text("INICIAR SESIÓN CON GOOGLE"),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 50.0, 15.0, 8.0),
-            child: Row(
+          _addWidgetWithPadding(
+              8.0,
+              8.0,
+              ElevatedButtonWithIcon(
+                  icon: const FaIcon(FontAwesomeIcons.google),
+                  onPressed: () {},
+                  label: "INICIAR SESIÓN CON GOOGLE",
+                  backgroundColor:
+                      const Color.fromARGB(0xFF, 0xDC, 0x4E, 0x41))),
+          _addWidgetWithPadding(
+            50.0,
+            15.0,
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text("¿No tienes una cuenta? "),
@@ -99,6 +79,21 @@ class LoginPage extends StatelessWidget {
             ),
           )
         ],
+      ),
+    );
+  }
+
+  Padding _addWidgetWithPadding(double top, double bottom, Widget widget) {
+    return Padding(
+        padding: EdgeInsets.fromLTRB(15.0, top, 15.0, bottom), child: widget);
+  }
+
+  Flexible _createDivider(BuildContext context) {
+    return Flexible(
+      child: Divider(
+        thickness: 1,
+        indent: MediaQuery.of(context).size.width / 20,
+        endIndent: MediaQuery.of(context).size.width / 20,
       ),
     );
   }

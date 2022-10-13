@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/components/add_picture_widget.dart';
+import 'package:tuks_divide/components/basic_elevated_button.dart';
+import 'package:tuks_divide/components/text_input_field.dart';
 
 class SignupPage extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
@@ -19,85 +22,48 @@ class SignupPage extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const CircleAvatar(
-                  backgroundColor: Colors.grey,
-                  radius: 60,
-                  child: FaIcon(
-                    // TODO: Implement logic to change if user adds image to profile
-                    FontAwesomeIcons.userAstronaut,
-                    color: Colors.white,
-                    size: 60,
-                  ),
-                ),
-                Positioned(
-                  right: -10.0,
-                  bottom: -10.0,
-                  child: FloatingActionButton(
-                    onPressed: () => {},
-                    child: const Icon(
-                      Icons.add_a_photo_outlined,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(label: Text("Nombre")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _lastNameController,
-              decoration: const InputDecoration(label: Text("Apellido")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(label: Text("Email")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(label: Text("Contraseña")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0),
-            child: TextField(
-              controller: _repeatPasswordController,
-              obscureText: true,
-              decoration:
-                  const InputDecoration(label: Text("Repetir contraseña")),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 0.0),
-            child: ElevatedButton(
+            child: AddPictureWidget(
+              backgroundColor: Colors.grey,
+              radius: 60,
+              iconSize: 60,
               onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(1.0),
-                  )),
-              child: const Text("CREAR CUENTA"),
             ),
           ),
+          _createInputField(
+            TextInputField(inputController: _nameController, label: "Nombre"),
+          ),
+          _createInputField(
+            TextInputField(
+                inputController: _lastNameController, label: "Apellido"),
+          ),
+          _createInputField(
+            TextInputField(inputController: _emailController, label: "Email"),
+          ),
+          _createInputField(
+            TextInputField(
+              inputController: _passwordController,
+              label: "Contraseña",
+              obscureText: true,
+            ),
+          ),
+          _createInputField(TextInputField(
+            inputController: _repeatPasswordController,
+            label: "Repetir contraseña",
+            obscureText: true,
+          )),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 0.0),
+              child: BasicElevatedButton(
+                label: "CREAR CUENTA",
+                onPressed: () {},
+              )),
         ],
       ),
     );
+  }
+
+  Padding _createInputField(TextInputField input) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(15.0, 8.0, 15.0, 8.0), child: input);
   }
 }
