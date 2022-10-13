@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tuks_divide/pages/create_group_page/member_item.dart';
 
 class MemberList extends StatelessWidget {
-  List<dynamic> membersData = [
+  final List<dynamic> membersData = [
     {"name": "ana", "lastName": "perez"},
     {"name": "kevin", "lastName": "gonzalez"}
   ];
