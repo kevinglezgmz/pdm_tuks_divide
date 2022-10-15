@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tuks_divide/pages/my_groups_page/group_item.dart';
 
 class GroupList extends StatelessWidget {
-  final List<dynamic> membersData = [
+  final List<dynamic> groupData = [
     {
       "groupName": "Disneyland Trip",
       "debtDescription": "No tienes cuentas pendientes :)"
@@ -19,12 +19,12 @@ class GroupList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
         child: ListView.builder(
-            itemCount: membersData.length,
+            itemCount: groupData.length,
             itemBuilder: (BuildContext context, int index) {
               return GroupItem(
-                groupName: membersData[index]["groupName"],
+                groupName: groupData[index]["groupName"],
                 groupImage: null,
-                debtDescription: membersData[index]["debtDescription"],
+                debtDescription: groupData[index]["debtDescription"],
               );
             }));
   }
