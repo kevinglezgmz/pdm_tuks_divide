@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tuks_divide/pages/create_group_page/create_group_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 
 void main() => runApp(const MyApp());
