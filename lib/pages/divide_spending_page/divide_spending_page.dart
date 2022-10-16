@@ -103,7 +103,7 @@ class DivideSpendingPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: const [
                   Text('\$0.00/persona'),
-                  Text('(3 personas)'),
+                  Text('(8 personas)'),
                 ],
               ),
             ),

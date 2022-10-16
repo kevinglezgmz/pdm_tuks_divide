@@ -123,30 +123,32 @@ class GroupProfileActivityPage extends StatelessWidget {
   }
 
   Widget _getActivityTile(String title, String subtitle) {
-    return ListTile(
-      leading: SizedBox(
-        width: 28,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            Text(
-              'oct.',
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              '13',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    return Card(
+      child: ListTile(
+        leading: SizedBox(
+          width: 28,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: const [
+              Text(
+                'oct.',
+                style: TextStyle(fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                '13',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
+        minLeadingWidth: 28,
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: Icon(Icons.attach_money),
       ),
-      minLeadingWidth: 28,
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: Icon(Icons.attach_money),
     );
   }
 }
