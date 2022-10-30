@@ -53,7 +53,9 @@ class LoginPage extends StatelessWidget {
               8.0,
               8.0,
               ElevatedButtonWithIcon(
-                  icon: const FaIcon(FontAwesomeIcons.google),
+                  icon: const FaIcon(
+                    FontAwesomeIcons.google,
+                  ),
                   onPressed: () {
                     context.read<AuthBloc>().add(AuthGoogleLoginEvent());
                   },

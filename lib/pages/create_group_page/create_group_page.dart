@@ -18,7 +18,9 @@ class CreateGroupPage extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.xmark),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Crear un grupo"),
+        title: const Text(
+          "Crear un grupo",
+        ),
         actions: [
           TextButton(
             onPressed: () {},
@@ -77,7 +79,9 @@ class CreateGroupPage extends StatelessWidget {
         Padding(
             padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
             child: ElevatedButtonWithIcon(
-              icon: const FaIcon(FontAwesomeIcons.userPlus),
+              icon: const FaIcon(
+                FontAwesomeIcons.userPlus,
+              ),
               onPressed: () {},
               label: "AÑADIR MIEMBRO",
               backgroundColor: null,

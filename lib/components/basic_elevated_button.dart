@@ -15,12 +15,15 @@ class BasicElevatedButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: createStyle(),
-      child: Text(label),
+      child: Text(
+        label,
+      ),
     );
   }
 
   ButtonStyle createStyle() {
     return ElevatedButton.styleFrom(
+        foregroundColor: Colors.grey[350],
         minimumSize: const Size.fromHeight(50),
         backgroundColor: backgroundColor,
         shape: RoundedRectangleBorder(
