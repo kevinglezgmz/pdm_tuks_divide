@@ -81,7 +81,6 @@ class CreateGroupPage extends StatelessWidget {
             child: ElevatedButtonWithIcon(
               icon: const FaIcon(
                 FontAwesomeIcons.userPlus,
-                color: Colors.white,
               ),
               onPressed: () {},
               label: "AÑADIR MIEMBRO",

@@ -53,7 +53,6 @@ class LoginPage extends StatelessWidget {
               ElevatedButtonWithIcon(
                   icon: const FaIcon(
                     FontAwesomeIcons.google,
-                    color: Colors.white,
                   ),
                   onPressed: () {},
                   label: "INICIAR SESIÓN CON GOOGLE",
