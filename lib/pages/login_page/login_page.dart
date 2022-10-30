@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
@@ -52,7 +54,9 @@ class LoginPage extends StatelessWidget {
               8.0,
               ElevatedButtonWithIcon(
                   icon: const FaIcon(FontAwesomeIcons.google),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.read<AuthBloc>().add(AuthGoogleLoginEvent());
+                  },
                   label: "INICIAR SESIÓN CON GOOGLE",
                   backgroundColor:
                       const Color.fromARGB(0xFF, 0xDC, 0x4E, 0x41))),
