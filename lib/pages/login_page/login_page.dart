@@ -16,75 +16,83 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tuks Divide')),
-      body: Column(
-        children: [
-          _addWidgetWithPadding(
-            35.0,
-            8.0,
-            TextInputField(inputController: _emailController, label: "Email"),
-          ),
-          _addWidgetWithPadding(
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _addWidgetWithPadding(
+              35.0,
               8.0,
-              8.0,
-              TextInputField(
-                  inputController: _passwordController,
-                  label: "Contraseña",
-                  obscureText: true)),
-          _addWidgetWithPadding(
-              18.0,
-              30.0,
-              BasicElevatedButton(
-                label: "INICIAR SESIÓN",
-                onPressed: () {},
-              )),
-          _addWidgetWithPadding(
-            8.0,
-            30.0,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _createDivider(context),
-                const Text("O"),
-                _createDivider(context)
-              ],
+              TextInputField(inputController: _emailController, label: "Email"),
             ),
-          ),
-          _addWidgetWithPadding(
-              8.0,
-              8.0,
-              ElevatedButtonWithIcon(
-                  icon: const FaIcon(
-                    FontAwesomeIcons.google,
-                  ),
+            _addWidgetWithPadding(
+                8.0,
+                8.0,
+                TextInputField(
+                    inputController: _passwordController,
+                    label: "Contraseña",
+                    obscureText: true)),
+            _addWidgetWithPadding(
+                18.0,
+                30.0,
+                BasicElevatedButton(
+                  label: "INICIAR SESIÓN",
                   onPressed: () {
-                    context.read<AuthBloc>().add(AuthGoogleLoginEvent());
+                    context.read<AuthBloc>().add(AuthEmailLoginEvent(
+                          email: _emailController.text.trim(),
+                          password: _passwordController.text.trim(),
+                        ));
                   },
-                  label: "INICIAR SESIÓN CON GOOGLE",
-                  backgroundColor:
-                      const Color.fromARGB(0xFF, 0xDC, 0x4E, 0x41))),
-          _addWidgetWithPadding(
-            50.0,
-            15.0,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("¿No tienes una cuenta? "),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignupPage()),
-                    );
-                  },
-                  child: const Text(
-                    "Crear una cuenta",
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                )
-              ],
+                )),
+            _addWidgetWithPadding(
+              8.0,
+              30.0,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _createDivider(context),
+                  const Text("O"),
+                  _createDivider(context)
+                ],
+              ),
             ),
-          )
-        ],
+            _addWidgetWithPadding(
+                8.0,
+                8.0,
+                ElevatedButtonWithIcon(
+                    icon: const FaIcon(
+                      FontAwesomeIcons.google,
+                    ),
+                    onPressed: () {
+                      context.read<AuthBloc>().add(AuthGoogleLoginEvent());
+                    },
+                    label: "INICIAR SESIÓN CON GOOGLE",
+                    backgroundColor:
+                        const Color.fromARGB(0xFF, 0xDC, 0x4E, 0x41))),
+            _addWidgetWithPadding(
+              50.0,
+              15.0,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("¿No tienes una cuenta? "),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignupPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Crear una cuenta",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

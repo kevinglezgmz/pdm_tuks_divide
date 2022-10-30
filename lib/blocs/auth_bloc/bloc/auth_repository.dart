@@ -17,7 +17,7 @@ class AuthRepository {
     return _authInstance.signOut();
   }
 
-  Future<UserDetails?> signInWithGoogle() async {
+  Future<UserDetails> signInWithGoogle() async {
     final GoogleSignInAccount? googleSignInAccount =
         await _googleSignIn.signIn();
     if (googleSignInAccount == null) {
@@ -25,42 +25,93 @@ class AuthRepository {
     }
     final googleAuth = await googleSignInAccount.authentication;
 
-    final AuthCredential credentials = GoogleAuthProvider.credential(
+    final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    await _authInstance.signInWithCredential(credentials);
+    await _authInstance.signInWithCredential(credential);
 
-    if (_authInstance.currentUser?.uid != null) {
-      await _createFirestoreUser(
-        _authInstance.currentUser!.uid,
-        googleSignInAccount.email,
-        googleSignInAccount.photoUrl,
-      );
+    if (_authInstance.currentUser?.uid == null) {
+      throw 'Invalid uid for Google sign in';
+    }
+    final UserDetails userDetails = await _createFirestoreUser(
+      _authInstance.currentUser!.uid,
+      googleSignInAccount.email,
+      googleSignInAccount.photoUrl,
+      googleSignInAccount.displayName ?? googleSignInAccount.email,
+      null,
+      null,
+    );
+    return userDetails;
+  }
+
+  Future<UserDetails> signInWithEmail(String email, String password) async {
+    final UserCredential credential = await _authInstance
+        .signInWithEmailAndPassword(email: email, password: password);
+    final UserDetails? currUser = await _getFirestoreUser(credential.user!.uid);
+    if (currUser == null) {
+      throw 'User is not in users database';
+    }
+    return currUser;
+  }
+
+  Future<UserDetails> signUpWithEmail(
+      UserDetails newUserDetails, String password) async {
+    final credential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: newUserDetails.email,
+      password: password,
+    );
+    final UserDetails insertedUserDetails = await _createFirestoreUser(
+      credential.user!.uid,
+      credential.user!.email!,
+      newUserDetails.pictureUrl,
+      newUserDetails.displayName,
+      newUserDetails.firstName,
+      newUserDetails.lastName,
+    );
+    return insertedUserDetails;
+  }
+
+  Future<UserDetails> _createFirestoreUser(
+    String uid,
+    String email,
+    String? profilePicture,
+    String? displayName,
+    String? firstName,
+    String? lastName,
+  ) async {
+    UserDetails? user = await _getFirestoreUser(uid);
+    if (user == null) {
+      final Map<String, dynamic> userToInsert = {
+        'uid': uid,
+        'email': email,
+        'pictureUrl': profilePicture,
+        'displayName': displayName,
+        'firstName': firstName,
+        'lastName': lastName,
+      };
+      await FirebaseFirestore.instance.collection("users").add(userToInsert);
+      user = UserDetails.fromMap(userToInsert);
     }
     return UserDetails(
-      displayName: googleSignInAccount.displayName ?? googleSignInAccount.email,
-      email: googleSignInAccount.email,
-      uid: _authInstance.currentUser!.uid,
-      pictureUrl: googleSignInAccount.photoUrl,
+      uid: uid,
+      pictureUrl: profilePicture,
+      email: email,
+      displayName: displayName,
+      firstName: firstName,
+      lastName: lastName,
     );
   }
 
-  Future<void> _createFirestoreUser(
-      String uid, String email, String? profilePicture) async {
+  Future<UserDetails?> _getFirestoreUser(String uid) async {
     final usersQuery = await FirebaseFirestore.instance
         .collection("users")
         .where('uid', isEqualTo: uid)
         .get();
-    final user = usersQuery.docs.isNotEmpty ? usersQuery.docs.first : null;
-    // Si no exite el doc, lo crea con valor default lista vacia
-    if (user == null || user.exists == false) {
-      await FirebaseFirestore.instance.collection("users").add({
-        'uid': uid,
-        'email': email,
-        'pictureUrl': profilePicture,
-      });
-    }
+    return usersQuery.docs.isNotEmpty
+        ? UserDetails.fromMap(usersQuery.docs[0].data())
+        : null;
   }
 }

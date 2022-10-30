@@ -11,24 +11,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(AuthNotLoggedInState()) {
-    on<AuthPasswordLoginEvent>(_initiatePasswordLoginEvent);
+    on<AuthEmailLoginEvent>(_initiatePasswordLoginEvent);
     on<AuthGoogleLoginEvent>(_initiateGoogleLoginEvent);
+    on<AuthEmailSignupEvent>(_initiateEmailSignupEvent);
     on<AuthCheckLoginStatusEvent>(((event, emit) {
       // To Do: Check if user is already logged in when opening the app after close
+      authRepository.signOutGoogleUser();
+      authRepository.signOutFirebaseUser();
     }));
   }
 
   FutureOr<void> _initiatePasswordLoginEvent(
-      AuthPasswordLoginEvent event, Emitter<AuthState> emit) {}
+      AuthEmailLoginEvent event, Emitter<AuthState> emit) async {
+    try {
+      final UserDetails user =
+          await authRepository.signInWithEmail(event.email, event.password);
+      emit(AuthLoggedInState(user: user));
+    } catch (e) {
+      // To Do Create Signup Error State
+      emit(AuthNotLoggedInState());
+    }
+  }
 
   FutureOr<void> _initiateGoogleLoginEvent(
       AuthGoogleLoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoggingInState());
     try {
-      final UserDetails? user = await authRepository.signInWithGoogle();
-      emit(AuthLoggedInState(user: user!));
+      final UserDetails user = await authRepository.signInWithGoogle();
+      emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Error State
+      emit(AuthNotLoggedInState());
+    }
+  }
+
+  FutureOr<void> _initiateEmailSignupEvent(
+      AuthEmailSignupEvent event, Emitter<AuthState> emit) async {
+    try {
+      final UserDetails user =
+          await authRepository.signUpWithEmail(event.newUser, event.password);
+      emit(AuthLoggedInState(user: user));
+    } catch (e) {
+      // To Do Create Signup Error State
       emit(AuthNotLoggedInState());
     }
   }
