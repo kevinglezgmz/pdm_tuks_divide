@@ -4,6 +4,7 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
+import 'package:tuks_divide/models/user_model.dart';
 
 class SignupPage extends StatelessWidget {
   final TextEditingController _firstNameController = TextEditingController();
@@ -25,6 +26,19 @@ class SignupPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            BlocListener(listener: (context, state) {
+              if (state is AuthLoggedInState) {
+                Navigator.of(context).pop();
+              } else if (state is AuthNotLoggedInState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Error al registrar usuario",
+                    ),
+                  ),
+                );
+              }
+            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
               child: AddPictureWidget(
@@ -58,22 +72,26 @@ class SignupPage extends StatelessWidget {
               obscureText: true,
             )),
             Padding(
-                padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
-                child: BasicElevatedButton(
-                  label: "CREAR CUENTA",
-                  onPressed: () {
-                    context.read<AuthBloc>().add(AuthEmailSignupEvent(
-                        newUser: UserDetails(
-                          displayName: '',
-                          pictureUrl: null,
-                          lastName: _lastNameController.text.trim(),
-                          firstName: _firstNameController.text.trim(),
-                          email: _emailController.text.trim(),
-                          uid: '',
+              padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
+              child: BasicElevatedButton(
+                label: "CREAR CUENTA",
+                onPressed: () {
+                  context.read<AuthBloc>().add(
+                        AuthEmailSignupEvent(
+                          newUser: UserModel(
+                            displayName: '',
+                            pictureUrl: null,
+                            lastName: _lastNameController.text.trim(),
+                            firstName: _firstNameController.text.trim(),
+                            email: _emailController.text.trim(),
+                            uid: '',
+                          ),
+                          password: _passwordController.text,
                         ),
-                        password: _passwordController.text));
-                  },
-                )),
+                      );
+                },
+              ),
+            ),
           ],
         ),
       ),

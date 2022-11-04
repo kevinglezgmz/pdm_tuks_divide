@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
+import 'package:tuks_divide/models/user_model.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -24,7 +25,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   FutureOr<void> _initiatePasswordLoginEvent(
       AuthEmailLoginEvent event, Emitter<AuthState> emit) async {
     try {
-      final UserDetails user =
+      final UserModel user =
           await authRepository.signInWithEmail(event.email, event.password);
       emit(AuthLoggedInState(user: user));
     } catch (e) {
@@ -37,7 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthGoogleLoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoggingInState());
     try {
-      final UserDetails user = await authRepository.signInWithGoogle();
+      final UserModel user = await authRepository.signInWithGoogle();
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Error State
@@ -48,7 +49,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   FutureOr<void> _initiateEmailSignupEvent(
       AuthEmailSignupEvent event, Emitter<AuthState> emit) async {
     try {
-      final UserDetails user =
+      final UserModel user =
           await authRepository.signUpWithEmail(event.newUser, event.password);
       emit(AuthLoggedInState(user: user));
     } catch (e) {

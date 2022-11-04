@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/models/collections.dart';
+import 'package:tuks_divide/models/user_model.dart';
 
 class AuthRepository {
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ["email"]);
@@ -17,7 +18,7 @@ class AuthRepository {
     return _authInstance.signOut();
   }
 
-  Future<UserDetails> signInWithGoogle() async {
+  Future<UserModel> signInWithGoogle() async {
     final GoogleSignInAccount? googleSignInAccount =
         await _googleSignIn.signIn();
     if (googleSignInAccount == null) {
@@ -35,7 +36,7 @@ class AuthRepository {
     if (_authInstance.currentUser?.uid == null) {
       throw 'Invalid uid for Google sign in';
     }
-    final UserDetails userDetails = await _createFirestoreUser(
+    final UserModel userDetails = await _createFirestoreUser(
       _authInstance.currentUser!.uid,
       googleSignInAccount.email,
       googleSignInAccount.photoUrl,
@@ -46,24 +47,24 @@ class AuthRepository {
     return userDetails;
   }
 
-  Future<UserDetails> signInWithEmail(String email, String password) async {
+  Future<UserModel> signInWithEmail(String email, String password) async {
     final UserCredential credential = await _authInstance
         .signInWithEmailAndPassword(email: email, password: password);
-    final UserDetails? currUser = await _getFirestoreUser(credential.user!.uid);
+    final UserModel? currUser = await _getFirestoreUser(credential.user!.uid);
     if (currUser == null) {
       throw 'User is not in users database';
     }
     return currUser;
   }
 
-  Future<UserDetails> signUpWithEmail(
-      UserDetails newUserDetails, String password) async {
+  Future<UserModel> signUpWithEmail(
+      UserModel newUserDetails, String password) async {
     final credential =
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: newUserDetails.email,
       password: password,
     );
-    final UserDetails insertedUserDetails = await _createFirestoreUser(
+    final UserModel insertedUserDetails = await _createFirestoreUser(
       credential.user!.uid,
       credential.user!.email!,
       newUserDetails.pictureUrl,
@@ -74,7 +75,7 @@ class AuthRepository {
     return insertedUserDetails;
   }
 
-  Future<UserDetails> _createFirestoreUser(
+  Future<UserModel> _createFirestoreUser(
     String uid,
     String email,
     String? profilePicture,
@@ -82,7 +83,7 @@ class AuthRepository {
     String? firstName,
     String? lastName,
   ) async {
-    UserDetails? user = await _getFirestoreUser(uid);
+    UserModel? user = await _getFirestoreUser(uid);
     if (user == null) {
       final Map<String, dynamic> userToInsert = {
         'uid': uid,
@@ -92,10 +93,12 @@ class AuthRepository {
         'firstName': firstName,
         'lastName': lastName,
       };
-      await FirebaseFirestore.instance.collection("users").add(userToInsert);
-      user = UserDetails.fromMap(userToInsert);
+      await FirebaseFirestore.instance
+          .collection(FirebaseCollections.users)
+          .add(userToInsert);
+      user = UserModel.fromMap(userToInsert);
     }
-    return UserDetails(
+    return UserModel(
       uid: uid,
       pictureUrl: profilePicture,
       email: email,
@@ -105,13 +108,13 @@ class AuthRepository {
     );
   }
 
-  Future<UserDetails?> _getFirestoreUser(String uid) async {
+  Future<UserModel?> _getFirestoreUser(String uid) async {
     final usersQuery = await FirebaseFirestore.instance
-        .collection("users")
+        .collection(FirebaseCollections.users)
         .where('uid', isEqualTo: uid)
         .get();
     return usersQuery.docs.isNotEmpty
-        ? UserDetails.fromMap(usersQuery.docs[0].data())
+        ? UserModel.fromMap(usersQuery.docs[0].data())
         : null;
   }
 }

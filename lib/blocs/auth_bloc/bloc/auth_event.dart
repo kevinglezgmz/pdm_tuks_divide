@@ -22,7 +22,7 @@ class AuthEmailLoginEvent extends AuthEvent {
 class AuthGoogleLoginEvent extends AuthEvent {}
 
 class AuthEmailSignupEvent extends AuthEvent {
-  final UserDetails newUser;
+  final UserModel newUser;
   final String password;
 
   const AuthEmailSignupEvent({required this.newUser, required this.password});
