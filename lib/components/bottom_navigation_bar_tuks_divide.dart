@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/pages/group_profile_activity_page/group_profile_activity_page.dart';
-import 'package:tuks_divide/pages/my_groups_page/my_groups_page.dart';
+import 'package:tuks_divide/pages/home_page/home_page.dart';
 
 class BottomNavigationBarTuksDivide extends StatefulWidget {
   const BottomNavigationBarTuksDivide({super.key});
@@ -23,8 +23,8 @@ class _BottomNavigationBarTuksDivideState
       body: IndexedStack(
         index: index,
         children: const [
-          MyGroupsPage(),
-          MyGroupsPage(),
+          HomePage(),
+          HomePage(),
           GroupProfileActivityPage(),
           GroupProfileActivityPage()
         ],
