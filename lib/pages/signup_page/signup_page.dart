@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
 
 class SignupPage extends StatelessWidget {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -17,47 +18,64 @@ class SignupPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Regístrate"), automaticallyImplyLeading: false),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
-            child: AddPictureWidget(
-              backgroundColor: Colors.grey,
-              radius: 60,
-              iconSize: 60,
-              onPressed: () {},
-            ),
-          ),
-          _createInputField(
-            TextInputField(inputController: _nameController, label: "Nombre"),
-          ),
-          _createInputField(
-            TextInputField(
-                inputController: _lastNameController, label: "Apellido"),
-          ),
-          _createInputField(
-            TextInputField(inputController: _emailController, label: "Email"),
-          ),
-          _createInputField(
-            TextInputField(
-              inputController: _passwordController,
-              label: "Contraseña",
-              obscureText: true,
-            ),
-          ),
-          _createInputField(TextInputField(
-            inputController: _repeatPasswordController,
-            label: "Repetir contraseña",
-            obscureText: true,
-          )),
-          Padding(
-              padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 0.0),
-              child: BasicElevatedButton(
-                label: "CREAR CUENTA",
+        title: const Text("Regístrate"),
+      ),
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
+              child: AddPictureWidget(
+                backgroundColor: Colors.grey,
+                radius: 60,
+                iconSize: 60,
                 onPressed: () {},
-              )),
-        ],
+              ),
+            ),
+            _createInputField(
+              TextInputField(
+                  inputController: _firstNameController, label: "Nombre"),
+            ),
+            _createInputField(
+              TextInputField(
+                  inputController: _lastNameController, label: "Apellido"),
+            ),
+            _createInputField(
+              TextInputField(inputController: _emailController, label: "Email"),
+            ),
+            _createInputField(
+              TextInputField(
+                inputController: _passwordController,
+                label: "Contraseña",
+                obscureText: true,
+              ),
+            ),
+            _createInputField(TextInputField(
+              inputController: _repeatPasswordController,
+              label: "Repetir contraseña",
+              obscureText: true,
+            )),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
+                child: BasicElevatedButton(
+                  label: "CREAR CUENTA",
+                  onPressed: () {
+                    context.read<AuthBloc>().add(AuthEmailSignupEvent(
+                        newUser: UserDetails(
+                          displayName: '',
+                          pictureUrl: null,
+                          lastName: _lastNameController.text.trim(),
+                          firstName: _firstNameController.text.trim(),
+                          email: _emailController.text.trim(),
+                          uid: '',
+                        ),
+                        password: _passwordController.text));
+                  },
+                )),
+          ],
+        ),
       ),
     );
   }

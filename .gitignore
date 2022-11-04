@@ -10,6 +10,7 @@
 .svn/
 migrate_working_dir/
 google-services.json
+secrets.dart
 
 # IntelliJ related
 *.iml
