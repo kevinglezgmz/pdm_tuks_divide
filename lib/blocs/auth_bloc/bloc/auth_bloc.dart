@@ -10,16 +10,23 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
+  UserModel? _me;
+  UserModel? get me => _me;
 
   AuthBloc({required this.authRepository}) : super(AuthNotLoggedInState()) {
     on<AuthEmailLoginEvent>(_initiatePasswordLoginEvent);
     on<AuthGoogleLoginEvent>(_initiateGoogleLoginEvent);
     on<AuthEmailSignupEvent>(_initiateEmailSignupEvent);
-    on<AuthCheckLoginStatusEvent>(((event, emit) {
-      // To Do: Check if user is already logged in when opening the app after close
-      authRepository.signOutGoogleUser();
-      authRepository.signOutFirebaseUser();
-    }));
+    on<AuthCheckLoginStatusEvent>(_checkLoginStatusEvent);
+  }
+
+  FutureOr<void> _checkLoginStatusEvent(
+      AuthCheckLoginStatusEvent event, Emitter<AuthState> emit) async {
+    UserModel? user = await authRepository.getMeUser();
+    if (user != null) {
+      _me = user;
+      emit(AuthLoggedInState(user: user));
+    }
   }
 
   FutureOr<void> _initiatePasswordLoginEvent(
@@ -27,6 +34,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final UserModel user =
           await authRepository.signInWithEmail(event.email, event.password);
+      _me = user;
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Signup Error State
@@ -39,6 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoggingInState());
     try {
       final UserModel user = await authRepository.signInWithGoogle();
+      _me = user;
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Error State
@@ -51,6 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final UserModel user =
           await authRepository.signUpWithEmail(event.newUser, event.password);
+      _me = user;
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Signup Error State

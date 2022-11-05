@@ -117,4 +117,18 @@ class AuthRepository {
         ? UserModel.fromMap(usersQuery.docs[0].data())
         : null;
   }
+
+  Future<UserModel?> getMeUser() async {
+    User? me = FirebaseAuth.instance.currentUser;
+    if (me == null) {
+      return null;
+    }
+    final usersQuery = await FirebaseFirestore.instance
+        .collection(FirebaseCollections.users)
+        .where('uid', isEqualTo: me.uid)
+        .get();
+    return usersQuery.docs.isNotEmpty
+        ? UserModel.fromMap(usersQuery.docs[0].data())
+        : null;
+  }
 }
