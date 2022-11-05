@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
 import 'package:tuks_divide/pages/create_group_page/member_list.dart';
@@ -46,7 +48,10 @@ class CreateGroupPage extends StatelessWidget {
                   iconSize: 45,
                   height: 45.0,
                   width: 45.0,
-                  onPressed: () {},
+                  onPressed: () {
+                    BlocProvider.of<UploadImageBloc>(context)
+                        .add(UploadNewImageEvent("groupImg", "gallery"));
+                  },
                 )),
             Container(
               width: MediaQuery.of(context).size.width / 1.49,

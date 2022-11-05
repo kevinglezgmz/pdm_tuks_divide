@@ -28,6 +28,7 @@ class AddPictureWidget extends StatelessWidget {
         right: -10.0,
         bottom: -10.0,
         child: FloatingActionButton(
+          heroTag: null,
           onPressed: onPressed,
           child: const Icon(
             Icons.add_a_photo_outlined,

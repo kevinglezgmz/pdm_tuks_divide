@@ -74,6 +74,7 @@ class GroupExpensesPage extends StatelessWidget {
         ExpenseList()
       ]),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: () {},
         child: const FaIcon(FontAwesomeIcons.plus),
       ),

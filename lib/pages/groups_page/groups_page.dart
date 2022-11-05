@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/pages/create_group_page/create_group_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_list.dart';
 
 class GroupsPage extends StatelessWidget {
@@ -24,7 +25,13 @@ class GroupsPage extends StatelessWidget {
         right: 15.0,
         bottom: 15.0,
         child: FloatingActionButton(
-          onPressed: () {},
+          heroTag: null,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateGroupPage()),
+            );
+          },
           child: const FaIcon(FontAwesomeIcons.plus),
         ),
       )

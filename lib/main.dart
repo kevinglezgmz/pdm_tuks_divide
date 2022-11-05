@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,7 @@ void main() async {
               AuthBloc(authRepository: context.read<AuthRepository>())
                 ..add(AuthCheckLoginStatusEvent()),
         ),
+        BlocProvider(create: (BuildContext context) => UploadImageBloc()),
       ],
       child: const MyApp(),
     ),
