@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tuks_divide/pages/home_page/group_item.dart';
+import 'package:tuks_divide/pages/groups_page/group_item.dart';
 
 class GroupList extends StatelessWidget {
   final List<dynamic> groupData = [

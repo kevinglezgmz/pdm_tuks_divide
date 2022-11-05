@@ -1,33 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tuks_divide/pages/home_page/group_list.dart';
+import 'package:tuks_divide/pages/group_profile_activity_page/group_profile_activity_page.dart';
+import 'package:tuks_divide/pages/groups_page/groups_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int index = 1;
+  @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Column(children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(12.0, 15.0, 12.0, 10.0),
-          alignment: Alignment.centerLeft,
-          child: const Text(
-            "Tus grupos",
-            style: TextStyle(
-                color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        GroupList(),
-      ]),
-      Positioned(
-        right: 15.0,
-        bottom: 15.0,
-        child: FloatingActionButton(
-          onPressed: () {},
-          child: const FaIcon(FontAwesomeIcons.plus),
-        ),
-      )
-    ]);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tuks Divide'),
+      ),
+      body: IndexedStack(
+        index: index,
+        children: const [
+          GroupsPage(),
+          GroupsPage(),
+          GroupProfileActivityPage(),
+          GroupProfileActivityPage()
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: index,
+        onTap: (int newIndex) {
+          setState(() {
+            index = newIndex;
+          });
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        type: BottomNavigationBarType.fixed,
+        unselectedItemColor: Colors.white,
+        selectedItemColor: Colors.white,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: "Grupos"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Amigos"),
+          BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.chartLine), label: "Actividad"),
+          BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.userAstronaut), label: "Cuenta")
+        ],
+      ),
+    );
   }
 }
