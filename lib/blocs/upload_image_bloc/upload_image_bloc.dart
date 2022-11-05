@@ -12,23 +12,22 @@ part 'upload_image_state.dart';
 
 class UploadImageBloc extends Bloc<UploadImageEvent, UploadImageState> {
   final UploadImageRepository _uploadImageRepository = UploadImageRepository();
+  String? uploadedImageUrl;
+
   UploadImageBloc() : super(UploadImageInitialState()) {
     on<UploadNewImageEvent>(_uploadNewImage);
   }
 
   FutureOr<void> _uploadNewImage(event, emit) async {
     emit(UploadingImageState());
-
-    bool permissionGranted = event.typeOfUpload == "camera"
-        ? await _requestPermission(Permission.camera)
-        : await _requestPermission(Permission.storage);
-
     try {
+      bool permissionGranted = event.typeOfUpload == "camera"
+          ? await _requestPermission(Permission.camera)
+          : await _requestPermission(Permission.storage);
       if (permissionGranted) {
         String imgUrl = await _uploadImageRepository.pickImage(
             event.collection, event.typeOfUpload);
-        //add image to collection
-        log(imgUrl);
+        uploadedImageUrl = imgUrl;
         emit(UploadingSuccessfulState());
       } else {
         throw "Permissions not granted";

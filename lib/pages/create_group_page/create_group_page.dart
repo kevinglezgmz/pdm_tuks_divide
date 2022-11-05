@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
+import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/pages/create_group_page/member_list.dart';
 
 class CreateGroupPage extends StatelessWidget {
@@ -25,7 +28,21 @@ class CreateGroupPage extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              final String? pictureUrl =
+                  BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl;
+              BlocProvider.of<GroupsBloc>(context).add(
+                AddNewGroupEvent(
+                  groupData: GroupModel(
+                    createdAt: Timestamp.now(),
+                    description: _groupDescriptionController.text,
+                    groupName: _groupNameController.text,
+                    owner: null,
+                    groupPicUrl: pictureUrl,
+                  ),
+                ),
+              );
+            },
             child: const Text(
               "Guardar",
               style: TextStyle(
@@ -39,30 +56,40 @@ class CreateGroupPage extends StatelessWidget {
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
-          child: Row(children: [
-            Padding(
+          child: Row(
+            children: [
+              Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: AddPictureWidget(
-                  backgroundColor: Colors.grey,
-                  radius: 45.0,
-                  iconSize: 45,
-                  height: 45.0,
-                  width: 45.0,
-                  onPressed: () {
-                    BlocProvider.of<UploadImageBloc>(context)
-                        .add(UploadNewImageEvent("groupImg", "gallery"));
+                child: BlocListener<GroupsBloc, GroupsState>(
+                  listener: (context, state) {
+                    if (state is GroupsCreatedGroupState) {
+                      Navigator.of(context).pop();
+                    }
                   },
-                )),
-            Container(
-              width: MediaQuery.of(context).size.width / 1.49,
-              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
-              child: TextField(
-                controller: _groupNameController,
-                decoration:
-                    const InputDecoration(label: Text("Nombre del grupo")),
+                  child: AddPictureWidget(
+                    backgroundColor: Colors.grey,
+                    radius: 45.0,
+                    iconSize: 45,
+                    height: 45.0,
+                    width: 45.0,
+                    onPressed: () {
+                      BlocProvider.of<UploadImageBloc>(context)
+                          .add(const UploadNewImageEvent("groupImg", "camera"));
+                    },
+                  ),
+                ),
               ),
-            ),
-          ]),
+              Container(
+                width: MediaQuery.of(context).size.width / 1.49,
+                padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+                child: TextField(
+                  controller: _groupNameController,
+                  decoration:
+                      const InputDecoration(label: Text("Nombre del grupo")),
+                ),
+              ),
+            ],
+          ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(15.0, 8.0, 19.0, 8.0),

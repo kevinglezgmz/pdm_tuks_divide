@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
+import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,18 +15,22 @@ void main() async {
   await Firebase.initializeApp();
   runApp(MultiRepositoryProvider(
     providers: [
-      RepositoryProvider(
-        create: (context) => AuthRepository(),
-      ),
+      RepositoryProvider(create: (context) => AuthRepository()),
+      RepositoryProvider(create: (context) => GroupsRepository()),
     ],
     child: MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              AuthBloc(authRepository: context.read<AuthRepository>())
-                ..add(AuthCheckLoginStatusEvent()),
+          create: (context) => AuthBloc(
+            authRepository: context.read<AuthRepository>(),
+          )..add(AuthCheckLoginStatusEvent()),
         ),
         BlocProvider(create: (BuildContext context) => UploadImageBloc()),
+        BlocProvider(
+          create: (context) => GroupsBloc(
+            groupsRepository: context.read<GroupsRepository>(),
+          ),
+        )
       ],
       child: const MyApp(),
     ),
@@ -45,7 +52,15 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xff1CC19F),
             secondary: const Color(0xff1CC19F)),
       ),
-      home: BlocBuilder<AuthBloc, AuthState>(
+      home: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoggedInState) {
+            final UserModel? me = BlocProvider.of<AuthBloc>(context).me;
+            if (me != null) {
+              BlocProvider.of<GroupsBloc>(context).add(LoadUserGroupsEvent());
+            }
+          }
+        },
         builder: (context, state) {
           if (state is AuthNotLoggedInState) {
             return LoginPage();

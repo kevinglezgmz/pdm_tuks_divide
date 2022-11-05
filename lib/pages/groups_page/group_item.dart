@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:tuks_divide/models/group_model.dart';
 
 class GroupItem extends StatelessWidget {
-  final String groupName;
-  final String? groupImage;
-  final String debtDescription;
+  final GroupModel groupData;
 
-  const GroupItem(
-      {super.key,
-      required this.groupName,
-      required this.groupImage,
-      required this.debtDescription});
+  const GroupItem({
+    super.key,
+    required this.groupData,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +21,9 @@ class GroupItem extends StatelessWidget {
             color: Colors.cyan[200],
           ),
         )),
-        title: Text(groupName),
-        subtitle: Text(debtDescription),
+        title: Text(groupData.groupName),
+        // TODO: realizar algún cálculo dependiendo de los datos disponibles
+        subtitle: const Text('Todo'),
       ),
     );
   }

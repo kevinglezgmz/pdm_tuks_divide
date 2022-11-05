@@ -21,18 +21,33 @@ class AddPictureWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(clipBehavior: Clip.none, children: [
       AvatarWidget(
-          backgroundColor: backgroundColor, radius: radius, iconSize: iconSize),
+        backgroundColor: backgroundColor,
+        radius: radius,
+        iconSize: iconSize,
+      ),
       Positioned(
         height: height,
         width: width,
         right: -10.0,
         bottom: -10.0,
-        child: FloatingActionButton(
-          heroTag: null,
-          onPressed: onPressed,
-          child: const Icon(
-            Icons.add_a_photo_outlined,
-            color: Colors.white,
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black,
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Material(
+            type: MaterialType.button,
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              child: const Icon(
+                Icons.add_a_photo_outlined,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       )

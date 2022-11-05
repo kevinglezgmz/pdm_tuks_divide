@@ -95,7 +95,8 @@ class AuthRepository {
       };
       await FirebaseFirestore.instance
           .collection(FirebaseCollections.users)
-          .add(userToInsert);
+          .doc(uid)
+          .set(userToInsert);
       user = UserModel.fromMap(userToInsert);
     }
     return UserModel(
@@ -109,13 +110,15 @@ class AuthRepository {
   }
 
   Future<UserModel?> _getFirestoreUser(String uid) async {
-    final usersQuery = await FirebaseFirestore.instance
+    final meUser = await FirebaseFirestore.instance
         .collection(FirebaseCollections.users)
-        .where('uid', isEqualTo: uid)
+        .doc(uid)
         .get();
-    return usersQuery.docs.isNotEmpty
-        ? UserModel.fromMap(usersQuery.docs[0].data())
-        : null;
+    final Map<String, dynamic>? docData = meUser.data();
+    if (docData == null) {
+      return null;
+    }
+    return UserModel.fromMap(docData);
   }
 
   Future<UserModel?> getMeUser() async {

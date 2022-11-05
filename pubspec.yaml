@@ -43,14 +43,14 @@ dependencies:
   meta: ^1.8.0
   share_plus: ^6.2.0
   font_awesome_flutter: ^10.2.1
-  firebase_auth: 4.1.0
+  firebase_auth: 4.1.1
   firebase_core: 2.1.1
-  google_sign_in: ^5.4.2
-  cloud_firestore: 4.0.3
-  flutterfire_ui: ^0.4.3+18
-  image_picker: ^0.8.6
-  permission_handler: ^10.2.0
-  firebase_storage: 11.0.3
+  google_sign_in: 5.4.2
+  cloud_firestore: 4.0.4
+  flutterfire_ui: 0.4.3+19
+  image_picker: 0.8.6
+  permission_handler: 10.2.0
+  firebase_storage: 11.0.4
 
 dev_dependencies:
   flutter_test:

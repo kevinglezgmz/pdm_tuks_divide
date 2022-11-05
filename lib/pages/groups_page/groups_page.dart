@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/pages/create_group_page/create_group_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_list.dart';
 
@@ -19,16 +21,29 @@ class GroupsPage extends StatelessWidget {
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-        GroupList(),
+        BlocConsumer<GroupsBloc, GroupsState>(
+          listener: (context, state) {},
+          builder: (context, state) {
+            if (state is GroupsLoadedState) {
+              return GroupList(
+                groupData: state.groups,
+              );
+            } else if (state is GroupsLoadingState) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return const Text('Error');
+          },
+        )
       ]),
       Positioned(
         right: 15.0,
         bottom: 15.0,
         child: FloatingActionButton(
-          heroTag: null,
+          heroTag: 'Add Group',
           onPressed: () {
-            Navigator.push(
-              context,
+            Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => CreateGroupPage()),
             );
           },

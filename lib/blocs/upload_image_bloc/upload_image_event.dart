@@ -11,7 +11,7 @@ class UploadNewImageEvent extends UploadImageEvent {
   final String collection;
   final String typeOfUpload;
 
-  UploadNewImageEvent(this.collection, this.typeOfUpload);
+  const UploadNewImageEvent(this.collection, this.typeOfUpload);
 
   @override
   List<dynamic> get props => [collection, typeOfUpload];
