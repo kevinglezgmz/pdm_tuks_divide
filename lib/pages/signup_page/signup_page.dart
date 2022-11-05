@@ -26,19 +26,6 @@ class SignupPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            BlocListener(listener: (context, state) {
-              if (state is AuthLoggedInState) {
-                Navigator.of(context).pop();
-              } else if (state is AuthNotLoggedInState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Error al registrar usuario",
-                    ),
-                  ),
-                );
-              }
-            }),
             Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
               child: AddPictureWidget(
@@ -71,25 +58,40 @@ class SignupPage extends StatelessWidget {
               label: "Repetir contraseña",
               obscureText: true,
             )),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
-              child: BasicElevatedButton(
-                label: "CREAR CUENTA",
-                onPressed: () {
-                  context.read<AuthBloc>().add(
-                        AuthEmailSignupEvent(
-                          newUser: UserModel(
-                            displayName: '',
-                            pictureUrl: null,
-                            lastName: _lastNameController.text.trim(),
-                            firstName: _firstNameController.text.trim(),
-                            email: _emailController.text.trim(),
-                            uid: '',
+            BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthLoggedInState) {
+                  Navigator.of(context).pop();
+                } else if (state is AuthNotLoggedInState) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Error al registrar usuario",
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
+                child: BasicElevatedButton(
+                  label: "CREAR CUENTA",
+                  onPressed: () {
+                    context.read<AuthBloc>().add(
+                          AuthEmailSignupEvent(
+                            newUser: UserModel(
+                              displayName: '',
+                              pictureUrl: null,
+                              lastName: _lastNameController.text.trim(),
+                              firstName: _firstNameController.text.trim(),
+                              email: _emailController.text.trim(),
+                              uid: '',
+                            ),
+                            password: _passwordController.text,
                           ),
-                          password: _passwordController.text,
-                        ),
-                      );
-                },
+                        );
+                  },
+                ),
               ),
             ),
           ],

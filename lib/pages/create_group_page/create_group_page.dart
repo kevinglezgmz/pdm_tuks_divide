@@ -2,11 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
+import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
+import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/create_group_page/member_list.dart';
 
 class CreateGroupPage extends StatelessWidget {
@@ -40,6 +44,7 @@ class CreateGroupPage extends StatelessWidget {
                     owner: null,
                     groupPicUrl: pictureUrl,
                   ),
+                  members: BlocProvider.of<CreateGroupBloc>(context).members,
                 ),
               );
             },
@@ -54,89 +59,91 @@ class CreateGroupPage extends StatelessWidget {
         ],
       ),
       body: Column(children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: BlocListener<GroupsBloc, GroupsState>(
-                  listener: (context, state) {
-                    if (state is GroupsCreatedGroupState) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: BlocBuilder<UploadImageBloc, UploadImageState>(
-                    builder: (context, state) {
-                      if (state is UploadingSuccessfulState) {
-                        return AddPictureWidget(
-                          backgroundColor: Colors.grey,
-                          radius: 45.0,
-                          iconSize: 45,
-                          height: 45.0,
-                          width: 45.0,
-                          avatarUrl: BlocProvider.of<UploadImageBloc>(context)
-                              .uploadedImageUrl,
-                          onPressed: () {
-                            _showAlertDialog(context);
-                          },
-                        );
-                      }
-                      return AddPictureWidget(
-                        backgroundColor: Colors.grey,
-                        radius: 45.0,
-                        iconSize: 45,
-                        height: 45.0,
-                        width: 45.0,
-                        onPressed: () {
-                          _showAlertDialog(context);
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width / 1.49,
-                padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
-                child: TextField(
-                  controller: _groupNameController,
-                  decoration:
-                      const InputDecoration(label: Text("Nombre del grupo")),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(15.0, 8.0, 19.0, 8.0),
-          child: TextField(
-            controller: _groupDescriptionController,
-            decoration: const InputDecoration(label: Text("Descripción")),
-            maxLength: 120,
-            maxLines: 3,
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(16.0, 30.0, 16.0, 16.0),
-          alignment: Alignment.centerLeft,
-          child: const Text(
-            "Miembros del grupo",
-            textAlign: TextAlign.left,
-          ),
-        ),
-        Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
-            child: ElevatedButtonWithIcon(
-              icon: const FaIcon(
-                FontAwesomeIcons.userPlus,
-              ),
-              onPressed: () {},
-              label: "AÑADIR MIEMBRO",
-              backgroundColor: null,
-            )),
-        MemberList()
+        _getGroupPicAndNameSection(context),
+        _getGroupDescriptionSection(),
+        _getMembersSectionTitle(),
+        _getMembersSection(context),
       ]),
+    );
+  }
+
+  Container _getMembersSectionTitle() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16.0, 30.0, 16.0, 16.0),
+      alignment: Alignment.centerLeft,
+      child: const Text(
+        "Miembros del grupo",
+        textAlign: TextAlign.left,
+      ),
+    );
+  }
+
+  Padding _getGroupDescriptionSection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 8.0, 19.0, 8.0),
+      child: TextField(
+        controller: _groupDescriptionController,
+        decoration: const InputDecoration(label: Text("Descripción")),
+        maxLength: 120,
+        maxLines: 3,
+      ),
+    );
+  }
+
+  Padding _getGroupPicAndNameSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BlocListener<GroupsBloc, GroupsState>(
+              listener: (context, state) {
+                if (state is GroupsCreatedGroupState) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: BlocBuilder<UploadImageBloc, UploadImageState>(
+                builder: (context, state) {
+                  if (state is UploadingSuccessfulState) {
+                    return AddPictureWidget(
+                      backgroundColor: Colors.grey,
+                      radius: 45.0,
+                      iconSize: 45,
+                      height: 45.0,
+                      width: 45.0,
+                      avatarUrl: BlocProvider.of<UploadImageBloc>(context)
+                          .uploadedImageUrl,
+                      onPressed: () {
+                        _showAlertDialog(context);
+                      },
+                    );
+                  }
+                  return AddPictureWidget(
+                    backgroundColor: Colors.grey,
+                    radius: 45.0,
+                    iconSize: 45,
+                    height: 45.0,
+                    width: 45.0,
+                    onPressed: () {
+                      _showAlertDialog(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width / 1.49,
+            padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+            child: TextField(
+              controller: _groupNameController,
+              decoration:
+                  const InputDecoration(label: Text("Nombre del grupo")),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -183,6 +190,89 @@ class CreateGroupPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showAddMemberDialog(
+      BuildContext context, List<UserModel> availableFriends) {
+    return showDialog<UserModel?>(
+      context: context,
+      builder: (context) => _getFriendsList(availableFriends),
+    ).then((member) {
+      if (member != null) {
+        BlocProvider.of<CreateGroupBloc>(context)
+            .add(AddMemberToGroupCreateEvent(userToAdd: member));
+      }
+    });
+  }
+
+  Widget _getFriendsList(List<UserModel> friends) {
+    return ListView.builder(
+      itemCount: friends.length,
+      itemBuilder: (BuildContext context, int index) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop(friends[index]);
+          },
+          child: Card(
+              child: ListTile(
+            leading: friends[index].pictureUrl != null
+                ? CircleAvatar(
+                    child: Image.network(friends[index].pictureUrl!),
+                  )
+                : const AvatarWidget(iconSize: 20),
+            title: Text(friends[index].displayName ??
+                friends[index].fullName ??
+                "<No Name>"),
+            trailing: const Icon(Icons.delete),
+          )),
+        );
+      },
+    );
+  }
+
+  Widget _getMembersSection(BuildContext context) {
+    return BlocBuilder<FriendsBloc, FriendsState>(
+      builder: (friendsContext, friendsState) {
+        return BlocBuilder<CreateGroupBloc, CreateGroupState>(
+          builder: (createGroupContext, createGroupState) {
+            final List<UserModel> friends = [];
+            final List<UserModel> selectedMembers = [];
+            if (friendsState is FriendsLoadedState) {
+              friends.addAll(friendsState.friends);
+            }
+            if (createGroupState is CreateGroupSelectedMembersState) {
+              selectedMembers.addAll(createGroupState.currentGroupMembers);
+            }
+            final List<UserModel> availableFriends = friends
+                .where((friend) => !selectedMembers.contains(friend))
+                .toList();
+            return Expanded(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
+                    child: ElevatedButtonWithIcon(
+                      icon: const FaIcon(
+                        FontAwesomeIcons.userPlus,
+                      ),
+                      onPressed: () {
+                        _showAddMemberDialog(
+                            createGroupContext, availableFriends);
+                      },
+                      label: "AÑADIR MIEMBRO",
+                      backgroundColor: null,
+                    ),
+                  ),
+                  MemberList(
+                    membersData: selectedMembers,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

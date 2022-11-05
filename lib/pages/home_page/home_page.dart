@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/pages/friends_page/friends_page.dart';
 import 'package:tuks_divide/pages/group_profile_activity_page/group_profile_activity_page.dart';
 import 'package:tuks_divide/pages/groups_page/groups_page.dart';
 
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage> {
         index: index,
         children: const [
           GroupsPage(),
-          GroupProfileActivityPage(),
+          FriendsPage(),
           GroupProfileActivityPage(),
           GroupProfileActivityPage()
         ],
