@@ -12,18 +12,18 @@ class GroupItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      //TODO: add logic to put group image
       child: ListTile(
-        leading: CircleAvatar(
-            child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.cyan[200],
-          ),
-        )),
+        //TODO: add logic to put group image
         title: Text(groupData.groupName),
         // TODO: realizar algún cálculo dependiendo de los datos disponibles
-        subtitle: const Text('Todo'),
+        subtitle: Text(groupData.description),
+        //TODO: add logic to put group image
+        leading: CircleAvatar(
+            backgroundImage: groupData.groupPicUrl == null ||
+                    groupData.groupPicUrl == ""
+                ? const NetworkImage(
+                    "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                : NetworkImage(groupData.groupPicUrl!)),
       ),
     );
   }

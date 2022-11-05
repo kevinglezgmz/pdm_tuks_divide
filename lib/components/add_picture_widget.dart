@@ -8,6 +8,7 @@ class AddPictureWidget extends StatelessWidget {
   final double radius;
   final double iconSize;
   final VoidCallback onPressed;
+  final String? avatarUrl;
   const AddPictureWidget(
       {super.key,
       this.height,
@@ -15,7 +16,8 @@ class AddPictureWidget extends StatelessWidget {
       required this.backgroundColor,
       required this.radius,
       required this.iconSize,
-      required this.onPressed});
+      required this.onPressed,
+      this.avatarUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class AddPictureWidget extends StatelessWidget {
         backgroundColor: backgroundColor,
         radius: radius,
         iconSize: iconSize,
+        avatarUrl: avatarUrl,
       ),
       Positioned(
         height: height,

@@ -66,15 +66,32 @@ class CreateGroupPage extends StatelessWidget {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: AddPictureWidget(
-                    backgroundColor: Colors.grey,
-                    radius: 45.0,
-                    iconSize: 45,
-                    height: 45.0,
-                    width: 45.0,
-                    onPressed: () {
-                      BlocProvider.of<UploadImageBloc>(context)
-                          .add(const UploadNewImageEvent("groupImg", "camera"));
+                  child: BlocBuilder<UploadImageBloc, UploadImageState>(
+                    builder: (context, state) {
+                      if (state is UploadingSuccessfulState) {
+                        return AddPictureWidget(
+                          backgroundColor: Colors.grey,
+                          radius: 45.0,
+                          iconSize: 45,
+                          height: 45.0,
+                          width: 45.0,
+                          avatarUrl: BlocProvider.of<UploadImageBloc>(context)
+                              .uploadedImageUrl,
+                          onPressed: () {
+                            _showAlertDialog(context);
+                          },
+                        );
+                      }
+                      return AddPictureWidget(
+                        backgroundColor: Colors.grey,
+                        radius: 45.0,
+                        iconSize: 45,
+                        height: 45.0,
+                        width: 45.0,
+                        onPressed: () {
+                          _showAlertDialog(context);
+                        },
+                      );
                     },
                   ),
                 ),
@@ -120,6 +137,52 @@ class CreateGroupPage extends StatelessWidget {
             )),
         MemberList()
       ]),
+    );
+  }
+
+  void _showAlertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cargar imagen"),
+        content: const Text("¿Cómo te gustaría cargar la imagen?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              BlocProvider.of<UploadImageBloc>(context)
+                  .add(const UploadNewImageEvent("groupImg", "gallery"));
+            },
+            child: Container(
+              color: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.all(14),
+              alignment: Alignment.center,
+              child: const Text(
+                "Seleccionar de la galería",
+                style: TextStyle(color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              BlocProvider.of<UploadImageBloc>(context)
+                  .add(const UploadNewImageEvent("groupImg", "camera"));
+            },
+            child: Container(
+              alignment: Alignment.center,
+              color: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.all(14),
+              child: const Text(
+                "Usar cámara",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
