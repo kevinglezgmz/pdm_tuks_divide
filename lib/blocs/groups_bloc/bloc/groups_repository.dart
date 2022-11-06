@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuks_divide/models/collections.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/groups_users_model.dart';
+import 'package:tuks_divide/models/user_model.dart';
 
 class GroupsRepository {
   final usersCollection =
@@ -28,7 +29,8 @@ class GroupsRepository {
     return groupsData.map((doc) => GroupModel.fromMap(doc.data()!)).toList();
   }
 
-  Future<GroupModel?> createNewUserGroup(GroupModel groupData) async {
+  Future<GroupModel?> createNewUserGroup(
+      GroupModel groupData, List<UserModel> members) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       return null;
@@ -46,6 +48,18 @@ class GroupsRepository {
       'group': groupRef,
       'user': userRef,
     });
+    await Future.wait(
+      members
+          .map(
+            (member) => groupsUsersCollection.add(
+              {
+                'group': groupRef,
+                'user': usersCollection.doc(member.uid),
+              },
+            ),
+          )
+          .toList(),
+    );
     return GroupModel.fromMap(dataToUpload);
   }
 }

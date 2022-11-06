@@ -9,11 +9,12 @@ abstract class GroupsEvent extends Equatable {
 
 class AddNewGroupEvent extends GroupsEvent {
   final GroupModel groupData;
+  final List<UserModel> members;
 
-  const AddNewGroupEvent({required this.groupData});
+  const AddNewGroupEvent({required this.groupData, required this.members});
 
   @override
-  List<Object> get props => [groupData];
+  List<Object> get props => [groupData, members];
 }
 
 class LoadUserGroupsEvent extends GroupsEvent {}

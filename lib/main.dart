@@ -1,7 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
+<<<<<<< HEAD
+=======
+import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
+import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
+import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+>>>>>>> 7c65b6436cbb56d808c8a2425feba7491d8a689a
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
@@ -17,6 +24,7 @@ void main() async {
     providers: [
       RepositoryProvider(create: (context) => AuthRepository()),
       RepositoryProvider(create: (context) => GroupsRepository()),
+      RepositoryProvider(create: (context) => FriendsRepository()),
     ],
     child: MultiBlocProvider(
       providers: [
@@ -26,10 +34,13 @@ void main() async {
           )..add(AuthCheckLoginStatusEvent()),
         ),
         BlocProvider(create: (BuildContext context) => UploadImageBloc()),
+        BlocProvider(create: (BuildContext context) => CreateGroupBloc()),
         BlocProvider(
-          create: (context) => GroupsBloc(
-            groupsRepository: context.read<GroupsRepository>(),
-          ),
+            create: (BuildContext context) => FriendsBloc(
+                friendsRepository: context.read<FriendsRepository>())),
+        BlocProvider(
+          create: (context) =>
+              GroupsBloc(groupsRepository: context.read<GroupsRepository>()),
         )
       ],
       child: const MyApp(),
@@ -58,6 +69,7 @@ class MyApp extends StatelessWidget {
             final UserModel? me = BlocProvider.of<AuthBloc>(context).me;
             if (me != null) {
               BlocProvider.of<GroupsBloc>(context).add(LoadUserGroupsEvent());
+              BlocProvider.of<FriendsBloc>(context).add(LoadUserFriendsEvent());
             }
           }
         },

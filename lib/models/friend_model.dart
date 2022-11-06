@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FriendModel {
   final Timestamp friendedAt;
-  final DocumentReference userA;
-  final DocumentReference userB;
+  final DocumentReference<Map<String, dynamic>> userA;
+  final DocumentReference<Map<String, dynamic>> userB;
 
   FriendModel({
     required this.friendedAt,

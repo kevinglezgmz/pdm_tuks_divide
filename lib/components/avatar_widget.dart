@@ -17,7 +17,6 @@ class AvatarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log("${avatarUrl}");
     return CircleAvatar(
         backgroundColor: backgroundColor,
         radius: radius,

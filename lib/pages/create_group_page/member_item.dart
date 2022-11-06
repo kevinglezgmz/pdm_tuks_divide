@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 
 class MemberItem extends StatelessWidget {
-  final String memberName;
-  final String memberLastName;
+  final String fullName;
   final String? profilePicture;
-  const MemberItem(
-      {super.key,
-      required this.memberName,
-      required this.memberLastName,
-      required this.profilePicture});
+  final void Function() onDeleteTap;
+  const MemberItem({
+    super.key,
+    required this.fullName,
+    required this.profilePicture,
+    required this.onDeleteTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +21,11 @@ class MemberItem extends StatelessWidget {
                 child: Image.network(profilePicture!),
               )
             : const AvatarWidget(iconSize: 20),
-        title: Text("$memberName $memberLastName"),
-        trailing: const Icon(Icons.delete),
+        title: Text(fullName),
+        trailing: GestureDetector(
+          onTap: onDeleteTap,
+          child: const Icon(Icons.delete),
+        ),
       ),
     );
   }

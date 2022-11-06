@@ -22,4 +22,14 @@ class UserModel {
         lastName = item['lastName'],
         pictureUrl = item['pictureUrl'],
         uid = item['uid'];
+
+  String? get fullName {
+    if (firstName != null &&
+        firstName != "" &&
+        lastName != null &&
+        lastName != "") {
+      return firstName! + lastName!;
+    }
+    return null;
+  }
 }
