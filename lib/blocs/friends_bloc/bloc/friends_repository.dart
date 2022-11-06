@@ -44,7 +44,7 @@ class FriendsRepository {
     final usersQuery =
         await usersCollection.where('email', isEqualTo: email).get();
     if (usersQuery.docs.isEmpty) {
-      throw 'No user found for the email $email';
+      throw 'No se econtró ningún usuario con el correo $email';
     }
     final foundUser = usersQuery.docs[0];
     final userRef = usersCollection.doc(uid);
@@ -53,7 +53,7 @@ class FriendsRepository {
         friendedAt: Timestamp.now(), userA: userRef, userB: userFriendRef);
     Map<String, dynamic> friendDataToUpload = {
       'userA': userRef,
-      'user': userFriendRef,
+      'userB': userFriendRef,
       'friendedAt': Timestamp.now(),
     };
     await friendsCollection.add(friendDataToUpload);

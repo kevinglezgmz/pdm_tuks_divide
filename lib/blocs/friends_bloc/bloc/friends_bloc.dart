@@ -35,14 +35,21 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
       AddNewFriendByMailEvent event, Emitter<FriendsState> emit) async {
     emit(FriendsAddingFriendstate());
     try {
+      final List<UserModel> friends = _userFriends
+          .where((element) => element.email == event.email)
+          .toList();
+      if (friends.isNotEmpty) {
+        throw 'El usuario con correo ${event.email} ya es tu amigo.';
+      }
       final addedFriend = await _friendsRepository.addFriendByMail(event.email);
       if (addedFriend != null) {
         _userFriends.add(addedFriend);
       }
       emit(FriendsAddedFriendstate());
-      emit(FriendsLoadedState(friends: _userFriends));
     } catch (e) {
       emit(FriendsAddingErrorState(errorMessage: e.toString()));
+    } finally {
+      emit(FriendsLoadedState(friends: _userFriends));
     }
   }
 }
