@@ -24,7 +24,8 @@ class FriendsPage extends StatelessWidget {
         BlocConsumer<FriendsBloc, FriendsState>(
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is FriendsLoadingState) {
+            if (state is FriendsLoadingState ||
+                state is FriendsAddingFriendstate) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
