@@ -1,4 +1,7 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:tuks_divide/models/payment_model.dart';
+import 'package:tuks_divide/models/spending_model.dart';
 
 class GroupProfileActivityPage extends StatelessWidget {
   const GroupProfileActivityPage({super.key});
@@ -92,7 +95,6 @@ class GroupProfileActivityPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 16),
-                  _getActivityDateDivider(),
                   _getActivityTile('Paletas con forma de Mickey',
                       'Kevin realizó un pago de \$10.00'),
                   _getActivityTile(
@@ -108,14 +110,62 @@ class GroupProfileActivityPage extends StatelessWidget {
     );
   }
 
-  Widget _getActivityDateDivider() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(
+  List<Widget> _createActivityList(List<PaymentModel> paymentRefs,
+      List<PaymentModel> debtRefs, List<SpendingModel> spentRefs) {
+    List<Widget> activityList = [];
+    int totalActivityItems =
+        debtRefs.length + debtRefs.length + spentRefs.length;
+    int paymentIdx = 0;
+    int debtIdx = 0;
+    int spentIdx = 0;
+    DateTime currMonth = DateTime.now();
+
+    for (int item = 0; item < totalActivityItems; item++) {
+      String title = "";
+      String subtitle = "";
+      dynamic activity = _getLatestActivity(
+          paymentRefs[paymentIdx], debtRefs[debtIdx], spentRefs[spentIdx]);
+
+      if (item == 0 || activity.createdAt.toDate().month != currMonth.month) {
+        currMonth = activity.createdAt.toDate();
+        activityList.add(_getActivityDateDivider(
+            DateFormat("MMMM").format(currMonth), currMonth.year));
+      }
+      //get name of spen
+      if (activity == paymentRefs[paymentIdx]) {
+        title = activity.activityList.add(_getActivityTile(title, subtitle));
+        paymentIdx++;
+      } else if (activity == debtRefs[debtIdx]) {
+        debtIdx++;
+      } else {
+        spentIdx++;
+      }
+    }
+    return activityList;
+  }
+
+  dynamic _getLatestActivity(
+      PaymentModel payment, PaymentModel debt, SpendingModel spending) {
+    if (payment.createdAt.millisecondsSinceEpoch >
+            debt.createdAt.millisecondsSinceEpoch &&
+        payment.createdAt.millisecondsSinceEpoch >
+            spending.createdAt.millisecondsSinceEpoch) {
+      return payment;
+    } else if (debt.createdAt.millisecondsSinceEpoch >
+        spending.createdAt.millisecondsSinceEpoch) {
+      return debt;
+    }
+    return spending;
+  }
+
+  Widget _getActivityDateDivider(String month, int year) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
         horizontal: 16,
       ),
       child: Text(
-        'Octubre del 2022',
-        style: TextStyle(
+        '$month del $year',
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -147,7 +197,7 @@ class GroupProfileActivityPage extends StatelessWidget {
         minLeadingWidth: 28,
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: Icon(Icons.attach_money),
+        trailing: const Icon(Icons.attach_money),
       ),
     );
   }

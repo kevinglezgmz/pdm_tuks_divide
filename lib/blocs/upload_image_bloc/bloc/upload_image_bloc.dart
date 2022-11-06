@@ -5,7 +5,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_repository.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_repository.dart';
 
 part 'upload_image_event.dart';
 part 'upload_image_state.dart';

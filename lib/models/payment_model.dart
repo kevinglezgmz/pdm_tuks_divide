@@ -5,9 +5,11 @@ class PaymentModel {
   final Timestamp createdAt;
   final DocumentReference payer;
   final DocumentReference receiver;
+  final DocumentReference groupSpending;
   final String? paymentPic;
 
-  PaymentModel({
+  PaymentModel(
+    this.groupSpending, {
     required this.amount,
     required this.createdAt,
     required this.payer,
@@ -20,5 +22,6 @@ class PaymentModel {
         createdAt = item['createdAt'],
         payer = item['payer'],
         receiver = item['receiver'],
+        groupSpending = item['groupSpending'],
         paymentPic = item['paymentPic'];
 }

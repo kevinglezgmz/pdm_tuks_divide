@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
-import 'package:tuks_divide/blocs/upload_image_bloc/upload_image_bloc.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
 import 'package:tuks_divide/models/group_model.dart';
