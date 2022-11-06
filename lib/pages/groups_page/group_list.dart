@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/pages/group_expenses_page/group_expenses_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_item.dart';
 
 class GroupList extends StatelessWidget {
@@ -12,8 +13,19 @@ class GroupList extends StatelessWidget {
       child: ListView.builder(
         itemCount: groupData.length,
         itemBuilder: (BuildContext context, int index) {
-          return GroupItem(
-            groupData: groupData[index],
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => GroupExpensesPage(
+                    group: groupData[index],
+                  ),
+                ),
+              );
+            },
+            child: GroupItem(
+              groupData: groupData[index],
+            ),
           );
         },
       ),

@@ -27,15 +27,20 @@ class ExpenseList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: ListView.builder(
-            itemCount: expenseData.length,
-            itemBuilder: (BuildContext context, int index) {
-              return ExpenseItem(
-                day: expenseData[index]["day"],
-                month: expenseData[index]["month"],
-                expenseTitle: expenseData[index]["expenseTitle"],
-                expenseDescription: expenseData[index]["expenseDescription"],
-              );
-            }));
+          itemCount: expenseData.length,
+          itemBuilder: (BuildContext context, int index) {
+            return ExpenseItem(
+              day: expenseData[index]["day"],
+              month: expenseData[index]["month"],
+              expenseTitle: expenseData[index]["expenseTitle"],
+              expenseDescription: expenseData[index]["expenseDescription"],
+            );
+          },
+        ),
+      ),
+    );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/components/avatar_widget.dart';
+import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/pages/group_expenses_page/expense_list.dart';
 
 class GroupExpensesPage extends StatelessWidget {
-  const GroupExpensesPage({super.key});
+  final GroupModel group;
+  const GroupExpensesPage({super.key, required this.group});
 
   @override
   Widget build(BuildContext context) {
@@ -19,27 +22,25 @@ class GroupExpensesPage extends StatelessWidget {
             Positioned(
               left: 30,
               bottom: -40,
-              child: Container(
-                height: 80,
-                width: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.pink[100],
-                ),
+              child: AvatarWidget(
+                backgroundColor: Colors.pink[100],
+                radius: 50,
+                iconSize: 50,
+                avatarUrl: group.groupPicUrl,
               ),
             )
           ],
         ),
         Container(
-          padding: const EdgeInsets.fromLTRB(40.0, 50.0, 0.0, 8.0),
+          padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
           alignment: Alignment.centerLeft,
-          child: const Text(
-            "Disney Trip",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          child: Text(
+            group.groupName,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ),
         Container(
-          padding: const EdgeInsets.fromLTRB(40.0, 8.0, 0.0, 8.0),
+          padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
           child: Column(
             children: [
               Row(
@@ -64,7 +65,7 @@ class GroupExpensesPage extends StatelessWidget {
           ),
         ),
         Container(
-          padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
+          padding: const EdgeInsets.fromLTRB(15, 15.0, 8.0, 0.0),
           alignment: Alignment.centerLeft,
           child: const Text(
             "Septiembre 2021",
@@ -74,7 +75,7 @@ class GroupExpensesPage extends StatelessWidget {
         ExpenseList()
       ]),
       floatingActionButton: FloatingActionButton(
-        heroTag: null,
+        heroTag: 'Add Expense To Group',
         onPressed: () {},
         child: const FaIcon(FontAwesomeIcons.plus),
       ),
