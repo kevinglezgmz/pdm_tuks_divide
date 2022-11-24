@@ -9,9 +9,10 @@ part 'user_activity_event.dart';
 part 'user_activity_state.dart';
 
 class UserActivityBloc extends Bloc<UserActivityEvent, UserActivityState> {
-  final UserActivityRepository _userActivityRepository =
-      UserActivityRepository();
-  UserActivityBloc() : super(UserActivityInitialState()) {
+  final UserActivityRepository _userActivityRepository;
+  UserActivityBloc({required userActivityRepository})
+      : _userActivityRepository = userActivityRepository,
+        super(UserActivityInitialState()) {
     on<UserActivityEvent>((event, emit) {
       on<UserActivityLoadEvent>(_loadUserActivityHandler);
     });

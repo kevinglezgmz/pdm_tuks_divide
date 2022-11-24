@@ -6,9 +6,14 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_bloc.dart';
+import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_repository.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_repository.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
@@ -22,6 +27,9 @@ void main() async {
       RepositoryProvider(create: (context) => AuthRepository()),
       RepositoryProvider(create: (context) => GroupsRepository()),
       RepositoryProvider(create: (context) => FriendsRepository()),
+      RepositoryProvider(create: (context) => UploadImageRepository()),
+      RepositoryProvider(create: (context) => UserActivityRepository()),
+      RepositoryProvider(create: (context) => UpdateUserProfileRepository()),
     ],
     child: MultiBlocProvider(
       providers: [
@@ -30,15 +38,24 @@ void main() async {
             authRepository: context.read<AuthRepository>(),
           )..add(AuthCheckLoginStatusEvent()),
         ),
-        BlocProvider(create: (BuildContext context) => UploadImageBloc()),
-        BlocProvider(create: (BuildContext context) => CreateGroupBloc()),
+        BlocProvider(
+          create: (context) =>
+              GroupsBloc(groupsRepository: context.read<GroupsRepository>()),
+        ),
         BlocProvider(
             create: (BuildContext context) => FriendsBloc(
                 friendsRepository: context.read<FriendsRepository>())),
         BlocProvider(
-          create: (context) =>
-              GroupsBloc(groupsRepository: context.read<GroupsRepository>()),
-        )
+            create: (BuildContext context) => UploadImageBloc(
+                uploadImageRepository: context.read<UploadImageRepository>())),
+        BlocProvider(
+            create: (BuildContext context) => UserActivityBloc(
+                userActivityRepository:
+                    context.read<UserActivityRepository>())),
+        BlocProvider(
+            create: (BuildContext context) => UpdateUserProfileBloc(
+                updateUserProfileRepository:
+                    context.read<UpdateUserProfileRepository>())),
       ],
       child: const MyApp(),
     ),

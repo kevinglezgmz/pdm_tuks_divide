@@ -10,10 +10,12 @@ part 'upload_image_event.dart';
 part 'upload_image_state.dart';
 
 class UploadImageBloc extends Bloc<UploadImageEvent, UploadImageState> {
-  final UploadImageRepository _uploadImageRepository = UploadImageRepository();
+  final UploadImageRepository _uploadImageRepository;
   String? uploadedImageUrl;
 
-  UploadImageBloc() : super(UploadImageInitialState()) {
+  UploadImageBloc({required uploadImageRepository})
+      : _uploadImageRepository = uploadImageRepository,
+        super(UploadImageInitialState()) {
     on<UploadNewImageEvent>(_uploadNewImage);
   }
 

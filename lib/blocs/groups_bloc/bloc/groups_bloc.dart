@@ -10,11 +10,12 @@ part 'groups_state.dart';
 
 class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
   final GroupsRepository groupsRepository;
-  final List<GroupModel> _userGroups = [];
+  List<GroupModel> _userGroups = [];
 
   GroupsBloc({required this.groupsRepository}) : super(GroupsInitial()) {
     on<LoadUserGroupsEvent>(_loadUserGroupsEventHandler);
     on<AddNewGroupEvent>(_addNewGroupEventHandler);
+    on<CleanGroupsListOnSignOutEvent>(_cleanGroupListHandler);
   }
 
   FutureOr<void> _loadUserGroupsEventHandler(
@@ -43,5 +44,9 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     } catch (e) {
       emit(GroupsCreatingErrorState(errorMessage: e.toString()));
     }
+  }
+
+  FutureOr<void> _cleanGroupListHandler(event, emit) {
+    _userGroups = [];
   }
 }

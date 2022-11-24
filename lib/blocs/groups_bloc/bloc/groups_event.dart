@@ -18,3 +18,5 @@ class AddNewGroupEvent extends GroupsEvent {
 }
 
 class LoadUserGroupsEvent extends GroupsEvent {}
+
+class CleanGroupsListOnSignOutEvent extends GroupsEvent {}

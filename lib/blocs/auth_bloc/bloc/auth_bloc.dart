@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
@@ -18,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthGoogleLoginEvent>(_initiateGoogleLoginEvent);
     on<AuthEmailSignupEvent>(_initiateEmailSignupEvent);
     on<AuthCheckLoginStatusEvent>(_checkLoginStatusEvent);
+    on<AuthSignOutEvent>(_signoutStatusEvent);
   }
 
   FutureOr<void> _checkLoginStatusEvent(
@@ -65,6 +67,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       // To Do Create Signup Error State
       emit(AuthNotLoggedInState());
+    }
+  }
+
+  FutureOr<void> _signoutStatusEvent(event, emit) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      _me = null;
+      emit(AuthNotLoggedInState());
+    } catch (e) {
+      emit(AuthNotSignedOutState());
     }
   }
 }

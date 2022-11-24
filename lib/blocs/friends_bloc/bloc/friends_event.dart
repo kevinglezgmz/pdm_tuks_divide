@@ -17,3 +17,5 @@ class AddNewFriendByMailEvent extends FriendsEvent {
   @override
   List<Object> get props => [email];
 }
+
+class CleanFriendsListOnSignOutEvent extends FriendsEvent {}

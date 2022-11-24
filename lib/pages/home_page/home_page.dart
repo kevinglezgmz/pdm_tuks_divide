@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/pages/edit_user_profile_page/edit_user_profile_page.dart';
 import 'package:tuks_divide/pages/friends_page/friends_page.dart';
 import 'package:tuks_divide/pages/group_profile_activity_page/group_profile_activity_page.dart';
 import 'package:tuks_divide/pages/groups_page/groups_page.dart';
@@ -21,11 +24,13 @@ class _HomePageState extends State<HomePage> {
       ),
       body: IndexedStack(
         index: index,
-        children: const [
-          GroupsPage(),
-          FriendsPage(),
-          GroupProfileActivityPage(),
-          GroupProfileActivityPage()
+        children: [
+          const GroupsPage(),
+          const FriendsPage(),
+          const GroupProfileActivityPage(),
+          EditUserProfilePage(
+            pictureUrl: context.read<AuthBloc>().me!.pictureUrl,
+          )
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

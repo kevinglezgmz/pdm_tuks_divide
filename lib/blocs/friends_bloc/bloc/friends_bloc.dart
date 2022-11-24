@@ -10,13 +10,14 @@ part 'friends_state.dart';
 
 class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
   final FriendsRepository _friendsRepository;
-  final List<UserModel> _userFriends = [];
+  List<UserModel> _userFriends = [];
 
   FriendsBloc({required friendsRepository})
       : _friendsRepository = friendsRepository,
         super(FriendsInitial()) {
     on<LoadUserFriendsEvent>(_loadUserFriendsEventHandler);
     on<AddNewFriendByMailEvent>(_addNewFriendByMailEventHandler);
+    on<CleanFriendsListOnSignOutEvent>(_cleanFriendListHandler);
   }
 
   FutureOr<void> _loadUserFriendsEventHandler(
@@ -51,5 +52,9 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
     } finally {
       emit(FriendsLoadedState(friends: _userFriends));
     }
+  }
+
+  _cleanFriendListHandler(event, emit) {
+    _userFriends = [];
   }
 }
