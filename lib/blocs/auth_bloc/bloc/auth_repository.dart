@@ -50,7 +50,7 @@ class AuthRepository {
   Future<UserModel> signInWithEmail(String email, String password) async {
     final UserCredential credential = await _authInstance
         .signInWithEmailAndPassword(email: email, password: password);
-    final UserModel? currUser = await _getFirestoreUser(credential.user!.uid);
+    final UserModel? currUser = await getFirestoreUser(credential.user!.uid);
     if (currUser == null) {
       throw 'User is not in users database';
     }
@@ -83,7 +83,7 @@ class AuthRepository {
     String? firstName,
     String? lastName,
   ) async {
-    UserModel? user = await _getFirestoreUser(uid);
+    UserModel? user = await getFirestoreUser(uid);
     if (user == null) {
       final Map<String, dynamic> userToInsert = {
         'uid': uid,
@@ -109,7 +109,7 @@ class AuthRepository {
     );
   }
 
-  Future<UserModel?> _getFirestoreUser(String uid) async {
+  Future<UserModel?> getFirestoreUser(String uid) async {
     final meUser = await FirebaseFirestore.instance
         .collection(FirebaseCollections.users)
         .doc(uid)

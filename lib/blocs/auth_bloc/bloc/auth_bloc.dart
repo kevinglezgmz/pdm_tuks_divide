@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthEmailSignupEvent>(_initiateEmailSignupEvent);
     on<AuthCheckLoginStatusEvent>(_checkLoginStatusEvent);
     on<AuthSignOutEvent>(_signoutStatusEvent);
+    on<AuthUserDataUpdatedEvent>(_getUserUpdatedData);
   }
 
   FutureOr<void> _checkLoginStatusEvent(
@@ -77,6 +78,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthNotLoggedInState());
     } catch (e) {
       emit(AuthNotSignedOutState());
+    }
+  }
+
+  FutureOr<void> _getUserUpdatedData(event, emit) async {
+    try {
+      final UserModel? user = await authRepository.getFirestoreUser(_me!.uid);
+      _me = user;
+      emit(AuthUserUpdatedState());
+    } catch (e) {
+      emit(AuthUserNotUpdatedState());
     }
   }
 }

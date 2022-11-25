@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,9 +12,10 @@ import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart'
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
+import 'package:tuks_divide/models/user_model.dart';
 
 class EditUserProfilePage extends StatelessWidget {
-  Stream<QuerySnapshot>? _userStream;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userStream;
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _displayNameController = TextEditingController();
@@ -27,94 +29,109 @@ class EditUserProfilePage extends StatelessWidget {
     _lastNameController.text = context.read<AuthBloc>().me!.lastName ?? "";
     _displayNameController.text =
         context.read<AuthBloc>().me!.displayName ?? "";
-    _userStream = FirebaseFirestore.instance.collection('users').snapshots();
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BlocBuilder<UploadImageBloc, UploadImageState>(
-            builder: (context, state) {
-              if (state is UploadingSuccessfulState) {
-                _pictureUrl = context.read<UploadImageBloc>().uploadedImageUrl!;
-              }
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
-                child: AddPictureWidget(
-                  backgroundColor: Colors.grey,
-                  radius: 60,
-                  iconSize: 60,
-                  avatarUrl: _pictureUrl,
-                  onPressed: () {
-                    _showAlertDialog(context);
-                  },
-                ),
-              );
-            },
-          ),
-          _createInputField(
-            TextInputField(
-              inputController: _firstNameController,
-              label: "Nombre",
-            ),
-          ),
-          _createInputField(
-            TextInputField(
-              inputController: _lastNameController,
-              label: "Apellido",
-            ),
-          ),
-          _createInputField(
-            TextInputField(
-              inputController: _displayNameController,
-              label: "Nombre de usuario",
-            ),
-          ),
-          BlocListener<UpdateUserProfileBloc, UpdateUserProfileState>(
-            listener: (context, state) {
-              if (state is UpdateUserProfileErrorState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Error al actualizar datos de la cuenta",
-                    ),
-                  ),
-                );
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
-              child: BasicElevatedButton(
-                label: "ACTUALIZAR CUENTA",
+    _userStream = FirebaseFirestore.instance
+        .collection('users')
+        .doc(context.read<AuthBloc>().me!.uid)
+        .snapshots()
+        .listen((event) {
+      if (event.data() == null) {
+        return;
+      }
+      UserModel updatedUser = UserModel.fromMap(event.data()!);
+      _firstNameController.text = updatedUser.firstName!;
+      _lastNameController.text = updatedUser.lastName!;
+      _displayNameController.text = updatedUser.displayName!;
+      _pictureUrl = updatedUser.pictureUrl!;
+    });
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BlocBuilder<UploadImageBloc, UploadImageState>(
+          builder: (context, state) {
+            if (state is UploadingSuccessfulState) {
+              _pictureUrl = context.read<UploadImageBloc>().uploadedImageUrl!;
+            }
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
+              child: AddPictureWidget(
+                backgroundColor: Colors.grey,
+                radius: 60,
+                iconSize: 60,
+                avatarUrl: _pictureUrl,
                 onPressed: () {
-                  log(_lastNameController.text.trim());
-                  context.read<UpdateUserProfileBloc>().add(
-                        UpdateNewUserProfileInfoEvent(
-                          firstName: _firstNameController.text.trim(),
-                          lastName: _lastNameController.text.trim(),
-                          displayName: _displayNameController.text.trim(),
-                          imageUrl: _pictureUrl,
-                          uid: context.read<AuthBloc>().me!.uid,
-                        ),
-                      );
+                  _showAlertDialog(context);
                 },
               ),
-            ),
+            );
+          },
+        ),
+        _createInputField(
+          TextInputField(
+            inputController: _firstNameController,
+            label: "Nombre",
           ),
-          Padding(
+        ),
+        _createInputField(
+          TextInputField(
+            inputController: _lastNameController,
+            label: "Apellido",
+          ),
+        ),
+        _createInputField(
+          TextInputField(
+            inputController: _displayNameController,
+            label: "Nombre de usuario",
+          ),
+        ),
+        BlocListener<UpdateUserProfileBloc, UpdateUserProfileState>(
+          listener: (context, state) {
+            if (state is UpdateUserProfileErrorState) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Error al actualizar datos de la cuenta",
+                  ),
+                ),
+              );
+            } else if (state is UpdateUserProfileLoadedState) {
+              context.read<AuthBloc>().add(
+                    AuthUserDataUpdatedEvent(),
+                  );
+            }
+          },
+          child: Padding(
             padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
             child: BasicElevatedButton(
-              label: "CERRAR SESIÓN",
+              label: "ACTUALIZAR CUENTA",
               onPressed: () {
-                BlocProvider.of<GroupsBloc>(context)
-                    .add(CleanGroupsListOnSignOutEvent());
-                BlocProvider.of<FriendsBloc>(context)
-                    .add(CleanFriendsListOnSignOutEvent());
-                context.read<AuthBloc>().add(AuthSignOutEvent());
+                log(_lastNameController.text.trim());
+                context.read<UpdateUserProfileBloc>().add(
+                      UpdateNewUserProfileInfoEvent(
+                        firstName: _firstNameController.text.trim(),
+                        lastName: _lastNameController.text.trim(),
+                        displayName: _displayNameController.text.trim(),
+                        imageUrl: _pictureUrl,
+                        uid: context.read<AuthBloc>().me!.uid,
+                      ),
+                    );
               },
             ),
-          )
-        ],
-      ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
+          child: BasicElevatedButton(
+            label: "CERRAR SESIÓN",
+            onPressed: () {
+              BlocProvider.of<GroupsBloc>(context)
+                  .add(CleanGroupsListOnSignOutEvent());
+              BlocProvider.of<FriendsBloc>(context)
+                  .add(CleanFriendsListOnSignOutEvent());
+              context.read<AuthBloc>().add(AuthSignOutEvent());
+            },
+          ),
+        )
+      ],
     );
   }
 

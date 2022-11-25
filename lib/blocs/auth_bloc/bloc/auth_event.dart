@@ -32,3 +32,5 @@ class AuthEmailSignupEvent extends AuthEvent {
 }
 
 class AuthSignOutEvent extends AuthEvent {}
+
+class AuthUserDataUpdatedEvent extends AuthEvent {}
