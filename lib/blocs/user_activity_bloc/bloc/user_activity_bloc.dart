@@ -21,7 +21,6 @@ class UserActivityBloc extends Bloc<UserActivityEvent, UserActivityState> {
   FutureOr<void> _loadUserActivityHandler(event, emit) async {
     try {
       final userActivity = await _userActivityRepository.getUserActivity();
-      log(userActivity.toString());
       emit(UserActivityLoadedState(activity: userActivity));
     } catch (error) {
       emit(UserActivityErrorState());

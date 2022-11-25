@@ -104,7 +104,6 @@ class EditUserProfilePage extends StatelessWidget {
             child: BasicElevatedButton(
               label: "ACTUALIZAR CUENTA",
               onPressed: () {
-                log(_lastNameController.text.trim());
                 context.read<UpdateUserProfileBloc>().add(
                       UpdateNewUserProfileInfoEvent(
                         firstName: _firstNameController.text.trim(),

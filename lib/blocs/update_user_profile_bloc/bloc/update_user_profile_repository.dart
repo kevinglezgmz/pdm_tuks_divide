@@ -27,7 +27,6 @@ class UpdateUserProfileRepository {
         updatedUserProfile.firstName != firstName ||
         updatedUserProfile.lastName != lastName ||
         updatedUserProfile.pictureUrl != imageUrl) {
-      log("nope, valió");
       throw "User not updated";
     }
     return updatedUserProfile;
