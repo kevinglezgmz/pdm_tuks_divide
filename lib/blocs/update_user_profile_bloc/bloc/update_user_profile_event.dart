@@ -14,7 +14,7 @@ class UpdateNewUserProfileInfoEvent extends UpdateUserProfileEvent {
   final String imageUrl;
   final String displayName;
 
-  UpdateNewUserProfileInfoEvent(
+  const UpdateNewUserProfileInfoEvent(
       {required this.uid,
       required this.firstName,
       required this.lastName,

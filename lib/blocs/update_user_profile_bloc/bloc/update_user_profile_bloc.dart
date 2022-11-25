@@ -18,12 +18,8 @@ class UpdateUserProfileBloc
 
   FutureOr<void> _updateUserProfileHandler(event, emit) async {
     try {
-      final userUpdated = await _updateUserProfileRepository.updateUserProfile(
-          event.uid,
-          event.firstName,
-          event.lastName,
-          event.imageUrl,
-          event.displayName);
+      await _updateUserProfileRepository.updateUserProfile(event.uid,
+          event.firstName, event.lastName, event.imageUrl, event.displayName);
       emit(UpdateUserProfileLoadedState());
     } catch (error) {
       emit(UpdateUserProfileErrorState());

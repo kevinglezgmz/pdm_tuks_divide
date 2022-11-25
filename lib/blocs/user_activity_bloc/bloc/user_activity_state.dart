@@ -14,9 +14,9 @@ class UserActivityLoadingState extends UserActivityState {}
 class UserActivityErrorState extends UserActivityState {}
 
 class UserActivityLoadedState extends UserActivityState {
-  Map<String, List<dynamic>> activity;
+  final Map<String, List<dynamic>> activity;
 
-  UserActivityLoadedState({required this.activity});
+  const UserActivityLoadedState({required this.activity});
 
   @override
   List<dynamic> get props => [];
