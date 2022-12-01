@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
 import 'package:tuks_divide/pages/group_expenses_page/expense_list.dart';
 
 class GroupExpensesPage extends StatelessWidget {
@@ -76,7 +79,22 @@ class GroupExpensesPage extends StatelessWidget {
       ]),
       floatingActionButton: FloatingActionButton(
         heroTag: 'Add Expense To Group',
-        onPressed: () {},
+        onPressed: () {
+          BlocProvider.of<SpendingsBloc>(context).add(
+            SpendingsResetBlocEvent(),
+          );
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (context) => const AddSpendingPage(),
+                ),
+              )
+              .then(
+                (value) => BlocProvider.of<SpendingsBloc>(context).add(
+                  SpendingsResetBlocEvent(),
+                ),
+              );
+        },
         child: const FaIcon(FontAwesomeIcons.plus),
       ),
     );

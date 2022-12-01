@@ -25,10 +25,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   FutureOr<void> _checkLoginStatusEvent(
       AuthCheckLoginStatusEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoggingInState());
     UserModel? user = await authRepository.getMeUser();
     if (user != null) {
       _me = user;
       emit(AuthLoggedInState(user: user));
+    } else {
+      emit(AuthNotLoggedInState());
     }
   }
 

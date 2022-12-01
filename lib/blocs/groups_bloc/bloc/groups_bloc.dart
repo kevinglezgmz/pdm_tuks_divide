@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/models/group_model.dart';
@@ -34,8 +35,13 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
       AddNewGroupEvent event, Emitter<GroupsState> emit) async {
     emit(GroupsCreatingGroupState());
     try {
-      final GroupModel? createdGroup = await groupsRepository
-          .createNewUserGroup(event.groupData, event.members);
+      final GroupModel? createdGroup =
+          await groupsRepository.createNewUserGroup(
+        event.description,
+        event.groupName,
+        event.pictureUrl,
+        event.members,
+      );
       if (createdGroup != null) {
         _userGroups.add(createdGroup);
       }

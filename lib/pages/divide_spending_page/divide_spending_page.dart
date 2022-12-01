@@ -1,379 +1,178 @@
 import 'package:flutter/material.dart';
-import 'package:tuks_divide/utils/text_input_utils.dart';
+import 'package:tuks_divide/models/spending_model.dart';
+import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
+import 'package:tuks_divide/pages/divide_spending_page/equal_distribution_tab.dart';
+import 'package:tuks_divide/pages/divide_spending_page/percentage_distribution_tab.dart';
+import 'package:tuks_divide/pages/divide_spending_page/unequal_distribution_tab.dart';
 
-class DivideSpendingPage extends StatelessWidget {
-  const DivideSpendingPage({super.key});
+class DivideSpendingPage extends StatefulWidget {
+  final DistributionType initialDistributionType;
+  final EqualDivideSpendingTabController equalTabController;
+  final UnequalDivideSpendingTabController unequalTabController;
+  final PercentageDivideSpendingTabController percentageTabController;
+  final double totalAmount;
+  const DivideSpendingPage({
+    super.key,
+    this.initialDistributionType = DistributionType.equal,
+    required this.equalTabController,
+    required this.unequalTabController,
+    required this.percentageTabController,
+    required this.totalAmount,
+  });
+
+  @override
+  State<DivideSpendingPage> createState() => _DivideSpendingPageState();
+}
+
+class _DivideSpendingPageState extends State<DivideSpendingPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  late DistributionType distributionType;
+
+  @override
+  void initState() {
+    _tabController = TabController(
+      vsync: this,
+      length: 3,
+      initialIndex: DistributionType.values.indexOf(
+        widget.initialDistributionType,
+      ),
+    );
+    distributionType = widget.initialDistributionType;
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        return;
+      }
+      setState(() {
+        distributionType = DistributionType.values[_tabController.index];
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'Ajustar gasto',
-            ),
-            actions: [
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.check,
-                  ))
-            ],
-            bottom: TabBar(
-                isScrollable: true,
-                unselectedLabelColor: Colors.white.withOpacity(0.3),
-                indicatorColor: Colors.white,
-                tabs: const [
-                  Tab(
-                    child: Text('En partes iguales'),
-                  ),
-                  Tab(
-                    child: Text('En partes desiguales'),
-                  ),
-                  Tab(
-                    child: Text('En porcentajes'),
-                  ),
-                ]),
-          ),
-          body: TabBarView(
-            children: [
-              _getEqualDistribution(),
-              _getUnequalDistribution(),
-              _getPercentageDistribution(),
-            ],
-          )),
-    );
-  }
-
-  Widget _getEqualDistribution() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Icon(Icons.calendar_view_month_outlined, size: 48),
-                          Icon(Icons.two_k, size: 48),
-                          Icon(Icons.three_k, size: 48),
-                          Icon(Icons.four_k, size: 48),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Dividir en partes iguales',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const Text(
-                        'Selecciona las personas que deben pagar la misma cantidad en este gasto.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-                _getEqualPriceCheckboxTile(),
-              ],
-            ),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Ajustar gasto',
         ),
-        Row(
-          children: [
-            Expanded(
-              flex: 60,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text('\$0.00/persona'),
-                  Text('(8 personas)'),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 40,
-              child: CheckboxListTile(
-                title: const Text(
-                  'Todos',
-                  textAlign: TextAlign.end,
-                ),
-                value: true,
-                onChanged: (value) {},
-              ),
-            )
-          ],
-        )
-      ],
-    );
-  }
-
-  CheckboxListTile _getEqualPriceCheckboxTile() {
-    return CheckboxListTile(
-      value: true,
-      onChanged: (newValue) {},
-      title: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.network(
-                "https://via.placeholder.com/150",
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Text('Miembro 1'),
-        ],
-      ),
-    );
-  }
-
-  ListTile _getUnequalPriceTile() {
-    TextEditingController unequalPartPriceController = TextEditingController();
-    return ListTile(
-      title: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.network(
-                "https://via.placeholder.com/150",
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Text('Miembro 1'),
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Center(
-            child: Text('\$ '),
-          ),
-          Center(
-            child: SizedBox(
-              height: 28,
-              width: 50,
-              child: TextFormField(
-                controller: unequalPartPriceController,
-                style: const TextStyle(fontSize: 16),
-                decoration: const InputDecoration(
-                  hintText: '0.00',
-                  hintStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  contentPadding: EdgeInsets.only(
-                    bottom: 13,
-                  ),
-                ),
-                inputFormatters: [DecimalTextInputFormatter(decimalRange: 2)],
-                textAlign: TextAlign.end,
-              ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              _validateDistribution(
+                context,
+                distributionType,
+              );
+            },
+            icon: const Icon(
+              Icons.check,
             ),
           )
         ],
-      ),
-    );
-  }
-
-  Widget _getUnequalDistribution() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Icon(Icons.incomplete_circle_outlined, size: 48),
-                          Icon(Icons.two_k, size: 48),
-                          Icon(Icons.three_k, size: 48),
-                          Icon(Icons.four_k, size: 48),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Dividir en partes desiguales',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const Text(
-                        'Introduce la cantidad exacta que cada uno de los miembros debe pagar.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-                _getUnequalPriceTile(),
-              ],
+        bottom: TabBar(
+          isScrollable: true,
+          unselectedLabelColor: Colors.white.withOpacity(0.3),
+          indicatorColor: Colors.white,
+          controller: _tabController,
+          tabs: const [
+            Tab(
+              child: Text('En partes iguales'),
             ),
-          ),
-        ),
-        SizedBox(
-          height: 48,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text('\$0.00 de \$45.25'),
-                Text('\$45.25 restante'),
-              ],
+            Tab(
+              child: Text('En partes desiguales'),
             ),
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _getPercentageDistribution() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Icon(Icons.percent, size: 48),
-                          Icon(Icons.two_k, size: 48),
-                          Icon(Icons.three_k, size: 48),
-                          Icon(Icons.four_k, size: 48),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Dividir por porcentajes',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const Text(
-                        'Introduce el porcentaje que le toca pagar a cada uno de los miembros.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-                _getPercentageTile(),
-              ],
+            Tab(
+              child: Text('En porcentajes'),
             ),
-          ),
-        ),
-        SizedBox(
-          height: 48,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text('0% de 100%'),
-                Text('100% restante'),
-              ],
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  ListTile _getPercentageTile() {
-    TextEditingController unequalPartPriceController = TextEditingController();
-    return ListTile(
-      leading: CircleAvatar(
-        radius: 20,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: Image.network(
-            "https://via.placeholder.com/150",
-            fit: BoxFit.cover,
-          ),
+          ],
         ),
       ),
-      title: const Text('Miembro 1'),
-      subtitle: const Text('\$0.00'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          Center(
-            child: SizedBox(
-              height: 28,
-              width: 40,
-              child: TextFormField(
-                controller: unequalPartPriceController,
-                style: const TextStyle(fontSize: 16),
-                decoration: const InputDecoration(
-                  hintText: '0',
-                  hintStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  contentPadding: EdgeInsets.only(
-                    bottom: 13,
-                  ),
-                ),
-                inputFormatters: [DecimalTextInputFormatter(decimalRange: 2)],
-                textAlign: TextAlign.end,
-              ),
-            ),
+          EqualDistributionTab(
+            controller: widget.equalTabController,
+            totalAmount: widget.totalAmount,
           ),
-          const Center(
-            child: Text(' %'),
+          UnequalDistributionTab(
+            controller: widget.unequalTabController,
+            totalAmount: widget.totalAmount,
           ),
+          PercentageDistributionTab(
+            controller: widget.percentageTabController,
+            totalAmount: widget.totalAmount,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _validateDistribution(
+    BuildContext context,
+    DistributionType spendingDistributionType,
+  ) {
+    if (distributionType == DistributionType.equal) {
+      if (widget.equalTabController.isValidDistribution()) {
+        Navigator.of(context).pop(distributionType);
+      } else {
+        _showDistributionErrorDialog(
+          context,
+          title: "Distribución no válida",
+          message:
+              "Debes seleccionar al menos un miembro para realizar la distribución.",
+        );
+      }
+      return;
+    }
+    if (distributionType == DistributionType.unequal) {
+      if (widget.unequalTabController.isValidDistribution(widget.totalAmount)) {
+        Navigator.of(context).pop(distributionType);
+      } else {
+        _showDistributionErrorDialog(
+          context,
+          title: "Distribución no válida",
+          message:
+              "La suma total de todos los montos debe ser igual al total del gasto.",
+        );
+      }
+      return;
+    }
+    if (distributionType == DistributionType.percentage) {
+      if (widget.percentageTabController.isValidDistribution()) {
+        Navigator.of(context).pop(distributionType);
+      } else {
+        _showDistributionErrorDialog(
+          context,
+          title: "Distribución no válida",
+          message:
+              "La suma total de todos los porcentajes debe sumar cien por ciento.",
+        );
+      }
+      return;
+    }
+  }
+
+  void _showDistributionErrorDialog(BuildContext context,
+      {required String title, required String message}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("Aceptar"),
+          )
         ],
       ),
     );

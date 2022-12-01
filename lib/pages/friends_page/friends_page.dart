@@ -114,7 +114,8 @@ class FriendsPage extends StatelessWidget {
                 );
               },
             ),
-          )
+          ),
+          const SizedBox(width: 12),
         ],
       ),
     );

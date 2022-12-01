@@ -13,19 +13,8 @@ class GroupList extends StatelessWidget {
       child: ListView.builder(
         itemCount: groupData.length,
         itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => GroupExpensesPage(
-                    group: groupData[index],
-                  ),
-                ),
-              );
-            },
-            child: GroupItem(
-              groupData: groupData[index],
-            ),
+          return GroupItem(
+            groupData: groupData[index],
           );
         },
       ),

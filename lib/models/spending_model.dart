@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
 enum DistributionType {
   equal,
@@ -6,17 +7,17 @@ enum DistributionType {
   percentage,
 }
 
-class SpendingModel {
+class SpendingModel extends Equatable {
   final double amount;
   final Timestamp createdAt;
   final String description;
   final DistributionType distributionType;
-  final DocumentReference paidBy;
-  final DocumentReference addedBy;
-  final List<DocumentReference> participants;
+  final DocumentReference<Map<String, dynamic>> paidBy;
+  final DocumentReference<Map<String, dynamic>> addedBy;
+  final List<DocumentReference<Map<String, dynamic>>> participants;
   final String? spendingPic;
 
-  SpendingModel({
+  const SpendingModel({
     required this.amount,
     required this.createdAt,
     required this.description,
@@ -32,8 +33,43 @@ class SpendingModel {
         createdAt = item['createdAt'],
         addedBy = item['addedBy'],
         description = item['description'],
-        distributionType = item['distributionType'],
+        distributionType = DistributionType.values[item['distributionType']],
         paidBy = item['paidBy'],
         participants = item['participants'],
         spendingPic = item['spendingPic'];
+
+  Map<String, dynamic> toMap() {
+    return {
+      'amount': amount,
+      'createdAt': createdAt,
+      'description': description,
+      'distributionType': distributionType.index,
+      'paidBy': paidBy,
+      'participants': participants,
+      'spendingPic': spendingPic,
+      'addedBy': addedBy,
+    };
+  }
+
+  static String distributionTypeText(DistributionType distributionType) {
+    if (distributionType == DistributionType.equal) {
+      return 'partes iguales';
+    } else if (distributionType == DistributionType.unequal) {
+      return 'partes desiguales';
+    } else {
+      return 'porcentajes';
+    }
+  }
+
+  @override
+  List<Object?> get props => [
+        amount,
+        createdAt,
+        description,
+        distributionType,
+        paidBy,
+        addedBy,
+        participants.toString(),
+        spendingPic,
+      ];
 }

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
@@ -6,6 +5,7 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_bloc.dart';
 import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
@@ -39,8 +39,15 @@ void main() async {
           )..add(AuthCheckLoginStatusEvent()),
         ),
         BlocProvider(
-          create: (context) =>
-              GroupsBloc(groupsRepository: context.read<GroupsRepository>()),
+          create: (context) => GroupsBloc(
+            groupsRepository: context.read<GroupsRepository>(),
+          ),
+        ),
+        BlocProvider(create: (BuildContext context) => CreateGroupBloc()),
+        BlocProvider(
+          create: (BuildContext context) => SpendingsBloc(
+            groupsRepository: context.read<GroupsRepository>(),
+          ),
         ),
         BlocProvider(
             create: (BuildContext context) => FriendsBloc(
@@ -92,7 +99,9 @@ class MyApp extends StatelessWidget {
             return LoginPage();
           } else if (state is AuthLoggingInState) {
             // To Do: Implement Loading Over The Home Screen
-            return LoginPage();
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
           return const HomePage();
         },

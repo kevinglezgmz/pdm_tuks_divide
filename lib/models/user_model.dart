@@ -1,4 +1,6 @@
-class UserModel {
+import 'package:equatable/equatable.dart';
+
+class UserModel extends Equatable {
   final String uid;
   final String email;
   final String? pictureUrl;
@@ -6,17 +8,17 @@ class UserModel {
   final String? lastName;
   final String? displayName;
 
-  UserModel({
-    required this.displayName,
-    required this.email,
-    required this.firstName,
-    required this.lastName,
-    required this.pictureUrl,
+  const UserModel({
     required this.uid,
+    required this.email,
+    this.displayName,
+    this.firstName,
+    this.lastName,
+    this.pictureUrl,
   });
 
   UserModel.fromMap(Map<String, dynamic> item)
-      : displayName = item['displayName'],
+      : displayName = item['displayName'] == "" ? null : item['displayName'],
         email = item['email'],
         firstName = item['firstName'],
         lastName = item['lastName'],
@@ -32,4 +34,14 @@ class UserModel {
     }
     return null;
   }
+
+  @override
+  List<Object?> get props => [
+        uid,
+        email,
+        pictureUrl,
+        firstName,
+        lastName,
+        displayName,
+      ];
 }

@@ -33,17 +33,14 @@ class CreateGroupPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              final String? pictureUrl =
-                  BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl;
+              final String pictureUrl =
+                  BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl ??
+                      '';
               BlocProvider.of<GroupsBloc>(context).add(
                 AddNewGroupEvent(
-                  groupData: GroupModel(
-                    createdAt: Timestamp.now(),
-                    description: _groupDescriptionController.text,
-                    groupName: _groupNameController.text,
-                    owner: null,
-                    groupPicUrl: pictureUrl,
-                  ),
+                  description: _groupDescriptionController.text,
+                  groupName: _groupNameController.text,
+                  pictureUrl: pictureUrl,
                   members: BlocProvider.of<CreateGroupBloc>(context).members,
                 ),
               );

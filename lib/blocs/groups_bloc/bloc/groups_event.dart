@@ -8,13 +8,25 @@ abstract class GroupsEvent extends Equatable {
 }
 
 class AddNewGroupEvent extends GroupsEvent {
-  final GroupModel groupData;
+  final String description;
+  final String groupName;
+  final String pictureUrl;
   final List<UserModel> members;
 
-  const AddNewGroupEvent({required this.groupData, required this.members});
+  const AddNewGroupEvent({
+    required this.description,
+    required this.groupName,
+    required this.members,
+    required this.pictureUrl,
+  });
 
   @override
-  List<Object> get props => [groupData, members];
+  List<Object> get props => [
+        description,
+        groupName,
+        members,
+        pictureUrl,
+      ];
 }
 
 class LoadUserGroupsEvent extends GroupsEvent {}

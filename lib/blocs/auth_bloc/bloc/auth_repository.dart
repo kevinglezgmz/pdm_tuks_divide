@@ -84,29 +84,22 @@ class AuthRepository {
     String? lastName,
   ) async {
     UserModel? user = await getFirestoreUser(uid);
-    if (user == null) {
-      final Map<String, dynamic> userToInsert = {
-        'uid': uid,
-        'email': email,
-        'pictureUrl': profilePicture,
-        'displayName': displayName,
-        'firstName': firstName,
-        'lastName': lastName,
-      };
-      await FirebaseFirestore.instance
-          .collection(FirebaseCollections.users)
-          .doc(uid)
-          .set(userToInsert);
-      user = UserModel.fromMap(userToInsert);
+    if (user != null) {
+      return user;
     }
-    return UserModel(
-      uid: uid,
-      pictureUrl: profilePicture,
-      email: email,
-      displayName: displayName,
-      firstName: firstName,
-      lastName: lastName,
-    );
+    final Map<String, dynamic> userToInsert = {
+      'uid': uid,
+      'email': email,
+      'pictureUrl': profilePicture,
+      'displayName': displayName,
+      'firstName': firstName,
+      'lastName': lastName,
+    };
+    await FirebaseFirestore.instance
+        .collection(FirebaseCollections.users)
+        .doc(uid)
+        .set(userToInsert);
+    return UserModel.fromMap(userToInsert);
   }
 
   Future<UserModel?> getFirestoreUser(String uid) async {

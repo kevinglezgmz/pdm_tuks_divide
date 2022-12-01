@@ -18,7 +18,7 @@ class EditUserProfilePage extends StatelessWidget {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _displayNameController = TextEditingController();
-  String _pictureUrl;
+  String? _pictureUrl;
   EditUserProfilePage({super.key, required pictureUrl})
       : _pictureUrl = pictureUrl;
 
@@ -37,10 +37,10 @@ class EditUserProfilePage extends StatelessWidget {
         return;
       }
       UserModel updatedUser = UserModel.fromMap(event.data()!);
-      _firstNameController.text = updatedUser.firstName!;
-      _lastNameController.text = updatedUser.lastName!;
-      _displayNameController.text = updatedUser.displayName!;
-      _pictureUrl = updatedUser.pictureUrl!;
+      _firstNameController.text = updatedUser.firstName ?? '';
+      _lastNameController.text = updatedUser.lastName ?? '';
+      _displayNameController.text = updatedUser.displayName ?? '';
+      _pictureUrl = updatedUser.pictureUrl;
     });
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -48,7 +48,7 @@ class EditUserProfilePage extends StatelessWidget {
         BlocBuilder<UploadImageBloc, UploadImageState>(
           builder: (context, state) {
             if (state is UploadingSuccessfulState) {
-              _pictureUrl = context.read<UploadImageBloc>().uploadedImageUrl!;
+              _pictureUrl = context.read<UploadImageBloc>().uploadedImageUrl;
             }
             return Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
@@ -108,7 +108,7 @@ class EditUserProfilePage extends StatelessWidget {
                         firstName: _firstNameController.text.trim(),
                         lastName: _lastNameController.text.trim(),
                         displayName: _displayNameController.text.trim(),
-                        imageUrl: _pictureUrl,
+                        imageUrl: _pictureUrl ?? '',
                         uid: context.read<AuthBloc>().me!.uid,
                       ),
                     );
