@@ -18,10 +18,13 @@ import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  initializeDateFormatting();
   runApp(MultiRepositoryProvider(
     providers: [
       RepositoryProvider(create: (context) => AuthRepository()),
@@ -91,6 +94,8 @@ class MyApp extends StatelessWidget {
             if (me != null) {
               BlocProvider.of<GroupsBloc>(context).add(LoadUserGroupsEvent());
               BlocProvider.of<FriendsBloc>(context).add(LoadUserFriendsEvent());
+              BlocProvider.of<UserActivityBloc>(context)
+                  .add(UserActivityLoadEvent());
             }
           }
         },

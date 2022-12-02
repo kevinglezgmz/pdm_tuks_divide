@@ -15,19 +15,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String windowTitle = "Tuks Divide";
   int index = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tuks Divide'),
+        title: Text(windowTitle),
       ),
       body: IndexedStack(
         index: index,
         children: [
           const GroupsPage(),
           const FriendsPage(),
-          const GroupProfileActivityPage(),
+          GroupProfileActivityPage(),
           EditUserProfilePage(
             pictureUrl: context.read<AuthBloc>().me!.pictureUrl,
           )
@@ -37,6 +38,16 @@ class _HomePageState extends State<HomePage> {
         currentIndex: index,
         onTap: (int newIndex) {
           setState(() {
+            if (newIndex == 1) {
+              windowTitle = "Mis amigos";
+            } else if (newIndex == 2) {
+              windowTitle =
+                  "Actividad de ${context.read<AuthBloc>().me!.displayName ?? context.read<AuthBloc>().me!.fullName ?? "<No name>"}";
+            } else if (newIndex == 3) {
+              windowTitle = "Editar perfil";
+            } else {
+              windowTitle = "Tuks Divide";
+            }
             index = newIndex;
           });
         },

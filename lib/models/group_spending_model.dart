@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class GroupSpendingModel extends Equatable {
-  final DocumentReference group;
-  final DocumentReference spending;
-  final DocumentReference user;
+  final DocumentReference<Map<String, dynamic>> group;
+  final DocumentReference<Map<String, dynamic>> spending;
+  final DocumentReference<Map<String, dynamic>> user;
   final double amountToPay;
 
   const GroupSpendingModel({

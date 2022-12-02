@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
@@ -8,6 +10,7 @@ enum DistributionType {
 }
 
 class SpendingModel extends Equatable {
+  final String? sid;
   final double amount;
   final Timestamp createdAt;
   final String description;
@@ -17,29 +20,32 @@ class SpendingModel extends Equatable {
   final List<DocumentReference<Map<String, dynamic>>> participants;
   final String? spendingPic;
 
-  const SpendingModel({
-    required this.amount,
-    required this.createdAt,
-    required this.description,
-    required this.distributionType,
-    required this.paidBy,
-    required this.participants,
-    required this.spendingPic,
-    required this.addedBy,
-  });
+  const SpendingModel(
+      {required this.amount,
+      required this.createdAt,
+      required this.description,
+      required this.distributionType,
+      required this.paidBy,
+      required this.participants,
+      required this.spendingPic,
+      required this.addedBy,
+      this.sid});
 
   SpendingModel.fromMap(Map<String, dynamic> item)
-      : amount = item['amount'],
+      : sid = item['sid'],
+        amount = item['amount'],
         createdAt = item['createdAt'],
         addedBy = item['addedBy'],
         description = item['description'],
         distributionType = DistributionType.values[item['distributionType']],
         paidBy = item['paidBy'],
-        participants = item['participants'],
+        participants = List<DocumentReference<Map<String, dynamic>>>.from(
+            item['participants']),
         spendingPic = item['spendingPic'];
 
   Map<String, dynamic> toMap() {
     return {
+      'sid': sid,
       'amount': amount,
       'createdAt': createdAt,
       'description': description,
