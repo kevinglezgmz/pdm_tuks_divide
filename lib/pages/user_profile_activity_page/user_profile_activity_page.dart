@@ -3,11 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
+import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
+import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
+import 'package:tuks_divide/pages/spending_detail_page/spending_detail_page.dart';
 
 class UserProfileActivityPage extends StatelessWidget {
   final dateFormat = DateFormat.MMMM('es');
@@ -110,7 +114,8 @@ class UserProfileActivityPage extends StatelessWidget {
                           state.spendingDoneByMe,
                           state.owings,
                           state.otherUsers,
-                          context.read<AuthBloc>().me!),
+                          context.read<AuthBloc>().me!,
+                          context),
                     ),
                   ))
             ],
@@ -254,7 +259,8 @@ class UserProfileActivityPage extends StatelessWidget {
       List<SpendingModel> spendingDoneByMe,
       List<GroupSpendingModel> owings,
       List<UserModel> users,
-      UserModel me) {
+      UserModel me,
+      context) {
     List<SpendingModel> pastSpendings = [];
     List<Widget> activityList = [];
     int totalActivityItems = payback.length +
@@ -278,6 +284,7 @@ class UserProfileActivityPage extends StatelessWidget {
       String title = "";
       String subtitle = "";
       Timestamp? owingsDate;
+      VoidCallback onTap = () {};
       if (owings.isNotEmpty) {
         final currSpending = spendingDoneByMe
             .where((element) => owings[0].spending.id == element.spendingId)
@@ -319,14 +326,41 @@ class UserProfileActivityPage extends StatelessWidget {
             users.firstWhere((user) => user.uid == myPayments[0].receiver.id);
         subtitle = "Pagaste ${activity.amount} a ${user.displayName}";
         myPayments.removeAt(0);
+        onTap = () {
+          BlocProvider.of<PaymentDetailBloc>(context)
+              .add(GetPaymentDetailEvent(payment: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(),
+            ),
+          );
+        };
       } else if (payback.isNotEmpty && activity == payback[0]) {
         user = users.firstWhere((user) => user.uid == payback[0].payer.id);
         subtitle = "${user.displayName} te pagó ${activity.amount}";
         payback.removeAt(0);
+        onTap = () {
+          BlocProvider.of<PaymentDetailBloc>(context)
+              .add(GetPaymentDetailEvent(payment: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(),
+            ),
+          );
+        };
       } else if (spendingDoneByMe.isNotEmpty &&
           activity == spendingDoneByMe[0]) {
         subtitle = "Pagaste la cuenta de \$${activity.amount}";
         pastSpendings.add(spendingDoneByMe.removeAt(0));
+        onTap = () {
+          BlocProvider.of<SpendingDetailBloc>(context)
+              .add(GetSpendingDetailEvent(spending: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => SpendingDetailPage(),
+            ),
+          );
+        };
       } else if (activity != null) {
         user = users.firstWhere((user) => user.uid == owings[0].user.id);
         subtitle =
@@ -334,7 +368,7 @@ class UserProfileActivityPage extends StatelessWidget {
         owings.removeAt(0);
       }
       activityList.add(_getActivityTile(
-          title, subtitle, dateFormat.format(currMonth), currMonth.day));
+          title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
     }
     return activityList;
   }
@@ -382,9 +416,11 @@ class UserProfileActivityPage extends StatelessWidget {
     );
   }
 
-  Widget _getActivityTile(
-      String title, String subtitle, String month, int day) {
+  Widget _getActivityTile(String title, String subtitle, String month, int day,
+      VoidCallback onTap) {
     return Card(
+        child: InkWell(
+      onTap: onTap,
       child: ListTile(
         leading: SizedBox(
           width: 28,
@@ -410,6 +446,6 @@ class UserProfileActivityPage extends StatelessWidget {
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.attach_money),
       ),
-    );
+    ));
   }
 }
