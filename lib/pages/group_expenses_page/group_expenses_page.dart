@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
+import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/models/group_model.dart';
@@ -10,6 +12,8 @@ import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
 import 'package:intl/intl.dart';
+import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
+import 'package:tuks_divide/pages/spending_detail_page/spending_detail_page.dart';
 
 class GroupExpensesPage extends StatelessWidget {
   final GroupModel group;
@@ -78,11 +82,8 @@ class GroupExpensesPage extends StatelessWidget {
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                       child: Column(
-                        children: _createActivityList(
-                          state.spendings,
-                          state.payments,
-                          state.groupUsers,
-                        ),
+                        children: _createActivityList(state.spendings,
+                            state.payments, state.groupUsers, context),
                       ),
                     ),
             )
@@ -122,11 +123,8 @@ class GroupExpensesPage extends StatelessWidget {
     });
   }
 
-  List<Widget> _createActivityList(
-    List<SpendingModel> spendings,
-    List<PaymentModel> payments,
-    List<UserModel> users,
-  ) {
+  List<Widget> _createActivityList(List<SpendingModel> spendings,
+      List<PaymentModel> payments, List<UserModel> users, context) {
     List<Widget> activityList = [];
     int totalActivityItems = payments.length + spendings.length;
     int spendingIdx = 0;
@@ -143,6 +141,7 @@ class GroupExpensesPage extends StatelessWidget {
     for (int item = 0; item < totalActivityItems; item++) {
       String title = "";
       String subtitle = "";
+      VoidCallback onTap = () {};
       dynamic activity = _getLatestActivity(
           payments.isNotEmpty ? payments[paymentsIdx] : null,
           spendings.isNotEmpty ? spendings[spendingIdx] : null);
@@ -158,6 +157,15 @@ class GroupExpensesPage extends StatelessWidget {
         final user = users
             .firstWhere((user) => user.uid == spendings[spendingIdx].paidBy.id);
         subtitle = "${user.displayName} pagó ${activity.amount}";
+        onTap = () {
+          BlocProvider.of<SpendingDetailBloc>(context)
+              .add(GetSpendingDetailEvent(spending: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => SpendingDetailPage(),
+            ),
+          );
+        };
         spendingIdx++;
       } else if (payments.isNotEmpty && activity == payments[paymentsIdx]) {
         final payer = users
@@ -166,10 +174,19 @@ class GroupExpensesPage extends StatelessWidget {
             (user) => user.uid == payments[spendingIdx].receiver.id);
         subtitle =
             "${payer.displayName} pagó a ${receiver.displayName} ${activity.amount}";
+        onTap = () {
+          BlocProvider.of<PaymentDetailBloc>(context)
+              .add(GetPaymentDetailEvent(payment: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(),
+            ),
+          );
+        };
         paymentsIdx++;
       }
       activityList.add(_getActivityTile(
-          title, subtitle, dateFormat.format(currMonth), currMonth.day));
+          title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
     }
     return activityList;
   }
@@ -200,9 +217,11 @@ class GroupExpensesPage extends StatelessWidget {
     );
   }
 
-  Widget _getActivityTile(
-      String title, String subtitle, String month, int day) {
+  Widget _getActivityTile(String title, String subtitle, String month, int day,
+      VoidCallback onTap) {
     return Card(
+        child: InkWell(
+      onTap: onTap,
       child: ListTile(
         leading: SizedBox(
           width: 28,
@@ -228,6 +247,6 @@ class GroupExpensesPage extends StatelessWidget {
         subtitle: Text(subtitle),
         trailing: const FaIcon(FontAwesomeIcons.receipt),
       ),
-    );
+    ));
   }
 }
