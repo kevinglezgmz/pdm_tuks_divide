@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/models/collections.dart';
+import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
+import 'package:tuks_divide/models/groups_users_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_activity_model.dart';
@@ -18,48 +21,36 @@ class UserActivityRepository {
       FirebaseFirestore.instance.collection(FirebaseCollections.payments);
   final groupsSpendingsCollection = FirebaseFirestore.instance
       .collection(FirebaseCollections.groupsSpendings);
+  final groupsUsersCollection =
+      FirebaseFirestore.instance.collection(FirebaseCollections.groupsUsers);
+  final groupsRepository = GroupsRepository();
 
-  Future<List<UserModel>> _getUsersData(
-    List<PaymentModel> spendingRefs,
-    List<SpendingModel> spentRefs,
-    List<PaymentModel> debtRefs,
-  ) async {
+  FutureOr<List<UserModel>> _getUsersData(
+      List<GroupsUsersModel> groups, UserModel user) async {
     List<UserModel> users = [];
-    for (var paymentRef in spendingRefs) {
-      final payment = await paymentRef.receiver.get();
-      final foundUser = users
-          .where((UserModel user) =>
-              user.uid == UserModel.fromMap(payment.data()!).uid)
-          .toList();
-      if (foundUser.isNotEmpty) {
-        users.add(foundUser[0]);
-      }
+    final groupsRefs =
+        await Future.wait(groups.map((group) => group.group.get()).toList());
+    final groupsRefsToModel =
+        groupsRefs.map((doc) => GroupModel.fromMap(doc.data()!)).toList();
+
+    for (int i = 0; i < groupsRefsToModel.length; i++) {
+      final members =
+          await groupsRepository.getMembersOfGroup(groupsRefsToModel[i]);
+      users.addAll(members);
     }
 
-    for (var debtRef in debtRefs) {
-      final debt = await debtRef.payer.get();
-      final foundUser = users
-          .where((UserModel user) =>
-              user.uid == UserModel.fromMap(debt.data()!).uid)
-          .toList();
-      if (foundUser.isNotEmpty) {
-        users.add(foundUser[0]);
-      }
-    }
+    /*final membersList = await Future.wait(groupsRefsToModel
+        .map((group) => groupsRepository.getMembersOfGroup(group)));*/
 
-    for (var spentRef in spentRefs) {
-      final participantsRef = spentRef.participants;
-      for (var participantRef in participantsRef) {
-        final participant = await participantRef.get();
-        final foundUser = users
-            .where((UserModel user) =>
-                user.uid == UserModel.fromMap(participant.data()!).uid)
-            .toList();
-        if (foundUser.isNotEmpty) {
-          users.add(foundUser[0]);
-        }
-      }
-    }
+    /*for (int i = 0; i < membersList.length; i++) {
+      users.addAll(membersList[0]);
+    }*/
+
+    users = users.toSet().toList();
+    users.remove(user);
+
+    //final usersGroupRefs = await Future.wait(groupsRefsToModel.map((group) => grou))
+
     return users;
   }
 
@@ -102,6 +93,8 @@ class UserActivityRepository {
       return null;
     }
     final userRef = usersCollection.doc(uid);
+    final userDoc = await userRef.get();
+    final user = UserModel.fromMap(userDoc.data()!);
     final spendigData =
         await paymentsCollection.where('payer', isEqualTo: userRef).get();
     final spendingRefs = spendigData.docs
@@ -136,8 +129,13 @@ class UserActivityRepository {
     final owingRefsKnown = _getOwingsFromGroups(owingRefs, spentRefs);
     final myDebtRefs = _getMyDebt(spendingsRefs, spentRefs);
 
-    final otherUsersData =
-        await _getUsersData(spendingRefs, spentRefs, debtRefs);
+    final groupsUsersRefs =
+        await groupsUsersCollection.where('user', isEqualTo: userRef).get();
+    final groupsUsers = groupsUsersRefs.docs
+        .map((doc) => GroupsUsersModel.fromMap(doc.data()))
+        .toList();
+
+    final otherUsersData = await _getUsersData(groupsUsers, user);
 
     spendingRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     debtRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
