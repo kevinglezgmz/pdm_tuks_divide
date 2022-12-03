@@ -8,53 +8,51 @@ import 'package:tuks_divide/models/user_model.dart';
 part 'friends_event.dart';
 part 'friends_state.dart';
 
-class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
+class FriendsBloc extends Bloc<FriendsEvent, FriendsUseState> {
   final FriendsRepository _friendsRepository;
-  List<UserModel> _userFriends = [];
 
   FriendsBloc({required friendsRepository})
       : _friendsRepository = friendsRepository,
-        super(FriendsInitial()) {
-    on<LoadUserFriendsEvent>(_loadUserFriendsEventHandler);
+        super(const FriendsUseState()) {
     on<AddNewFriendByMailEvent>(_addNewFriendByMailEventHandler);
-    on<CleanFriendsListOnSignOutEvent>(_cleanFriendListHandler);
-  }
-
-  FutureOr<void> _loadUserFriendsEventHandler(
-      LoadUserFriendsEvent event, Emitter<FriendsState> emit) async {
-    emit(FriendsLoadingState());
-    try {
-      final friends = await _friendsRepository.getUserFriends();
-      _userFriends.addAll(friends);
-      emit(FriendsLoadedState(friends: _userFriends));
-    } catch (e) {
-      emit(FriendsErrorState(errorMessage: e.toString()));
-    }
+    on<CleanFriendsListOnSignOutEvent>(_resetFriendsBloc);
+    on<UpdateFriendsStateEvent>(_updateFriendsStateEventHandler);
   }
 
   FutureOr<void> _addNewFriendByMailEventHandler(
-      AddNewFriendByMailEvent event, Emitter<FriendsState> emit) async {
-    emit(FriendsAddingFriendstate());
+      AddNewFriendByMailEvent event, Emitter<FriendsUseState> emit) async {
+    emit(state.copyWith(isAddingFriend: true));
     try {
-      final List<UserModel> friends = _userFriends
+      final List<UserModel> friends = state.friends
           .where((element) => element.email == event.email)
           .toList();
       if (friends.isNotEmpty) {
         throw 'El usuario con correo ${event.email} ya es tu amigo.';
       }
-      final addedFriend = await _friendsRepository.addFriendByMail(event.email);
-      if (addedFriend != null) {
-        _userFriends.add(addedFriend);
-      }
-      emit(FriendsAddedFriendstate());
+      _friendsRepository.addFriendByMail(event.email);
     } catch (e) {
-      emit(FriendsAddingErrorState(errorMessage: e.toString()));
+      emit(state.copyWith(errorMessage: e.toString()));
     } finally {
-      emit(FriendsLoadedState(friends: _userFriends));
+      emit(state.copyWith(
+        isAddingFriend: false,
+        errorMessage: "",
+      ));
     }
   }
 
-  _cleanFriendListHandler(event, emit) {
-    _userFriends = [];
+  _resetFriendsBloc(event, emit) {
+    emit(const FriendsUseState());
+  }
+
+  void _updateFriendsStateEventHandler(
+    UpdateFriendsStateEvent event,
+    Emitter<FriendsUseState> emit,
+  ) {
+    emit(state.copyWith(
+      errorMessage: event.newState.errorMessage,
+      friends: event.newState.friends,
+      isAddingFriend: event.newState.isAddingFriend,
+      isLoadingFriends: event.newState.isLoadingFriends,
+    ));
   }
 }

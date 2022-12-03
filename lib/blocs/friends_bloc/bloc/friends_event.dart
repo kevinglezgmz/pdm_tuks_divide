@@ -7,8 +7,6 @@ abstract class FriendsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadUserFriendsEvent extends FriendsEvent {}
-
 class AddNewFriendByMailEvent extends FriendsEvent {
   final String email;
 
@@ -19,3 +17,12 @@ class AddNewFriendByMailEvent extends FriendsEvent {
 }
 
 class CleanFriendsListOnSignOutEvent extends FriendsEvent {}
+
+class UpdateFriendsStateEvent extends FriendsEvent {
+  final NullableFriendsUseState newState;
+
+  const UpdateFriendsStateEvent({required this.newState});
+
+  @override
+  List<Object> get props => [newState];
+}

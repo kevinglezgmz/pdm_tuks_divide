@@ -7,39 +7,60 @@ abstract class FriendsState extends Equatable {
   List<Object> get props => [];
 }
 
-class FriendsInitial extends FriendsState {}
-
-class NoFriendsState extends FriendsState {}
-
-class FriendsErrorState extends FriendsState {
-  final String errorMessage;
-
-  const FriendsErrorState({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
-class FriendsLoadedState extends FriendsState {
+class FriendsUseState extends FriendsState {
+  final bool isLoadingFriends;
+  final bool isAddingFriend;
   final List<UserModel> friends;
-
-  const FriendsLoadedState({required this.friends});
-
-  @override
-  List<Object> get props => [friends];
-}
-
-class FriendsLoadingState extends FriendsState {}
-
-class FriendsAddingFriendstate extends FriendsState {}
-
-class FriendsAddedFriendstate extends FriendsState {}
-
-class FriendsAddingErrorState extends FriendsState {
   final String errorMessage;
 
-  const FriendsAddingErrorState({required this.errorMessage});
+  const FriendsUseState({
+    this.isLoadingFriends = false,
+    this.isAddingFriend = false,
+    this.friends = const [],
+    this.errorMessage = "",
+  });
+
+  FriendsUseState copyWith({
+    bool? isLoadingFriends,
+    bool? isAddingFriend,
+    List<UserModel>? friends,
+    String? errorMessage,
+  }) {
+    return FriendsUseState(
+      isLoadingFriends: isLoadingFriends ?? this.isLoadingFriends,
+      isAddingFriend: isAddingFriend ?? this.isAddingFriend,
+      friends: friends ?? this.friends,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 
   @override
-  List<Object> get props => [errorMessage];
+  List<Object> get props => [
+        isLoadingFriends,
+        isAddingFriend,
+        friends,
+        errorMessage,
+      ];
+}
+
+class NullableFriendsUseState extends FriendsState {
+  final bool? isLoadingFriends;
+  final bool? isAddingFriend;
+  final List<UserModel>? friends;
+  final String? errorMessage;
+
+  const NullableFriendsUseState({
+    this.isLoadingFriends,
+    this.isAddingFriend,
+    this.friends,
+    this.errorMessage,
+  });
+
+  @override
+  List<Object> get props => [
+        isLoadingFriends ?? 'isLoadingFriends',
+        isAddingFriend ?? 'isAddingFriend',
+        friends ?? 'friends',
+        errorMessage ?? 'errorMessage',
+      ];
 }

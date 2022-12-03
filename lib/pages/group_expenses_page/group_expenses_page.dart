@@ -73,22 +73,18 @@ class GroupExpensesPage extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              top: 284,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: state.isLoadingActivity
-                      ? [const Center(child: CircularProgressIndicator())]
-                      : _createActivityList(
+            Expanded(
+              child: state.isLoadingActivity
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: _createActivityList(
                           state.spendings,
                           state.payments,
                           state.groupUsers,
                         ),
-                ),
-              ),
+                      ),
+                    ),
             )
           ],
         ),

@@ -74,16 +74,16 @@ class GroupsUseState extends GroupsState {
 }
 
 class NullableGroupsUseState extends GroupsState {
-  final String? userGroups;
-  final String? hasError;
-  final String? isLoadingGroups;
-  final DistributionType? isCreatingGroup;
-  final Map<UserModel, bool>? isLoadingActivity;
-  final Map<UserModel, double?>? errorMessage;
-  final Map<UserModel, double?>? spendings;
-  final UserModel? payments;
-  final bool? groupUsers;
-  final bool? selectedGroup;
+  final List<PaymentModel>? payments;
+  final List<SpendingModel>? spendings;
+  final List<UserModel>? groupUsers;
+  final List<GroupModel>? userGroups;
+  final GroupModel? selectedGroup;
+  final bool? hasError;
+  final bool? isLoadingGroups;
+  final bool? isCreatingGroup;
+  final bool? isLoadingActivity;
+  final String? errorMessage;
 
   const NullableGroupsUseState({
     this.userGroups,

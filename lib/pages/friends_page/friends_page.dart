@@ -1,12 +1,37 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
+import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
-class FriendsPage extends StatelessWidget {
+class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
+
+  @override
+  State<FriendsPage> createState() => _FriendsPageState();
+}
+
+class _FriendsPageState extends State<FriendsPage> {
+  late final StreamSubscription<List<UserModel>> _myFriendsSubscription;
+  late final FriendsBloc friendsBloc;
+
+  @override
+  void initState() {
+    friendsBloc = BlocProvider.of<FriendsBloc>(context);
+    _listenForRealtimeUpdates();
+    super.initState();
+  }
+
+  @override
+  void dispose() async {
+    _myFriendsSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,20 +46,19 @@ class FriendsPage extends StatelessWidget {
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-        BlocConsumer<FriendsBloc, FriendsState>(
+        BlocConsumer<FriendsBloc, FriendsUseState>(
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is FriendsLoadingState ||
-                state is FriendsAddingFriendstate) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (state is FriendsLoadedState) {
-              return _getFriendsList(
-                state.friends,
+            if (state.isAddingFriend || state.isLoadingFriends) {
+              return const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
             }
-            return const Text('Error');
+            return _getFriendsList(
+              state.friends,
+            );
           },
         )
       ]),
@@ -78,9 +102,9 @@ class FriendsPage extends StatelessWidget {
               Navigator.of(context).pop();
             },
           ),
-          BlocListener<FriendsBloc, FriendsState>(
+          BlocListener<FriendsBloc, FriendsUseState>(
             listener: (context, state) {
-              if (state is FriendsAddedFriendstate) {
+              if (state.isAddingFriend) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -91,7 +115,7 @@ class FriendsPage extends StatelessWidget {
                     ),
                   );
                 Navigator.of(context).pop();
-              } else if (state is FriendsAddingErrorState) {
+              } else if (state.errorMessage != "") {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -102,7 +126,7 @@ class FriendsPage extends StatelessWidget {
                     ),
                   );
                 Navigator.of(context).pop();
-              } else if (state is FriendsAddingFriendstate) {}
+              }
             },
             child: ElevatedButton(
               child: const Text('Agregar'),
@@ -145,6 +169,26 @@ class FriendsPage extends StatelessWidget {
                     "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
                 : NetworkImage(friend.pictureUrl!)),
       ),
+    );
+  }
+
+  void _listenForRealtimeUpdates() {
+    friendsBloc.add(
+      const UpdateFriendsStateEvent(
+        newState: NullableFriendsUseState(isLoadingFriends: true),
+      ),
+    );
+    _myFriendsSubscription = FriendsRepository.getUserFriendsSubscription(
+      (friends) {
+        friendsBloc.add(
+          UpdateFriendsStateEvent(
+            newState: NullableFriendsUseState(
+              friends: friends,
+              isLoadingFriends: false,
+            ),
+          ),
+        );
+      },
     );
   }
 }

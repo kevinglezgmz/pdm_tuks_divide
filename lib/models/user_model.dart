@@ -30,7 +30,7 @@ class UserModel extends Equatable {
         firstName != "" &&
         lastName != null &&
         lastName != "") {
-      return firstName! + lastName!;
+      return "${firstName!} ${lastName!}";
     }
     return null;
   }

@@ -231,15 +231,13 @@ class CreateGroupPage extends StatelessWidget {
   }
 
   Widget _getMembersSection(BuildContext context) {
-    return BlocBuilder<FriendsBloc, FriendsState>(
+    return BlocBuilder<FriendsBloc, FriendsUseState>(
       builder: (friendsContext, friendsState) {
         return BlocBuilder<CreateGroupBloc, CreateGroupState>(
           builder: (createGroupContext, createGroupState) {
             final List<UserModel> friends = [];
             final List<UserModel> selectedMembers = [];
-            if (friendsState is FriendsLoadedState) {
-              friends.addAll(friendsState.friends);
-            }
+            friends.addAll(friendsState.friends);
             if (createGroupState is CreateGroupSelectedMembersState) {
               selectedMembers.addAll(createGroupState.currentGroupMembers);
             }

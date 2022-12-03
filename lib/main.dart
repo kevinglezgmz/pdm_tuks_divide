@@ -86,16 +86,7 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xff1CC19F),
             secondary: const Color(0xff1CC19F)),
       ),
-      home: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthLoggedInState) {
-            final UserModel? me = BlocProvider.of<AuthBloc>(context).me;
-            if (me != null) {
-              BlocProvider.of<GroupsBloc>(context).add(LoadUserGroupsEvent());
-              BlocProvider.of<FriendsBloc>(context).add(LoadUserFriendsEvent());
-            }
-          }
-        },
+      home: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthNotLoggedInState) {
             return LoginPage();

@@ -14,46 +14,22 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
   final GroupsRepository groupsRepository;
 
   GroupsBloc({required this.groupsRepository}) : super(const GroupsUseState()) {
-    on<LoadUserGroupsEvent>(_loadUserGroupsEventHandler);
     on<AddNewGroupEvent>(_addNewGroupEventHandler);
     on<CleanGroupsListOnSignOutEvent>(_resetGroupsState);
     on<LoadGroupActivityEvent>(_loadGroupActivityHandler);
     on<UpdateGroupsStateEvent>(_updateGroupsStateEventHandler);
   }
 
-  FutureOr<void> _loadUserGroupsEventHandler(
-      LoadUserGroupsEvent event, Emitter<GroupsState> emit) async {
-    emit(state.copyWith(isLoadingGroups: true));
-    try {
-      final groups = await groupsRepository.getUserGroups();
-      emit(state.copyWith(userGroups: groups));
-    } catch (e) {
-      emit(state.copyWith(
-        errorMessage: e.toString(),
-        hasError: true,
-      ));
-    } finally {
-      emit(state.copyWith(
-        isLoadingGroups: false,
-        hasError: false,
-      ));
-    }
-  }
-
   FutureOr<void> _addNewGroupEventHandler(
       AddNewGroupEvent event, Emitter<GroupsState> emit) async {
     emit(state.copyWith(isCreatingGroup: true));
     try {
-      final GroupModel? createdGroup =
-          await groupsRepository.createNewUserGroup(
+      await groupsRepository.createNewUserGroup(
         event.description,
         event.groupName,
         event.pictureUrl,
         event.members,
       );
-      if (createdGroup != null) {
-        emit(state.copyWith(userGroups: [...state.userGroups, createdGroup]));
-      }
     } catch (e) {
       emit(state.copyWith(
         errorMessage: e.toString(),
@@ -70,7 +46,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
 
   void _resetGroupsState(
       CleanGroupsListOnSignOutEvent event, Emitter<GroupsUseState> emit) {
-    _updateState(emit, const GroupsUseState());
+    emit(const GroupsUseState());
   }
 
   FutureOr<void> _loadGroupActivityHandler(
@@ -111,20 +87,18 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
   }
 
   void _updateGroupsStateEventHandler(
-      UpdateGroupsStateEvent event, Emitter<GroupsUseState> emit) {}
-
-  void _updateState(Emitter<GroupsUseState> emit, GroupsUseState newState) {
+      UpdateGroupsStateEvent event, Emitter<GroupsUseState> emit) {
     emit(state.copyWith(
-      userGroups: newState.userGroups,
-      hasError: newState.hasError,
-      isLoadingGroups: newState.isLoadingGroups,
-      isCreatingGroup: newState.isCreatingGroup,
-      isLoadingActivity: newState.isLoadingActivity,
-      errorMessage: newState.errorMessage,
-      spendings: newState.spendings,
-      payments: newState.payments,
-      groupUsers: newState.groupUsers,
-      selectedGroup: newState.selectedGroup,
+      userGroups: event.newState.userGroups,
+      hasError: event.newState.hasError,
+      isLoadingGroups: event.newState.isLoadingGroups,
+      isCreatingGroup: event.newState.isCreatingGroup,
+      isLoadingActivity: event.newState.isLoadingActivity,
+      errorMessage: event.newState.errorMessage,
+      spendings: event.newState.spendings,
+      payments: event.newState.payments,
+      groupUsers: event.newState.groupUsers,
+      selectedGroup: event.newState.selectedGroup,
     ));
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuks_divide/models/collections.dart';
@@ -10,17 +12,17 @@ import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class GroupsRepository {
-  final usersCollection =
+  static final usersCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.users);
-  final groupsCollection =
+  static final groupsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.groups);
-  final groupsUsersCollection =
+  static final groupsUsersCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.groupsUsers);
-  final groupsSpendingsCollection = FirebaseFirestore.instance
+  static final groupsSpendingsCollection = FirebaseFirestore.instance
       .collection(FirebaseCollections.groupsSpendings);
-  final spendingsCollection =
+  static final spendingsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.spendings);
-  final paymentsCollection =
+  static final paymentsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.payments);
 
   Future<List<GroupModel>> getUserGroups() async {
@@ -183,5 +185,36 @@ class GroupsRepository {
       spendings: spendings,
       groupUsers: users,
     );
+  }
+
+  static StreamSubscription<QuerySnapshot<Map<String, dynamic>>>
+      getUserGroupsSubscription(Function(List<GroupModel>) callback) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      throw "No user id";
+    }
+    final userRef = usersCollection.doc(uid);
+    return groupsUsersCollection
+        .where('user', isEqualTo: userRef)
+        .snapshots()
+        .listen((event) async {
+      final groupsUsersData = event;
+      if (event.docs.isNotEmpty) {
+        final userGroupsRefs = groupsUsersData.docs
+            .map((doc) => GroupsUsersModel.fromMap(doc.data()))
+            .toList();
+        final groupsData = await Future.wait(
+            userGroupsRefs.map((group) => group.group.get()).toList());
+        final groups = groupsData
+            .map(
+              (doc) =>
+                  GroupModel.fromMap(doc.data()!..addAll({'groupId': doc.id})),
+            )
+            .toList();
+        callback(groups);
+      } else {
+        callback([]);
+      }
+    });
   }
 }
