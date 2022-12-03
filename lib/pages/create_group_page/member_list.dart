@@ -15,6 +15,7 @@ class MemberList extends StatelessWidget {
         itemCount: membersData.length,
         itemBuilder: (BuildContext context, int index) {
           return MemberItem(
+            me: index == 0 ? membersData[index] : null,
             fullName: membersData[index].displayName ??
                 membersData[index].fullName ??
                 '<No Name>',

@@ -7,13 +7,13 @@ abstract class CreateGroupState extends Equatable {
   List<Object> get props => [];
 }
 
-class CreateGroupInitial extends CreateGroupState {}
+class CreateGroupUseState extends CreateGroupState {
+  final List<UserModel> membersInGroup;
 
-class CreateGroupSelectedMembersState extends CreateGroupState {
-  final List<UserModel> currentGroupMembers;
-
-  const CreateGroupSelectedMembersState({required this.currentGroupMembers});
+  const CreateGroupUseState({
+    this.membersInGroup = const [],
+  });
 
   @override
-  List<Object> get props => currentGroupMembers;
+  List<Object> get props => [membersInGroup];
 }

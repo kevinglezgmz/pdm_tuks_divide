@@ -7,12 +7,8 @@ import 'package:tuks_divide/models/user_model.dart';
 part 'create_group_event.dart';
 part 'create_group_state.dart';
 
-class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
-  final List<UserModel> _currentGroupMembers = [];
-
-  List<UserModel> get members => _currentGroupMembers;
-
-  CreateGroupBloc() : super(CreateGroupInitial()) {
+class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupUseState> {
+  CreateGroupBloc() : super(const CreateGroupUseState()) {
     on<InitGroupCreateEvent>(_initGroupCreateEventHandler);
     on<AddMemberToGroupCreateEvent>(_addMemberToGroupCreateEventHandler);
     on<RemoveMemberFromGroupCreateEvent>(
@@ -20,26 +16,22 @@ class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
   }
 
   FutureOr<void> _addMemberToGroupCreateEventHandler(
-      AddMemberToGroupCreateEvent event, Emitter<CreateGroupState> emit) {
-    _currentGroupMembers.add(event.userToAdd);
-    emit(CreateGroupInitial());
-    emit(CreateGroupSelectedMembersState(
-        currentGroupMembers: _currentGroupMembers));
+      AddMemberToGroupCreateEvent event, Emitter<CreateGroupUseState> emit) {
+    final List<UserModel> newList = [...state.membersInGroup, event.userToAdd];
+    emit(CreateGroupUseState(membersInGroup: [...newList]));
   }
 
   FutureOr<void> _removeMemberFromGroupCreateEventHandler(
-      RemoveMemberFromGroupCreateEvent event, Emitter<CreateGroupState> emit) {
-    _currentGroupMembers.remove(event.userToRemove);
-    emit(CreateGroupInitial());
-    emit(CreateGroupSelectedMembersState(
-        currentGroupMembers: _currentGroupMembers));
+      RemoveMemberFromGroupCreateEvent event,
+      Emitter<CreateGroupUseState> emit) {
+    final List<UserModel> newList = state.membersInGroup
+        .where((element) => element != event.userToRemove)
+        .toList();
+    emit(CreateGroupUseState(membersInGroup: [...newList]));
   }
 
   FutureOr<void> _initGroupCreateEventHandler(
-      InitGroupCreateEvent event, Emitter<CreateGroupState> emit) {
-    emit(CreateGroupInitial());
-    _currentGroupMembers.clear();
-    emit(CreateGroupSelectedMembersState(
-        currentGroupMembers: _currentGroupMembers));
+      InitGroupCreateEvent event, Emitter<CreateGroupUseState> emit) {
+    emit(const CreateGroupUseState());
   }
 }
