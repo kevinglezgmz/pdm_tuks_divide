@@ -19,6 +19,7 @@ class FriendsPage extends StatefulWidget {
 class _FriendsPageState extends State<FriendsPage> {
   late final StreamSubscription<List<UserModel>> _myFriendsSubscription;
   late final FriendsBloc friendsBloc;
+  bool isAddingFriend = false;
 
   @override
   void initState() {
@@ -49,7 +50,7 @@ class _FriendsPageState extends State<FriendsPage> {
         BlocConsumer<FriendsBloc, FriendsUseState>(
           listener: (context, state) {},
           builder: (context, state) {
-            if (state.isAddingFriend || state.isLoadingFriends) {
+            if (state.isLoadingFriends) {
               return const Expanded(
                 child: Center(
                   child: CircularProgressIndicator(),
@@ -104,18 +105,11 @@ class _FriendsPageState extends State<FriendsPage> {
           ),
           BlocListener<FriendsBloc, FriendsUseState>(
             listener: (context, state) {
-              if (state.isAddingFriend) {
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Se añadió ${emailController.text} a tu lista de amigos',
-                      ),
-                    ),
-                  );
-                Navigator.of(context).pop();
-              } else if (state.errorMessage != "") {
+              if (state.isAddingFriend && isAddingFriend == false) {
+                isAddingFriend = true;
+                return;
+              }
+              if (state.errorMessage != "" && isAddingFriend) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -125,7 +119,26 @@ class _FriendsPageState extends State<FriendsPage> {
                       ),
                     ),
                   );
-                Navigator.of(context).pop();
+                isAddingFriend = false;
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+                return;
+              }
+              if (state.isAddingFriend == false && isAddingFriend) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Se añadió ${emailController.text} a tu lista de amigos',
+                      ),
+                    ),
+                  );
+                isAddingFriend = false;
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
               }
             },
             child: ElevatedButton(

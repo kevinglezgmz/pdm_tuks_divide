@@ -29,7 +29,7 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsUseState> {
       if (friends.isNotEmpty) {
         throw 'El usuario con correo ${event.email} ya es tu amigo.';
       }
-      _friendsRepository.addFriendByMail(event.email);
+      await _friendsRepository.addFriendByMail(event.email);
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
     } finally {
