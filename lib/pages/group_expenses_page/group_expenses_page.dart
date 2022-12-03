@@ -1,101 +1,360 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/models/payment_model.dart';
+import 'package:tuks_divide/models/spending_model.dart';
+import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
-import 'package:tuks_divide/pages/group_expenses_page/expense_list.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 class GroupExpensesPage extends StatelessWidget {
   final GroupModel group;
-  const GroupExpensesPage({super.key, required this.group});
+  final dateFormat = DateFormat.MMMM('es');
+  GroupExpensesPage({super.key, required this.group});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              color: Colors.cyan[200],
-              height: MediaQuery.of(context).size.height / 6,
-            ),
-            Positioned(
-              left: 30,
-              bottom: -40,
-              child: AvatarWidget(
-                backgroundColor: Colors.pink[100],
-                radius: 50,
-                iconSize: 50,
-                avatarUrl: group.groupPicUrl,
-              ),
-            )
-          ],
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
-          alignment: Alignment.centerLeft,
-          child: Text(
-            group.groupName,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
-          child: Column(
+    return BlocConsumer<GroupsBloc, GroupsState>(builder: (context, state) {
+      if (state is GroupActivityLoadedState) {
+        return Scaffold(
+          body: Column(
             children: [
-              Row(
-                children: const [
-                  Text(
-                    "Juan Pérez te debe ",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+              Stack(clipBehavior: Clip.none, children: [
+                Container(
+                  color: Colors.cyan[200],
+                  height: MediaQuery.of(context).size.height / 6,
+                ),
+                Positioned(
+                  left: 30,
+                  bottom: -40,
+                  child: AvatarWidget(
+                    backgroundColor: Colors.pink[100],
+                    radius: 50,
+                    iconSize: 50,
+                    avatarUrl: group.groupPicUrl,
                   ),
-                  Text("\$65.32",
-                      style: TextStyle(fontSize: 16, color: Colors.blue))
-                ],
-              ),
-              Row(
-                children: const [
-                  Text("Debes a Andrea ",
-                      style: TextStyle(fontSize: 16, color: Colors.grey)),
-                  Text("\$150.36",
-                      style: TextStyle(fontSize: 16, color: Colors.blue))
-                ],
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    group.groupName,
+                    style: const TextStyle(
+                        fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: const [
+                          //TODO: GET DEBTS AND OWINGS
+                          Text(
+                            "Juan Pérez te debe ",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          Text("\$65.32",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.blue))
+                        ],
+                      ),
+                      Row(
+                        children: const [
+                          Text("Debes a Andrea ",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.grey)),
+                          Text("\$150.36",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.blue))
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ]),
+              Positioned(
+                top: 284,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SingleChildScrollView(
+                  child: Column(
+                      children: _createActivityList(
+                          state.spendings, state.payments, state.groupUsers)),
+                ),
               )
             ],
           ),
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(15, 15.0, 8.0, 0.0),
-          alignment: Alignment.centerLeft,
-          child: const Text(
-            "Septiembre 2021",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          floatingActionButton: FloatingActionButton(
+            heroTag: 'Add Expense To Group',
+            onPressed: () {
+              BlocProvider.of<SpendingsBloc>(context).add(
+                SpendingsResetBlocEvent(),
+              );
+              Navigator.of(context)
+                  .push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddSpendingPage(),
+                    ),
+                  )
+                  .then(
+                    (value) => BlocProvider.of<SpendingsBloc>(context).add(
+                      SpendingsResetBlocEvent(),
+                    ),
+                  );
+            },
+            child: const FaIcon(FontAwesomeIcons.plus),
           ),
-        ),
-        ExpenseList()
-      ]),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'Add Expense To Group',
-        onPressed: () {
-          BlocProvider.of<SpendingsBloc>(context).add(
-            SpendingsResetBlocEvent(),
-          );
-          Navigator.of(context)
-              .push(
-                MaterialPageRoute(
-                  builder: (context) => const AddSpendingPage(),
+        );
+      } else if (state is GroupActivityLoadingState) {
+        return Scaffold(
+          body: Column(children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  color: Colors.cyan[200],
+                  height: MediaQuery.of(context).size.height / 6,
+                ),
+                Positioned(
+                  left: 30,
+                  bottom: -40,
+                  child: AvatarWidget(
+                    backgroundColor: Colors.pink[100],
+                    radius: 50,
+                    iconSize: 50,
+                    avatarUrl: group.groupPicUrl,
+                  ),
+                )
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                group.groupName,
+                style:
+                    const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: const [
+                  Center(
+                    child: CircularProgressIndicator(),
+                  )
+                ],
+              ),
+            ),
+          ]),
+          floatingActionButton: FloatingActionButton(
+            heroTag: 'Add Expense To Group',
+            onPressed: () {
+              BlocProvider.of<SpendingsBloc>(context).add(
+                SpendingsResetBlocEvent(),
+              );
+              Navigator.of(context)
+                  .push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddSpendingPage(),
+                    ),
+                  )
+                  .then(
+                    (value) => BlocProvider.of<SpendingsBloc>(context).add(
+                      SpendingsResetBlocEvent(),
+                    ),
+                  );
+            },
+            child: const FaIcon(FontAwesomeIcons.plus),
+          ),
+        );
+      }
+      return Scaffold(
+        body: Column(children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                color: Colors.cyan[200],
+                height: MediaQuery.of(context).size.height / 6,
+              ),
+              Positioned(
+                left: 30,
+                bottom: -40,
+                child: AvatarWidget(
+                  backgroundColor: Colors.pink[100],
+                  radius: 50,
+                  iconSize: 50,
+                  avatarUrl: group.groupPicUrl,
                 ),
               )
-              .then(
-                (value) => BlocProvider.of<SpendingsBloc>(context).add(
-                  SpendingsResetBlocEvent(),
-                ),
-              );
-        },
-        child: const FaIcon(FontAwesomeIcons.plus),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              group.groupName,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: const [
+                Center(
+                  child: Text(
+                      "No se pudo obtener la información, intenta de nuevo"),
+                )
+              ],
+            ),
+          ),
+        ]),
+        floatingActionButton: FloatingActionButton(
+          heroTag: 'Add Expense To Group',
+          onPressed: () {
+            BlocProvider.of<SpendingsBloc>(context).add(
+              SpendingsResetBlocEvent(),
+            );
+            Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (context) => const AddSpendingPage(),
+                  ),
+                )
+                .then(
+                  (value) => BlocProvider.of<SpendingsBloc>(context).add(
+                    SpendingsResetBlocEvent(),
+                  ),
+                );
+          },
+          child: const FaIcon(FontAwesomeIcons.plus),
+        ),
+      );
+    }, listener: (context, state) {
+      if (state is GroupActivityLoadingErrorState) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Error al obtener la actividad del grupo",
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  List<Widget> _createActivityList(List<SpendingModel> spendings,
+      List<PaymentModel> payments, List<UserModel> users) {
+    List<Widget> activityList = [];
+    int totalActivityItems = payments.length + spendings.length;
+    int spendingIdx = 0;
+    int paymentsIdx = 0;
+    DateTime currMonth = DateTime.now();
+
+    if (spendings.isEmpty && payments.isEmpty) {
+      activityList.add(const Text("No hay actividad para mostrar"));
+      return activityList;
+    }
+
+    activityList.add(const SizedBox(height: 16));
+
+    for (int item = 0; item < totalActivityItems; item++) {
+      String title = "";
+      String subtitle = "";
+      dynamic activity = _getLatestActivity(
+          payments.isNotEmpty ? payments[paymentsIdx] : null,
+          spendings.isNotEmpty ? spendings[spendingIdx] : null);
+
+      if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
+        currMonth = activity.createdAt.toDate();
+        activityList.add(_getActivityDateDivider(
+            dateFormat.format(currMonth), currMonth.year));
+      }
+
+      title = activity.description;
+      if (spendings.isNotEmpty && activity == spendings[spendingIdx]) {
+        final user = users
+            .firstWhere((user) => user.uid == spendings[spendingIdx].paidBy.id);
+        subtitle = "${user.displayName} pagó ${activity.amount}";
+        spendingIdx++;
+      } else if (payments.isNotEmpty && activity == payments[paymentsIdx]) {
+        final payer = users
+            .firstWhere((user) => user.uid == payments[spendingIdx].payer.id);
+        final receiver = users.firstWhere(
+            (user) => user.uid == payments[spendingIdx].receiver.id);
+        subtitle =
+            "${payer.displayName} pagó a ${receiver.displayName} ${activity.amount}";
+        paymentsIdx++;
+      }
+      activityList.add(_getActivityTile(
+          title, subtitle, dateFormat.format(currMonth), currMonth.day));
+    }
+    return activityList;
+  }
+
+  dynamic _getLatestActivity(PaymentModel? payment, SpendingModel? spending) {
+    if (payment == null) {
+      return spending;
+    } else if (spending == null) {
+      return payment;
+    } else if (payment.createdAt.millisecondsSinceEpoch >
+        spending.createdAt.millisecondsSinceEpoch) {
+      return payment;
+    }
+    return spending;
+  }
+
+  Widget _getActivityDateDivider(String month, int year) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+      ),
+      child: Text(
+        '${month[0].toUpperCase() + month.substring(1)} del $year',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _getActivityTile(
+      String title, String subtitle, String month, int day) {
+    return Card(
+      child: ListTile(
+        leading: SizedBox(
+          width: 28,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '${month.substring(0, 3)}.',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                '$day',
+                style: const TextStyle(fontSize: 24),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        minLeadingWidth: 28,
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const FaIcon(FontAwesomeIcons.receipt),
       ),
     );
   }

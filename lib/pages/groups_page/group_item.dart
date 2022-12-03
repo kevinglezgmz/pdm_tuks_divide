@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/pages/group_expenses_page/group_expenses_page.dart';
@@ -20,6 +21,8 @@ class GroupItem extends StatelessWidget {
           BlocProvider.of<SpendingsBloc>(context).add(
             SpendingLoadGroupMembersEvent(group: groupData),
           );
+          BlocProvider.of<GroupsBloc>(context)
+              .add(LoadGroupActivityEvent(groupData: groupData));
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => GroupExpensesPage(

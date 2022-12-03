@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/models/payment_model.dart';
+import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 part 'groups_event.dart';
@@ -17,6 +19,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     on<LoadUserGroupsEvent>(_loadUserGroupsEventHandler);
     on<AddNewGroupEvent>(_addNewGroupEventHandler);
     on<CleanGroupsListOnSignOutEvent>(_cleanGroupListHandler);
+    on<LoadGroupActivityEvent>(_loadGroupActivityHandler);
   }
 
   FutureOr<void> _loadUserGroupsEventHandler(
@@ -54,5 +57,22 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
 
   FutureOr<void> _cleanGroupListHandler(event, emit) {
     _userGroups = [];
+  }
+
+  FutureOr<void> _loadGroupActivityHandler(event, emit) async {
+    emit(GroupActivityLoadingState());
+    try {
+      final groupActivity =
+          await groupsRepository.getGroupActivity(event.groupData);
+      if (groupActivity == null) {
+        throw "Group Activity not found";
+      }
+      emit(GroupActivityLoadedState(
+          payments: groupActivity.payments,
+          spendings: groupActivity.spendings,
+          groupUsers: groupActivity.groupUsers));
+    } catch (error) {
+      emit(GroupActivityLoadingErrorState(errorMessage: error.toString()));
+    }
   }
 }

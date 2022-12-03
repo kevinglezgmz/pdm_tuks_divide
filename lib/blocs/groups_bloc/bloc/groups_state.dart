@@ -43,3 +43,32 @@ class GroupsCreatingErrorState extends GroupsState {
   @override
   List<Object> get props => [errorMessage];
 }
+
+class GroupActivityLoadedState extends GroupsState {
+  final List<PaymentModel> payments;
+  final List<SpendingModel> spendings;
+  final List<UserModel> groupUsers;
+
+  const GroupActivityLoadedState(
+      {required this.payments,
+      required this.spendings,
+      required this.groupUsers});
+
+  @override
+  List<Object> get props => [
+        payments,
+        spendings,
+        groupUsers,
+      ];
+}
+
+class GroupActivityLoadingState extends GroupsState {}
+
+class GroupActivityLoadingErrorState extends GroupsState {
+  final String errorMessage;
+
+  const GroupActivityLoadingErrorState({required this.errorMessage});
+
+  @override
+  List<Object> get props => [errorMessage];
+}

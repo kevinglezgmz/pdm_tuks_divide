@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuks_divide/models/collections.dart';
+import 'package:tuks_divide/models/group_activity_model.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/groups_users_model.dart';
+import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
@@ -18,6 +20,8 @@ class GroupsRepository {
       .collection(FirebaseCollections.groupsSpendings);
   final spendingsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.spendings);
+  final paymentsCollection =
+      FirebaseFirestore.instance.collection(FirebaseCollections.payments);
 
   Future<List<GroupModel>> getUserGroups() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -139,5 +143,40 @@ class GroupsRepository {
       }).toList(),
     );
     return false;
+  }
+
+  List<SpendingModel> _getSpendings(
+      List<GroupSpendingModel> allGroupSpendings) {
+    List<SpendingModel> res = [];
+    allGroupSpendings.forEach((spending) async {
+      final isNewSpending =
+          res.where((element) => element.sid == spending.spending.id);
+      if (isNewSpending.isEmpty) {
+        final data = await spendingsCollection.doc(spending.spending.id).get();
+        res.add(SpendingModel.fromMap(data.data()!));
+      }
+    });
+    return res;
+  }
+
+  Future<GroupActivityModel?> getGroupActivity(GroupModel groupData) async {
+    final groupRef = groupsCollection.doc(groupData.groupId);
+    final users = await getMembersOfGroup(groupData);
+    final paymentData =
+        await paymentsCollection.where('group', isEqualTo: groupRef).get();
+    final paymentRefs = paymentData.docs
+        .map((doc) => PaymentModel.fromMap(doc.data()))
+        .toList();
+    final allGroupSpendingsData = await groupsSpendingsCollection
+        .where('group', isEqualTo: groupRef)
+        .get();
+    final allGroupSpendingsRefs = allGroupSpendingsData.docs
+        .map((doc) => GroupSpendingModel.fromMap(doc.data()))
+        .toList();
+
+    final spendings = _getSpendings(allGroupSpendingsRefs);
+
+    return GroupActivityModel(
+        payments: paymentRefs, spendings: spendings, groupUsers: users);
   }
 }
