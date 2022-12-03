@@ -48,18 +48,20 @@ class GroupProfileActivityPage extends StatelessWidget {
                   top: 128 - 48,
                   right: 0,
                   left: 0,
-                  child: CircleAvatar(
-                      radius: 48,
-                      backgroundImage: context
-                                      .read<AuthBloc>()
-                                      .me!
-                                      .pictureUrl ==
-                                  null ||
-                              context.read<AuthBloc>().me!.pictureUrl == ""
-                          ? const NetworkImage(
-                              "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
-                          : NetworkImage(
-                              context.read<AuthBloc>().me!.pictureUrl!))),
+                  child: Center(
+                    child: CircleAvatar(
+                        radius: 55,
+                        backgroundImage: context
+                                        .read<AuthBloc>()
+                                        .me!
+                                        .pictureUrl ==
+                                    null ||
+                                context.read<AuthBloc>().me!.pictureUrl == ""
+                            ? const NetworkImage(
+                                "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                            : NetworkImage(
+                                context.read<AuthBloc>().me!.pictureUrl!)),
+                  )),
               Positioned(
                 top: 128 + 48,
                 right: 0,
