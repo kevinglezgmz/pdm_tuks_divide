@@ -5,6 +5,8 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
+import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_repository.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_bloc.dart';
 import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_repository.dart';
@@ -32,6 +34,7 @@ void main() async {
       RepositoryProvider(create: (context) => UploadImageRepository()),
       RepositoryProvider(create: (context) => UserActivityRepository()),
       RepositoryProvider(create: (context) => UpdateUserProfileRepository()),
+      RepositoryProvider(create: (context) => SpendingDetailRepository())
     ],
     child: MultiBlocProvider(
       providers: [
@@ -65,6 +68,10 @@ void main() async {
             create: (BuildContext context) => UpdateUserProfileBloc(
                 updateUserProfileRepository:
                     context.read<UpdateUserProfileRepository>())),
+        BlocProvider(
+            create: (BuildContext context) => SpendingDetailBloc(
+                spendingDetailRepository:
+                    context.read<SpendingDetailRepository>())),
       ],
       child: const MyApp(),
     ),
