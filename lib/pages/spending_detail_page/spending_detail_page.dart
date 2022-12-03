@@ -4,15 +4,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/spending_detail_page/participants_list.dart';
+import 'package:intl/intl.dart';
 
 class SpendingDetailPage extends StatelessWidget {
-  const SpendingDetailPage({super.key});
+  final dateFormat = DateFormat.MMMM('es');
+  SpendingDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SpendingDetailBloc, SpendingDetailState>(
         builder: (context, state) {
           if (state is SpendingLoadedDetailState) {
+            final date = state.spending.createdAt.toDate();
             return Scaffold(
                 appBar: AppBar(
                   title: const Text("Detalle de gasto"),
@@ -47,6 +50,10 @@ class SpendingDetailPage extends StatelessWidget {
                           ),
                           Text(
                             "Pagado por ${_getPaidByName(state.spending.paidBy, state.participants)}",
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            "Fecha: ${date.day} de ${date.month} del ${date.year}",
                             textAlign: TextAlign.center,
                           ),
                         ],

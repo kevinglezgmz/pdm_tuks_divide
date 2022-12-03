@@ -357,7 +357,7 @@ class UserProfileActivityPage extends StatelessWidget {
               .add(GetSpendingDetailEvent(spending: activity));
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const SpendingDetailPage(),
+              builder: (context) => SpendingDetailPage(),
             ),
           );
         };
