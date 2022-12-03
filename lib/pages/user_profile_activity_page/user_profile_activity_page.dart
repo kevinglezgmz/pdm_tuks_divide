@@ -87,7 +87,7 @@ class UserProfileActivityPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Te deben \$${_calculateOwing(state.owings, context.read<AuthBloc>().me!.uid)}',
+                      'Te deben \$${_calculateOwing(state.owings, state.payback)}',
                       style: const TextStyle(
                         fontSize: 16,
                       ),
@@ -219,9 +219,7 @@ class UserProfileActivityPage extends StatelessWidget {
     }
 
     for (var debt in myDebts) {
-      if (debt.user.id != uid) {
-        total += debt.amountToPay;
-      }
+      total += debt.amountToPay;
     }
 
     if (myPayments.isEmpty) {
@@ -235,15 +233,17 @@ class UserProfileActivityPage extends StatelessWidget {
     return total;
   }
 
-  double _calculateOwing(List<GroupSpendingModel> owings, String uid) {
+  double _calculateOwing(
+      List<GroupSpendingModel> owings, List<PaymentModel> paybacks) {
     double total = 0;
     if (owings.isEmpty) {
       return total;
     }
     for (var owing in owings) {
-      if (owing.user.id != uid) {
-        total += owing.amountToPay;
-      }
+      total += owing.amountToPay;
+    }
+    for (var payback in paybacks) {
+      total -= payback.amount;
     }
     return total;
   }
