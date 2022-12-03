@@ -14,24 +14,22 @@ class UserActivityLoadingState extends UserActivityState {}
 class UserActivityErrorState extends UserActivityState {}
 
 class UserActivityLoadedState extends UserActivityState {
-  final List<PaymentModel> spendingRefs;
-  final List<PaymentModel> debtRefs;
-  final List<SpendingModel> spentRefs;
-  final List<UserModel> users;
-  final List<GroupSpendingModel> noDebt;
-  final List<GroupSpendingModel> owingRefs;
-  final List<GroupSpendingModel> myDebtRefs;
+  final List<PaymentModel> myPayments;
+  final List<PaymentModel> payback;
+  final List<SpendingModel> spendingDoneByMe;
+  final List<UserModel> otherUsers;
+  final List<GroupSpendingModel> myDebts;
+  final List<GroupSpendingModel> owings;
 
   const UserActivityLoadedState(
-      {required this.spendingRefs,
-      required this.debtRefs,
-      required this.spentRefs,
-      required this.users,
-      required this.noDebt,
-      required this.owingRefs,
-      required this.myDebtRefs});
+      {required this.myPayments,
+      required this.payback,
+      required this.spendingDoneByMe,
+      required this.otherUsers,
+      required this.myDebts,
+      required this.owings});
 
   @override
   List<dynamic> get props =>
-      [spendingRefs, debtRefs, spentRefs, users, noDebt, owingRefs, myDebtRefs];
+      [myPayments, payback, spendingDoneByMe, otherUsers, myDebts, owings];
 }

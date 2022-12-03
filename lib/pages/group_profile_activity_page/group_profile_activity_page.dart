@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -79,14 +80,14 @@ class GroupProfileActivityPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Debes \$${_getMyDebt(state.spendingRefs, state.myDebtRefs)}",
+                      "Debes \$${_getMyDebt(state.myPayments, state.myDebts, context.read<AuthBloc>().me!.uid)}",
                       style: const TextStyle(
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Te deben \$${_calculateOwing(state.debtRefs, state.spentRefs, state.noDebt)}',
+                      'Te deben \$${_calculateOwing(state.owings, context.read<AuthBloc>().me!.uid)}',
                       style: const TextStyle(
                         fontSize: 16,
                       ),
@@ -103,8 +104,13 @@ class GroupProfileActivityPage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _createActivityList(state.spendingRefs,
-                          state.debtRefs, state.spentRefs, state.users),
+                      children: _createActivityList(
+                          state.myPayments,
+                          state.payback,
+                          state.spendingDoneByMe,
+                          state.owings,
+                          state.otherUsers,
+                          context.read<AuthBloc>().me!),
                     ),
                   ))
             ],
@@ -205,94 +211,124 @@ class GroupProfileActivityPage extends StatelessWidget {
     );
   }
 
-  double _getMyDebt(
-      List<PaymentModel> spendingRefs, List<GroupSpendingModel> myDebtRefs) {
+  double _getMyDebt(List<PaymentModel> myPayments,
+      List<GroupSpendingModel> myDebts, String uid) {
     double total = 0;
-    if (myDebtRefs.isEmpty) {
+    if (myDebts.isEmpty) {
       return total;
     }
 
-    for (var debt in myDebtRefs) {
-      total += debt.amountToPay;
+    for (var debt in myDebts) {
+      if (debt.user.id != uid) {
+        total += debt.amountToPay;
+      }
     }
 
-    if (spendingRefs.isEmpty) {
+    if (myPayments.isEmpty) {
       return total;
     }
 
-    for (var spending in spendingRefs) {
-      total -= spending.amount;
+    for (var payment in myPayments) {
+      total -= payment.amount;
     }
 
     return total;
   }
 
-  double _calculateOwing(List<PaymentModel> debtRefs,
-      List<SpendingModel> spentRefs, List<GroupSpendingModel> noDebt) {
+  double _calculateOwing(List<GroupSpendingModel> owings, String uid) {
     double total = 0;
-    if (spentRefs.isEmpty) {
-      return 0;
+    if (owings.isEmpty) {
+      return total;
     }
-    for (var spending in spentRefs) {
-      total += spending.amount;
-    }
-    if (debtRefs.isNotEmpty) {
-      for (var debt in debtRefs) {
-        total -= debt.amount;
-      }
-    }
-    if (noDebt.isNotEmpty) {
-      for (var notAdebt in noDebt) {
-        total -= notAdebt.amountToPay;
+    for (var owing in owings) {
+      if (owing.user.id != uid) {
+        total += owing.amountToPay;
       }
     }
     return total;
   }
 
   List<Widget> _createActivityList(
-      List<PaymentModel> spendingRefs,
-      List<PaymentModel> debtRefs,
-      List<SpendingModel> spentRefs,
-      List<UserModel> users) {
+      List<PaymentModel> myPayments,
+      List<PaymentModel> payback,
+      List<SpendingModel> spendingDoneByMe,
+      List<GroupSpendingModel> owings,
+      List<UserModel> users,
+      UserModel me) {
+    List<SpendingModel> pastSpendings = [];
     List<Widget> activityList = [];
-    int totalActivityItems =
-        debtRefs.length + debtRefs.length + spentRefs.length;
-    int paymentIdx = 0;
-    int debtIdx = 0;
-    int spentIdx = 0;
-    DateTime currMonth = DateTime.now();
+    int totalActivityItems = payback.length +
+        payback.length +
+        spendingDoneByMe.length +
+        owings.length;
 
     activityList.add(const SizedBox(height: 16));
+    if (totalActivityItems == 0) {
+      activityList.add(const Text("No hay actividad para mostrar"));
+      return activityList;
+    }
+
+    DateTime currMonth = DateTime.now();
 
     for (int item = 0; item < totalActivityItems; item++) {
       UserModel? user;
       String title = "";
       String subtitle = "";
+      Timestamp? owingsDate;
+      if (owings.isNotEmpty) {
+        final currSpending = spendingDoneByMe
+            .where((element) => owings[0].spending.id == element.spendingId)
+            .toList();
+        owingsDate = currSpending.isNotEmpty ? currSpending[0].createdAt : null;
+        if (owingsDate == null) {
+          final pastSpending = pastSpendings
+              .where((element) => owings[0].spending.id == element.spendingId)
+              .toList();
+          owingsDate =
+              pastSpending.isNotEmpty ? pastSpending[0].createdAt : null;
+        }
+      }
       dynamic activity = _getLatestActivity(
-          spendingRefs.isNotEmpty ? spendingRefs[paymentIdx] : null,
-          debtRefs.isNotEmpty ? debtRefs[debtIdx] : null,
-          spentRefs.isNotEmpty ? spentRefs[spentIdx] : null);
+          myPayments.isNotEmpty ? myPayments[0] : null,
+          payback.isNotEmpty ? payback[0] : null,
+          spendingDoneByMe.isNotEmpty ? spendingDoneByMe[0] : null,
+          owings.isNotEmpty ? owings[0] : null,
+          owingsDate != null ? owingsDate.millisecondsSinceEpoch : null);
 
-      if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
-        currMonth = activity.createdAt.toDate();
-        activityList.add(_getActivityDateDivider(
-            dateFormat.format(currMonth), currMonth.year));
+      if (activity == owings[0]) {
+        title = "Nueva deuda";
+        if (owingsDate!.toDate().month != currMonth.month) {
+          currMonth = owingsDate.toDate();
+          activityList.add(_getActivityDateDivider(
+              dateFormat.format(currMonth), currMonth.year));
+        }
+      } else if (activity != owings[0]) {
+        title = activity.description;
+        if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
+          currMonth = activity.createdAt.toDate();
+          activityList.add(_getActivityDateDivider(
+              dateFormat.format(currMonth), currMonth.year));
+        }
       }
 
-      title = activity.description;
-      if (spendingRefs.isNotEmpty && activity == spendingRefs[paymentIdx]) {
-        user = users.firstWhere(
-            (user) => user.uid == spendingRefs[paymentIdx].receiver.id);
+      if (myPayments.isNotEmpty && activity == myPayments[0]) {
+        user =
+            users.firstWhere((user) => user.uid == myPayments[0].receiver.id);
         subtitle = "Pagaste ${activity.amount} a ${user.displayName}";
-        paymentIdx++;
-      } else if (debtRefs.isNotEmpty && activity == debtRefs[debtIdx]) {
-        user = users
-            .firstWhere((user) => user.uid == debtRefs[paymentIdx].payer.id);
+        myPayments.removeAt(0);
+      } else if (payback.isNotEmpty && activity == payback[0]) {
+        user = users.firstWhere((user) => user.uid == payback[0].payer.id);
         subtitle = "${user.displayName} te pagó ${activity.amount}";
-        debtIdx++;
-      } else {
+        payback.removeAt(0);
+      } else if (spendingDoneByMe.isNotEmpty &&
+          activity == spendingDoneByMe[0]) {
         subtitle = "Pagaste la cuenta de ${activity.amount}";
-        spentIdx++;
+        pastSpendings.add(spendingDoneByMe.removeAt(0));
+      } else if (activity != null) {
+        user = users.firstWhere((user) => user.uid == owings[0].user.id);
+        subtitle =
+            "${user.displayName} debe a ${me.displayName} \$${activity.amountToPay}";
+        owings.removeAt(0);
       }
       activityList.add(_getActivityTile(
           title, subtitle, dateFormat.format(currMonth), currMonth.day));
@@ -300,48 +336,36 @@ class GroupProfileActivityPage extends StatelessWidget {
     return activityList;
   }
 
-  dynamic _getLatestActivity(
-      PaymentModel? payment, PaymentModel? debt, SpendingModel? spending) {
-    if (payment == null && debt == null) {
-      return spending;
-    } else if (payment == null && spending == null) {
-      return debt;
-    } else if (debt == null && spending == null) {
-      return payment;
-    } else if (payment == null &&
-        debt!.createdAt.millisecondsSinceEpoch >
-            spending!.createdAt.millisecondsSinceEpoch) {
-      return debt;
-    } else if (payment == null &&
-        debt!.createdAt.millisecondsSinceEpoch <
-            spending!.createdAt.millisecondsSinceEpoch) {
-      return debt;
-    } else if (debt == null &&
-        payment!.createdAt.millisecondsSinceEpoch >
-            spending!.createdAt.millisecondsSinceEpoch) {
-      return payment;
-    } else if (debt == null &&
-        payment!.createdAt.millisecondsSinceEpoch <
-            spending!.createdAt.millisecondsSinceEpoch) {
-      return spending;
-    } else if (spending == null &&
-        payment!.createdAt.millisecondsSinceEpoch >
-            debt!.createdAt.millisecondsSinceEpoch) {
-      return payment;
-    } else if (spending == null &&
-        payment!.createdAt.millisecondsSinceEpoch <
-            debt!.createdAt.millisecondsSinceEpoch) {
-      return debt;
-    } else if (payment!.createdAt.millisecondsSinceEpoch >
-            debt!.createdAt.millisecondsSinceEpoch &&
-        payment.createdAt.millisecondsSinceEpoch >
-            spending!.createdAt.millisecondsSinceEpoch) {
-      return payment;
-    } else if (debt.createdAt.millisecondsSinceEpoch >
-        spending!.createdAt.millisecondsSinceEpoch) {
-      return debt;
+  dynamic _getLatestActivity(PaymentModel? payment, PaymentModel? payback,
+      SpendingModel? spending, GroupSpendingModel? owing, int? owingsDate) {
+    int minIdx = 0;
+    final List<int?> milis = [];
+    milis
+        .add(payment != null ? payment.createdAt.millisecondsSinceEpoch : null);
+    milis
+        .add(payback != null ? payback.createdAt.millisecondsSinceEpoch : null);
+    milis.add(
+        spending != null ? spending.createdAt.millisecondsSinceEpoch : null);
+    milis.add(owingsDate);
+    for (int i = 1; i < 4; i++) {
+      if (milis[i - 1] == null) {
+        minIdx = i;
+        continue;
+      }
+      if (milis[i] != null &&
+          milis[minIdx] != null &&
+          milis[i]! > milis[minIdx]!) {
+        minIdx = i;
+      }
     }
-    return spending;
+    if (minIdx == 0) {
+      return payment;
+    } else if (minIdx == 1) {
+      return payback;
+    } else if (minIdx == 2) {
+      return spending;
+    }
+    return owing;
   }
 
   Widget _getActivityDateDivider(String month, int year) {

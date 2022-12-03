@@ -30,61 +30,41 @@ class UserActivityRepository {
     List<UserModel> users = [];
     final groupsRefs =
         await Future.wait(groups.map((group) => group.group.get()).toList());
-    final groupsRefsToModel =
-        groupsRefs.map((doc) => GroupModel.fromMap(doc.data()!)).toList();
+    final groupsRefsToModel = groupsRefs
+        .map((doc) =>
+            GroupModel.fromMap(doc.data()!..addAll({"groupId": doc.id})))
+        .toList();
 
     for (int i = 0; i < groupsRefsToModel.length; i++) {
       final members =
           await groupsRepository.getMembersOfGroup(groupsRefsToModel[i]);
       users.addAll(members);
     }
-
-    /*final membersList = await Future.wait(groupsRefsToModel
-        .map((group) => groupsRepository.getMembersOfGroup(group)));*/
-
-    /*for (int i = 0; i < membersList.length; i++) {
-      users.addAll(membersList[0]);
-    }*/
-
     users = users.toSet().toList();
     users.remove(user);
-
-    //final usersGroupRefs = await Future.wait(groupsRefsToModel.map((group) => grou))
 
     return users;
   }
 
-  List<GroupSpendingModel> _getOwingsFromGroups(
-      List<GroupSpendingModel> owingRefs, List<SpendingModel> spentRefs) {
+  FutureOr<List<GroupSpendingModel>> _getOwingsData(
+      List<SpendingModel> spendingsDoneByMe, UserModel user) async {
     List<GroupSpendingModel> owings = [];
 
-    for (var owing in owingRefs) {
-      for (var spending in spentRefs) {
-        final owingsFound =
-            spending.participants.where((s) => s.id == owing.user.id).toList();
-        if (owingsFound.isNotEmpty) {
-          owings.add(owing);
-        }
-      }
+    final spendingsOwingListsRefs = await Future.wait(spendingsDoneByMe.map(
+        (spending) => groupsSpendingsCollection
+            .where('spending',
+                isEqualTo: spendingsCollection.doc(spending.spendingId))
+            .get()));
+
+    for (int i = 0; i < spendingsOwingListsRefs.length; i++) {
+      final spendingOwings = spendingsOwingListsRefs[i]
+          .docs
+          .map((doc) => GroupSpendingModel.fromMap(doc.data()));
+      owings.addAll(spendingOwings);
     }
 
+    owings.removeWhere((owing) => owing.user.id == user.uid);
     return owings;
-  }
-
-  List<GroupSpendingModel> _getMyDebt(
-      List<GroupSpendingModel> spendingRefs, List<SpendingModel> spentRefs) {
-    List<GroupSpendingModel> debts = [];
-
-    for (var spent in spentRefs) {
-      for (var spending in spendingRefs) {
-        final found = spent.paidBy.id != spending.user.id;
-        if (found) {
-          debts.add(spending);
-        }
-      }
-    }
-
-    return debts;
   }
 
   FutureOr<UserActivityModel?> getUserActivity() async {
@@ -95,39 +75,31 @@ class UserActivityRepository {
     final userRef = usersCollection.doc(uid);
     final userDoc = await userRef.get();
     final user = UserModel.fromMap(userDoc.data()!);
-    final spendigData =
+
+    final myPaymentsRefs =
         await paymentsCollection.where('payer', isEqualTo: userRef).get();
-    final spendingRefs = spendigData.docs
+    final myPayments = myPaymentsRefs.docs
         .map((doc) => PaymentModel.fromMap(doc.data()))
         .toList();
 
-    final debtData =
+    final paybackRefs =
         await paymentsCollection.where('receiver', isEqualTo: userRef).get();
-    final debtRefs =
-        debtData.docs.map((doc) => PaymentModel.fromMap(doc.data())).toList();
+    final payback = paybackRefs.docs
+        .map((doc) => PaymentModel.fromMap(doc.data()))
+        .toList();
 
-    final spentData =
+    final spendingDoneByMeRefs =
         await spendingsCollection.where('paidBy', isEqualTo: userRef).get();
-    final spentRefs = spentData.docs
+    final spendingDoneByMe = spendingDoneByMeRefs.docs
         .map((doc) =>
             SpendingModel.fromMap(doc.data()..addAll({'spendingId': doc.id})))
         .toList();
 
-    final spendingsData =
+    final myDebtsRefs =
         await groupsSpendingsCollection.where('user', isEqualTo: userRef).get();
-    final spendingsRefs = spendingsData.docs
+    final myDebts = myDebtsRefs.docs
         .map((doc) => GroupSpendingModel.fromMap(doc.data()))
         .toList();
-
-    final owingData = await groupsSpendingsCollection
-        .where('user', isNotEqualTo: userRef)
-        .get();
-    final owingRefs = owingData.docs
-        .map((doc) => GroupSpendingModel.fromMap(doc.data()))
-        .toList();
-
-    final owingRefsKnown = _getOwingsFromGroups(owingRefs, spentRefs);
-    final myDebtRefs = _getMyDebt(spendingsRefs, spentRefs);
 
     final groupsUsersRefs =
         await groupsUsersCollection.where('user', isEqualTo: userRef).get();
@@ -136,18 +108,18 @@ class UserActivityRepository {
         .toList();
 
     final otherUsersData = await _getUsersData(groupsUsers, user);
+    final owings = await _getOwingsData(spendingDoneByMe, user);
 
-    spendingRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    debtRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    spentRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    myPayments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    payback.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    spendingDoneByMe.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return UserActivityModel(
-        spendingRefs: spendingRefs,
-        debtRefs: debtRefs,
-        spentRefs: spentRefs,
+        myPayments: myPayments,
+        payback: payback,
+        spendingDoneByMe: spendingDoneByMe,
         otherUsers: otherUsersData,
-        notDebt: spendingsRefs,
-        owingRefs: owingRefsKnown,
-        myDebtRefs: myDebtRefs);
+        myDebts: myDebts,
+        owings: owings);
   }
 }

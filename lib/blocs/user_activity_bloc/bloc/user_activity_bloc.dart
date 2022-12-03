@@ -26,17 +26,18 @@ class UserActivityBloc extends Bloc<UserActivityEvent, UserActivityState> {
       if (userActivity == null) {
         throw "No se pudo encontrar la actividad del usuario";
       }
-      totalActivities = userActivity.debtRefs.length +
-          userActivity.spendingRefs.length +
-          userActivity.spentRefs.length;
+      totalActivities = userActivity.myDebts.length +
+          userActivity.myPayments.length +
+          userActivity.payback.length +
+          userActivity.spendingDoneByMe.length +
+          userActivity.owings.length;
       emit(UserActivityLoadedState(
-          spendingRefs: userActivity.spendingRefs,
-          debtRefs: userActivity.debtRefs,
-          spentRefs: userActivity.spentRefs,
-          users: userActivity.otherUsers,
-          noDebt: userActivity.notDebt,
-          owingRefs: userActivity.owingRefs,
-          myDebtRefs: userActivity.myDebtRefs));
+          myPayments: userActivity.myPayments,
+          myDebts: userActivity.myDebts,
+          payback: userActivity.payback,
+          otherUsers: userActivity.otherUsers,
+          owings: userActivity.owings,
+          spendingDoneByMe: userActivity.spendingDoneByMe));
     } catch (error) {
       emit(UserActivityErrorState());
     }

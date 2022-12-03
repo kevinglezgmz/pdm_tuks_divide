@@ -93,8 +93,6 @@ class MyApp extends StatelessWidget {
             if (me != null) {
               BlocProvider.of<GroupsBloc>(context).add(LoadUserGroupsEvent());
               BlocProvider.of<FriendsBloc>(context).add(LoadUserFriendsEvent());
-              BlocProvider.of<UserActivityBloc>(context)
-                  .add(UserActivityLoadEvent());
             }
           }
         },

@@ -5,40 +5,36 @@ import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class UserActivityModel extends Equatable {
-  final List<PaymentModel> spendingRefs;
-  final List<PaymentModel> debtRefs;
-  final List<SpendingModel> spentRefs;
+  final List<PaymentModel> myPayments;
+  final List<PaymentModel> payback;
+  final List<SpendingModel> spendingDoneByMe;
   final List<UserModel> otherUsers;
-  final List<GroupSpendingModel> notDebt;
-  final List<GroupSpendingModel> owingRefs;
-  final List<GroupSpendingModel> myDebtRefs;
+  final List<GroupSpendingModel> myDebts;
+  final List<GroupSpendingModel> owings;
 
   const UserActivityModel(
-      {required this.spendingRefs,
-      required this.debtRefs,
-      required this.spentRefs,
+      {required this.myPayments,
+      required this.payback,
+      required this.spendingDoneByMe,
       required this.otherUsers,
-      required this.notDebt,
-      required this.owingRefs,
-      required this.myDebtRefs});
+      required this.myDebts,
+      required this.owings});
 
   @override
   List<Object?> get props => [
-        spendingRefs,
-        debtRefs,
-        spentRefs,
+        myPayments,
+        payback,
+        spendingDoneByMe,
         otherUsers,
-        notDebt,
-        owingRefs,
-        myDebtRefs
+        myDebts,
+        owings,
       ];
 
   UserActivityModel.fromMap(Map<String, dynamic> item)
-      : spendingRefs = item['spendingRefs'],
-        debtRefs = item['debtRefs'],
-        spentRefs = item['spentRefs'],
+      : myPayments = item['myPayments'],
+        payback = item['payback'],
+        spendingDoneByMe = item['spendingDoneByMe'],
         otherUsers = item['otherUsers'],
-        notDebt = item['otherUsers'],
-        owingRefs = item['owingRefs'],
-        myDebtRefs = item['myDebtRefs'];
+        myDebts = item['otherUsers'],
+        owings = item['owings'];
 }
