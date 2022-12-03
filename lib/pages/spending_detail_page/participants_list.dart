@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/models/user_model.dart';
-import 'package:tuks_divide/pages/spending_detail_page.dart/participant_item.dart';
+import 'package:tuks_divide/pages/spending_detail_page/participant_item.dart';
 
 class ParticipantsList extends StatelessWidget {
   final List<UserModel> participantsData;

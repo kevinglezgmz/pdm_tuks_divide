@@ -3,13 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
-import 'package:tuks_divide/pages/spending_detail_page.dart/spending_detail_page.dart';
+import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
+import 'package:tuks_divide/pages/spending_detail_page/spending_detail_page.dart';
 
 class UserProfileActivityPage extends StatelessWidget {
   final dateFormat = DateFormat.MMMM('es');
@@ -324,10 +326,28 @@ class UserProfileActivityPage extends StatelessWidget {
             users.firstWhere((user) => user.uid == myPayments[0].receiver.id);
         subtitle = "Pagaste ${activity.amount} a ${user.displayName}";
         myPayments.removeAt(0);
+        onTap = () {
+          BlocProvider.of<PaymentDetailBloc>(context)
+              .add(GetPaymentDetailEvent(payment: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(),
+            ),
+          );
+        };
       } else if (payback.isNotEmpty && activity == payback[0]) {
         user = users.firstWhere((user) => user.uid == payback[0].payer.id);
         subtitle = "${user.displayName} te pagó ${activity.amount}";
         payback.removeAt(0);
+        onTap = () {
+          BlocProvider.of<PaymentDetailBloc>(context)
+              .add(GetPaymentDetailEvent(payment: activity));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(),
+            ),
+          );
+        };
       } else if (spendingDoneByMe.isNotEmpty &&
           activity == spendingDoneByMe[0]) {
         subtitle = "Pagaste la cuenta de \$${activity.amount}";

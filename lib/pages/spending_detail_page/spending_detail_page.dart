@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/models/user_model.dart';
-import 'package:tuks_divide/pages/spending_detail_page.dart/participants_list.dart';
+import 'package:tuks_divide/pages/spending_detail_page/participants_list.dart';
 
 class SpendingDetailPage extends StatelessWidget {
   const SpendingDetailPage({super.key});

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_repository.dart';
@@ -15,7 +17,7 @@ class SpendingDetailBloc
         super(SpendingDetailInitialState()) {
     on<GetSpendingDetailEvent>(_getSpendingDetailEventHandler);
   }
-  Future<void> _getSpendingDetailEventHandler(event, emit) async {
+  FutureOr<void> _getSpendingDetailEventHandler(event, emit) async {
     emit(SpendingLoadingDetailState());
     try {
       final participants = await _spendingDetailRepository
