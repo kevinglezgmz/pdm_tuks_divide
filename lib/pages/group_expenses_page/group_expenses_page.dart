@@ -39,45 +39,42 @@ class GroupExpensesPage extends StatelessWidget {
                     avatarUrl: group.groupPicUrl,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    group.groupName,
-                    style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: const [
-                          //TODO: GET DEBTS AND OWINGS
-                          Text(
-                            "Juan Pérez te debe ",
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          Text("\$65.32",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.blue))
-                        ],
-                      ),
-                      Row(
-                        children: const [
-                          Text("Debes a Andrea ",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.grey)),
-                          Text("\$150.36",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.blue))
-                        ],
-                      )
-                    ],
-                  ),
-                ),
               ]),
+              Container(
+                padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  group.groupName,
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: const [
+                        //TODO: GET DEBTS AND OWINGS
+                        Text(
+                          "Juan Pérez te debe ",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        Text("\$65.32",
+                            style: TextStyle(fontSize: 16, color: Colors.blue))
+                      ],
+                    ),
+                    Row(
+                      children: const [
+                        Text("Debes a Andrea ",
+                            style: TextStyle(fontSize: 16, color: Colors.grey)),
+                        Text("\$150.36",
+                            style: TextStyle(fontSize: 16, color: Colors.blue))
+                      ],
+                    )
+                  ],
+                ),
+              ),
               Positioned(
                 top: 284,
                 left: 0,
@@ -340,12 +337,12 @@ class GroupExpensesPage extends StatelessWidget {
             children: [
               Text(
                 '${month.substring(0, 3)}.',
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               Text(
                 '$day',
-                style: const TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 20),
                 textAlign: TextAlign.center,
               ),
             ],
