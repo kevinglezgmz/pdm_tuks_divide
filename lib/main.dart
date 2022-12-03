@@ -24,9 +24,11 @@ import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+const enableNotifications = false;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (false) {
+  if (enableNotifications) {
     AwesomeNotifications().initialize(
       // set the icon to null if you want to use the default app icon
       null,
@@ -49,9 +51,9 @@ void main() async {
       debug: true,
     );
     await NotificationController.initializeRemoteNotifications(debug: true);
-    await Firebase.initializeApp();
     await NotificationController.getFirebaseMessagingToken();
   }
+  await Firebase.initializeApp();
   await initializeDateFormatting();
   runApp(MultiRepositoryProvider(
     providers: [
@@ -116,23 +118,25 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: NotificationController.onActionReceivedMethod,
-      onNotificationCreatedMethod:
-          NotificationController.onNotificationCreatedMethod,
-      onNotificationDisplayedMethod:
-          NotificationController.onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod:
-          NotificationController.onDismissActionReceivedMethod,
-    );
-    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-      if (!isAllowed) {
-        // This is just a basic example. For real apps, you must show some
-        // friendly dialog box before call the request method.
-        // This is very important to not harm the user experience
-        AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-    });
+    if (enableNotifications) {
+      AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod,
+      );
+      AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+        if (!isAllowed) {
+          // This is just a basic example. For real apps, you must show some
+          // friendly dialog box before call the request method.
+          // This is very important to not harm the user experience
+          AwesomeNotifications().requestPermissionToSendNotifications();
+        }
+      });
+    }
     super.initState();
   }
 
