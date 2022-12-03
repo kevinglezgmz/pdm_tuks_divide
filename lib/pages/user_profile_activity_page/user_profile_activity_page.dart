@@ -9,9 +9,9 @@ import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
-class GroupProfileActivityPage extends StatelessWidget {
+class UserProfileActivityPage extends StatelessWidget {
   final dateFormat = DateFormat.MMMM('es');
-  GroupProfileActivityPage({super.key});
+  UserProfileActivityPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -325,7 +325,7 @@ class GroupProfileActivityPage extends StatelessWidget {
         payback.removeAt(0);
       } else if (spendingDoneByMe.isNotEmpty &&
           activity == spendingDoneByMe[0]) {
-        subtitle = "Pagaste la cuenta de ${activity.amount}";
+        subtitle = "Pagaste la cuenta de \$${activity.amount}";
         pastSpendings.add(spendingDoneByMe.removeAt(0));
       } else if (activity != null) {
         user = users.firstWhere((user) => user.uid == owings[0].user.id);
