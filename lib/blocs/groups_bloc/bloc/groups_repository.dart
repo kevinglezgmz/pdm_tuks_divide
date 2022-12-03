@@ -103,7 +103,7 @@ class GroupsRepository {
         .toList();
   }
 
-  Future<bool> saveSpendingForGroup(
+  Future<void> saveSpendingForGroup(
     GroupModel group,
     Map<UserModel, double> userToAmountToPay,
     double amount,
@@ -112,23 +112,23 @@ class GroupsRepository {
     DistributionType distributionType,
     UserModel paidBy,
   ) async {
-    final SpendingModel spendingModel = SpendingModel(
-      amount: amount,
-      createdAt: Timestamp.now(),
-      description: description,
-      distributionType: distributionType,
-      paidBy: usersCollection.doc(
+    final Map<String, dynamic> spendingModel = {
+      "amount": amount,
+      "createdAt": Timestamp.now(),
+      "description": description,
+      "distributionType": distributionType.index,
+      "paidBy": usersCollection.doc(
         paidBy.uid,
       ),
-      participants: userToAmountToPay.keys
+      "participants": userToAmountToPay.keys
           .map((e) => usersCollection.doc(e.uid))
           .toList(),
-      spendingPic: spendingPic,
-      addedBy: usersCollection.doc(
+      "spendingPic": spendingPic,
+      "addedBy": usersCollection.doc(
         FirebaseAuth.instance.currentUser!.uid,
       ),
-    );
-    final spendingRef = await spendingsCollection.add(spendingModel.toMap());
+    };
+    final spendingRef = await spendingsCollection.add(spendingModel);
     await Future.wait(
       userToAmountToPay.entries.map((entry) {
         GroupSpendingModel newRecord = GroupSpendingModel(
@@ -142,7 +142,6 @@ class GroupsRepository {
         );
       }).toList(),
     );
-    return false;
   }
 
   List<SpendingModel> _getSpendings(
@@ -150,10 +149,11 @@ class GroupsRepository {
     List<SpendingModel> res = [];
     allGroupSpendings.forEach((spending) async {
       final isNewSpending =
-          res.where((element) => element.sid == spending.spending.id);
+          res.where((element) => element.spendingId == spending.spending.id);
       if (isNewSpending.isEmpty) {
         final data = await spendingsCollection.doc(spending.spending.id).get();
-        res.add(SpendingModel.fromMap(data.data()!));
+        res.add(SpendingModel.fromMap(
+            data.data()!..addAll({"spendingId": data.id})));
       }
     });
     return res;

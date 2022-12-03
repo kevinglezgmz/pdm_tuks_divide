@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,7 +8,6 @@ import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart'
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
-import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/create_group_page/member_list.dart';
 

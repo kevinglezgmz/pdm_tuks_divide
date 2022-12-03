@@ -15,6 +15,8 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
   final List<UserModel> _currentUsersInGroup = [];
   GroupModel? _currentGroup;
 
+  List<UserModel> get usersInGroup => _currentUsersInGroup;
+
   double get unequalDistributionAccumulatedValue =>
       state.userToUnEqualDistributionAmount.values
           .map((value) => value ?? 0)
@@ -62,6 +64,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
           event.newState.userToPercentDistributionAmount,
       userToUnEqualDistributionAmount:
           event.newState.userToUnEqualDistributionAmount,
+      payer: event.newState.payer,
     );
     _updateState(
       emit,
@@ -78,6 +81,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
       userToEqualDistributionAmount: newState.userToEqualDistributionAmount,
       userToPercentDistributionAmount: newState.userToPercentDistributionAmount,
       userToUnEqualDistributionAmount: newState.userToUnEqualDistributionAmount,
+      payer: newState.payer,
     ));
   }
 
@@ -122,9 +126,14 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
     if (_currentGroup == null) {
       throw "Not in a group";
     }
+    if (state.payer == null) {
+      throw "No payer";
+    }
+
     emit(state.copyWith(isSaving: true));
     final Map<UserModel, double> userToAmountToPayMap = {};
     final double totalAmount = double.tryParse(state.spendingAmount) ?? 0;
+
     if (state.spendingDistributionType == DistributionType.equal) {
       List<UserModel> participants = state.userToEqualDistributionAmount.entries
           .where((entry) => entry.value)
@@ -132,26 +141,85 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
           .toList();
       double amountPerPerson =
           double.parse((totalAmount / participants.length).toStringAsFixed(2));
-      if (amountPerPerson * participants.length != totalAmount) {
-        double rest = totalAmount - amountPerPerson * participants.length;
-      }
       for (final UserModel user in participants) {
         userToAmountToPayMap[user] = amountPerPerson;
       }
-      await _groupsRepository.saveSpendingForGroup(
-        _currentGroup!,
-        userToAmountToPayMap,
-        totalAmount,
-        state.spendingDescription,
-        state.spendingPictureUrl,
-        state.spendingDistributionType,
-        userToAmountToPayMap.keys.first,
-      );
-      emit(state.copyWith(saved: true, isSaving: false));
+      if (amountPerPerson * participants.length != totalAmount) {
+        double rest = double.parse((totalAmount -
+                double.parse(
+                  (amountPerPerson * participants.length).toStringAsFixed(2),
+                ))
+            .toStringAsFixed(2));
+        int i = 0;
+        while (rest > 0) {
+          rest = double.parse((rest - 0.01).toStringAsFixed(2));
+          userToAmountToPayMap[participants[i]] = double.parse(
+            (userToAmountToPayMap[participants[i]]! + 0.01).toStringAsFixed(2),
+          );
+          i++;
+          if (i == participants.length) {
+            i = 0;
+          }
+        }
+      }
     } else if (state.spendingDistributionType == DistributionType.unequal) {
+      List<UserModel> participants = state
+          .userToUnEqualDistributionAmount.entries
+          .where((entry) => (entry.value ?? 0) > 0)
+          .map((entry) => entry.key)
+          .toList();
+      for (final UserModel user in participants) {
+        userToAmountToPayMap[user] =
+            state.userToUnEqualDistributionAmount[user]!;
+      }
     } else if (state.spendingDistributionType == DistributionType.percentage) {
+      List<UserModel> participants = state
+          .userToPercentDistributionAmount.entries
+          .map((entry) => entry.key)
+          .toList();
+      double totalAccumulated = 0;
+      for (final UserModel user in participants) {
+        double? percent = state.userToPercentDistributionAmount[user];
+        if (percent == null) {
+          continue;
+        }
+        double amountToPay = double.parse(
+          (totalAmount * percent / 100).toStringAsFixed(2),
+        );
+        totalAccumulated = double.parse(
+          (totalAccumulated + amountToPay).toStringAsFixed(2),
+        );
+        userToAmountToPayMap[user] = amountToPay;
+      }
+      if (totalAccumulated != totalAmount) {
+        double rest = double.parse(
+          (totalAmount - totalAccumulated).toStringAsFixed(2),
+        );
+        int i = 0;
+        while (rest > 0) {
+          rest = double.parse((rest - 0.01).toStringAsFixed(2));
+          userToAmountToPayMap[participants[i]] = double.parse(
+            (userToAmountToPayMap[participants[i]]! + 0.01).toStringAsFixed(2),
+          );
+          i++;
+          if (i == participants.length) {
+            i = 0;
+          }
+        }
+      }
     } else {
+      emit(state.copyWith(saved: true, isSaving: false));
       return;
     }
+    await _groupsRepository.saveSpendingForGroup(
+      _currentGroup!,
+      userToAmountToPayMap,
+      totalAmount,
+      state.spendingDescription,
+      state.spendingPictureUrl,
+      state.spendingDistributionType,
+      state.payer!,
+    );
+    emit(state.copyWith(saved: true, isSaving: false));
   }
 }

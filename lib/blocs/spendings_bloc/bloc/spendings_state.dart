@@ -15,6 +15,7 @@ class SpendingsUseState extends SpendingsState {
   final Map<UserModel, bool> userToEqualDistributionAmount;
   final Map<UserModel, double?> userToUnEqualDistributionAmount;
   final Map<UserModel, double?> userToPercentDistributionAmount;
+  final UserModel? payer;
   final bool isSaving;
   final bool saved;
 
@@ -26,6 +27,7 @@ class SpendingsUseState extends SpendingsState {
     this.userToEqualDistributionAmount = const {},
     this.userToUnEqualDistributionAmount = const {},
     this.userToPercentDistributionAmount = const {},
+    this.payer,
     this.isSaving = false,
     this.saved = false,
   });
@@ -38,6 +40,7 @@ class SpendingsUseState extends SpendingsState {
     Map<UserModel, bool>? userToEqualDistributionAmount,
     Map<UserModel, double?>? userToUnEqualDistributionAmount,
     Map<UserModel, double?>? userToPercentDistributionAmount,
+    UserModel? payer,
     bool? isSaving,
     bool? saved,
   }) {
@@ -53,6 +56,7 @@ class SpendingsUseState extends SpendingsState {
           this.userToUnEqualDistributionAmount,
       userToPercentDistributionAmount: userToPercentDistributionAmount ??
           this.userToPercentDistributionAmount,
+      payer: payer ?? this.payer,
       isSaving: isSaving ?? this.isSaving,
       saved: saved ?? this.saved,
     );
@@ -67,7 +71,9 @@ class SpendingsUseState extends SpendingsState {
         userToEqualDistributionAmount,
         userToUnEqualDistributionAmount,
         userToPercentDistributionAmount,
-        isSaving
+        payer ?? 'Payer',
+        isSaving,
+        saved,
       ];
 }
 
@@ -79,17 +85,22 @@ class NullableSpendingsUseState extends SpendingsState {
   final Map<UserModel, bool>? userToEqualDistributionAmount;
   final Map<UserModel, double?>? userToUnEqualDistributionAmount;
   final Map<UserModel, double?>? userToPercentDistributionAmount;
+  final UserModel? payer;
   final bool? isSaving;
+  final bool? saved;
 
-  const NullableSpendingsUseState(
-      {this.spendingDistributionType,
-      this.spendingAmount,
-      this.spendingPictureUrl,
-      this.spendingDescription,
-      this.userToEqualDistributionAmount,
-      this.userToUnEqualDistributionAmount,
-      this.userToPercentDistributionAmount,
-      this.isSaving});
+  const NullableSpendingsUseState({
+    this.spendingDistributionType,
+    this.spendingAmount,
+    this.spendingPictureUrl,
+    this.spendingDescription,
+    this.userToEqualDistributionAmount,
+    this.userToUnEqualDistributionAmount,
+    this.userToPercentDistributionAmount,
+    this.payer,
+    this.isSaving,
+    this.saved,
+  });
 
   @override
   List<Object> get props => [
@@ -100,6 +111,8 @@ class NullableSpendingsUseState extends SpendingsState {
         userToEqualDistributionAmount ?? "null",
         userToUnEqualDistributionAmount ?? "null",
         userToPercentDistributionAmount ?? "null",
-        isSaving ?? "null"
+        payer ?? "null",
+        isSaving ?? "null",
+        saved ?? "null",
       ];
 }

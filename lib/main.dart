@@ -18,7 +18,6 @@ import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -104,7 +103,7 @@ class MyApp extends StatelessWidget {
             return LoginPage();
           } else if (state is AuthLoggingInState) {
             // To Do: Implement Loading Over The Home Screen
-            return Scaffold(
+            return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             );
           }

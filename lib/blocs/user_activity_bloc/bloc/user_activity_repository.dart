@@ -112,8 +112,10 @@ class UserActivityRepository {
 
     final spentData =
         await spendingsCollection.where('paidBy', isEqualTo: userRef).get();
-    final spentRefs =
-        spentData.docs.map((doc) => SpendingModel.fromMap(doc.data())).toList();
+    final spentRefs = spentData.docs
+        .map((doc) =>
+            SpendingModel.fromMap(doc.data()..addAll({'spendingId': doc.id})))
+        .toList();
 
     final spendingsData =
         await groupsSpendingsCollection.where('user', isEqualTo: userRef).get();

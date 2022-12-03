@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/models/group_model.dart';
-import 'package:tuks_divide/pages/group_expenses_page/group_expenses_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_item.dart';
 
 class GroupList extends StatelessWidget {

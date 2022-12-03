@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
@@ -24,10 +25,12 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
   late UnequalDivideSpendingTabController unequalTabController;
   late PercentageDivideSpendingTabController percentageTabController;
   late final SpendingsBloc spendingsBloc;
+  late final AuthBloc authBloc;
 
   @override
   void initState() {
     spendingsBloc = BlocProvider.of<SpendingsBloc>(context);
+    authBloc = BlocProvider.of<AuthBloc>(context);
     equalTabController = EqualDivideSpendingTabController(
       controllers: Map.fromEntries(
         spendingsBloc.state.userToEqualDistributionAmount.entries,
@@ -39,27 +42,13 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
     percentageTabController = PercentageDivideSpendingTabController(
       controllers: spendingsBloc.emptyUserToTextEditingControllerMap,
     );
-    descriptionController.addListener(
-      () {
-        spendingsBloc.add(
-          SpendingUpdateEvent(
-            newState: NullableSpendingsUseState(
-              spendingDescription: descriptionController.text,
-            ),
-          ),
-        );
-      },
-    );
-    spendingAmountController.addListener(
-      () {
-        spendingsBloc.add(
-          SpendingUpdateEvent(
-            newState: NullableSpendingsUseState(
-              spendingAmount: spendingAmountController.text,
-            ),
-          ),
-        );
-      },
+
+    spendingsBloc.add(
+      SpendingUpdateEvent(
+        newState: NullableSpendingsUseState(
+          payer: authBloc.me,
+        ),
+      ),
     );
     super.initState();
   }
@@ -71,8 +60,9 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
         title: const Text('Añadir gasto'),
         actions: [
           IconButton(
-            onPressed: () {
-              _saveSpending(context);
+            onPressed: () async {
+              await updateSpendingBloc();
+              _saveSpending();
             },
             icon: const Icon(
               Icons.check,
@@ -128,7 +118,7 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
           ),
           InkWell(
             onTap: () {
-              _openSpendingDistributionPage(context);
+              _openSpendingDistributionPage();
             },
             child: Ink(
               color: Colors.grey,
@@ -158,14 +148,21 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
     );
   }
 
-  void _openSpendingDistributionPage(BuildContext context) {
+  _openSpendingDistributionPage() async {
+    spendingsBloc.add(
+      SpendingUpdateEvent(
+        newState: NullableSpendingsUseState(
+          spendingDescription: descriptionController.text,
+          spendingAmount: spendingAmountController.text,
+        ),
+      ),
+    );
     EqualDivideSpendingTabController currEqualCtrl = equalTabController.clone();
     UnequalDivideSpendingTabController currUnequalCtrl =
         unequalTabController.clone();
     PercentageDivideSpendingTabController currPercentageCtrl =
         percentageTabController.clone();
-    double totalAmount =
-        double.tryParse(spendingsBloc.state.spendingAmount) ?? 0;
+    double totalAmount = double.tryParse(spendingAmountController.text) ?? 0;
     Navigator.of(context)
         .push(
       MaterialPageRoute(
@@ -239,18 +236,46 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
             style: TextStyle(fontSize: 16),
           ),
           InkWell(
-            onTap: () {},
+            onTap: () {
+              showSearch<UserModel?>(
+                context: context,
+                delegate: SelectPayerSearchDelegate(),
+              ).then((selectedUser) {
+                if (selectedUser == null) {
+                  return;
+                }
+                spendingsBloc.add(
+                  SpendingUpdateEvent(
+                    newState: NullableSpendingsUseState(
+                      payer: selectedUser,
+                    ),
+                  ),
+                );
+              });
+            },
             child: Ink(
               color: Colors.grey,
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 6,
-                  ),
-                  child: Text(
-                    'tí',
-                    style: TextStyle(fontSize: 16),
-                  )),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 6,
+                ),
+                child: BlocBuilder<SpendingsBloc, SpendingsUseState>(
+                  builder: (context, state) {
+                    UserModel? payer = state.payer ?? authBloc.me;
+                    String payerName = payer == authBloc.me
+                        ? 'tí'
+                        : state.payer!.displayName ??
+                            state.payer!.fullName ??
+                            state.payer!.email;
+                    return Text(
+                      payerName.substring(
+                          0, payerName.length > 16 ? 16 : payerName.length),
+                      style: const TextStyle(fontSize: 16),
+                    );
+                  },
+                ),
+              ),
             ),
           )
         ],
@@ -378,13 +403,27 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
     );
   }
 
-  _saveSpending(BuildContext context) {
+  _saveSpending() {
     if (spendingsBloc.state.isSaving) {
       return;
     }
     final double? spendingAmount =
         double.tryParse(spendingsBloc.state.spendingAmount);
     if (spendingAmount == null) {
+      _showDistributionErrorDialog(
+        context,
+        title: "Monto inválido",
+        message: "Debes introducir un monto válido en el gasto.",
+      );
+      return;
+    }
+    final String description = spendingsBloc.state.spendingDescription;
+    if (description == "") {
+      _showDistributionErrorDialog(
+        context,
+        title: "Descripción faltante",
+        message: "Debes ingresar una descripción del gasto realizado.",
+      );
       return;
     }
     DistributionType distributionType =
@@ -438,6 +477,18 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
         ],
       ),
     );
+  }
+
+  Future<void> updateSpendingBloc() async {
+    spendingsBloc.add(
+      SpendingUpdateEvent(
+        newState: NullableSpendingsUseState(
+          spendingDescription: descriptionController.text,
+          spendingAmount: spendingAmountController.text,
+        ),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 1));
   }
 }
 
@@ -532,4 +583,112 @@ class EqualDivideSpendingTabController {
 
   bool allParticipantsSelected() =>
       controllers.values.reduce((value, element) => value && element);
+}
+
+class SelectPayerSearchDelegate extends SearchDelegate<UserModel?> {
+  SelectPayerSearchDelegate() : super(searchFieldLabel: "Buscar por nombre");
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    List<UserModel> queryResult = getResults(context);
+    return ListView.builder(
+      itemCount: queryResult.length + 1,
+      itemBuilder: (BuildContext context, int index) {
+        if (index == 0) {
+          return const SizedBox(height: 16);
+        }
+        UserModel user = queryResult[index - 1];
+        return getUserTile(context, user);
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    List<UserModel> queryResult = getResults(context);
+    queryResult = queryResult.sublist(
+      0,
+      queryResult.length > 10 ? 10 : queryResult.length,
+    );
+    return ListView.builder(
+      itemCount: queryResult.length,
+      itemBuilder: (BuildContext context, int index) {
+        UserModel user = queryResult[index];
+        return getUserTile(context, user);
+      },
+    );
+  }
+
+  List<UserModel> getResults(BuildContext context) {
+    List<UserModel> membersInGroup =
+        BlocProvider.of<SpendingsBloc>(context).usersInGroup;
+    String queryLC = query.toLowerCase();
+    return queryLC == ""
+        ? membersInGroup
+        : membersInGroup
+            .where(
+              (element) =>
+                  ((element.displayName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0) ||
+                  ((element.firstName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0) ||
+                  ((element.lastName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0),
+            )
+            .toList();
+  }
+
+  Widget getUserTile(BuildContext context, UserModel user) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        child: InkWell(
+          onTap: () {
+            close(context, user);
+          },
+          child: ListTile(
+            title: Text(user.displayName ?? user.fullName ?? '<Sin Nombre>'),
+            leading: CircleAvatar(
+              backgroundImage: user.pictureUrl == null || user.pictureUrl == ""
+                  ? const NetworkImage(
+                      "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png",
+                    )
+                  : NetworkImage(user.pictureUrl!),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
