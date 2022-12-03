@@ -22,16 +22,17 @@ class GroupsPage extends StatelessWidget {
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-        BlocConsumer<GroupsBloc, GroupsState>(
+        BlocConsumer<GroupsBloc, GroupsUseState>(
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is GroupsLoadedState) {
-              return GroupList(
-                groupData: state.groups,
-              );
-            } else if (state is GroupsLoadingState) {
+            if (state.isLoadingGroups) {
               return const Center(
                 child: CircularProgressIndicator(),
+              );
+            }
+            if (state.userGroups.isNotEmpty) {
+              return GroupList(
+                groupData: state.userGroups,
               );
             }
             return const Text('Error');

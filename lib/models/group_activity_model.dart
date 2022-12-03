@@ -13,15 +13,15 @@ class GroupActivityModel extends Equatable {
       required this.spendings,
       required this.groupUsers});
 
+  GroupActivityModel.fromMap(Map<String, dynamic> item)
+      : payments = item['payments'],
+        spendings = item['spendings'],
+        groupUsers = item['groupUsers'];
+
   @override
   List<Object?> get props => [
         payments,
         spendings,
         groupUsers,
       ];
-
-  GroupActivityModel.fromMap(Map<String, dynamic> item)
-      : payments = item['payments'],
-        spendings = item['spendings'],
-        groupUsers = item['groupUsers'];
 }

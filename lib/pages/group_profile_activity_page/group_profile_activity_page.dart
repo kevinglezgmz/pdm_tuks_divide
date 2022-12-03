@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfire_ui/auth.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
@@ -8,7 +7,6 @@ import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 class GroupProfileActivityPage extends StatelessWidget {
   final dateFormat = DateFormat.MMMM('es');
@@ -214,17 +212,17 @@ class GroupProfileActivityPage extends StatelessWidget {
       return total;
     }
 
-    myDebtRefs.forEach((debt) {
+    for (var debt in myDebtRefs) {
       total += debt.amountToPay;
-    });
+    }
 
     if (spendingRefs.isEmpty) {
       return total;
     }
 
-    spendingRefs.forEach((spending) {
+    for (var spending in spendingRefs) {
       total -= spending.amount;
-    });
+    }
 
     return total;
   }
@@ -235,18 +233,18 @@ class GroupProfileActivityPage extends StatelessWidget {
     if (spentRefs.isEmpty) {
       return 0;
     }
-    spentRefs.forEach((spending) {
+    for (var spending in spentRefs) {
       total += spending.amount;
-    });
+    }
     if (debtRefs.isNotEmpty) {
-      debtRefs.forEach((debt) {
+      for (var debt in debtRefs) {
         total -= debt.amount;
-      });
+      }
     }
     if (noDebt.isNotEmpty) {
-      noDebt.forEach((notAdebt) {
+      for (var notAdebt in noDebt) {
         total -= notAdebt.amountToPay;
-      });
+      }
     }
     return total;
   }

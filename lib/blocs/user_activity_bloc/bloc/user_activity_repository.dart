@@ -19,10 +19,13 @@ class UserActivityRepository {
   final groupsSpendingsCollection = FirebaseFirestore.instance
       .collection(FirebaseCollections.groupsSpendings);
 
-  List<UserModel> _getUsersData(List<PaymentModel> spendingRefs,
-      List<SpendingModel> spentRefs, List<PaymentModel> debtRefs) {
+  Future<List<UserModel>> _getUsersData(
+    List<PaymentModel> spendingRefs,
+    List<SpendingModel> spentRefs,
+    List<PaymentModel> debtRefs,
+  ) async {
     List<UserModel> users = [];
-    spendingRefs.forEach((paymentRef) async {
+    for (var paymentRef in spendingRefs) {
       final payment = await paymentRef.receiver.get();
       final foundUser = users
           .where((UserModel user) =>
@@ -31,9 +34,9 @@ class UserActivityRepository {
       if (foundUser.isNotEmpty) {
         users.add(foundUser[0]);
       }
-    });
+    }
 
-    debtRefs.forEach((debtRef) async {
+    for (var debtRef in debtRefs) {
       final debt = await debtRef.payer.get();
       final foundUser = users
           .where((UserModel user) =>
@@ -42,11 +45,11 @@ class UserActivityRepository {
       if (foundUser.isNotEmpty) {
         users.add(foundUser[0]);
       }
-    });
+    }
 
-    spentRefs.forEach((spentRef) async {
+    for (var spentRef in spentRefs) {
       final participantsRef = spentRef.participants;
-      participantsRef.forEach((participantRef) async {
+      for (var participantRef in participantsRef) {
         final participant = await participantRef.get();
         final foundUser = users
             .where((UserModel user) =>
@@ -55,8 +58,8 @@ class UserActivityRepository {
         if (foundUser.isNotEmpty) {
           users.add(foundUser[0]);
         }
-      });
-    });
+      }
+    }
     return users;
   }
 
@@ -64,15 +67,15 @@ class UserActivityRepository {
       List<GroupSpendingModel> owingRefs, List<SpendingModel> spentRefs) {
     List<GroupSpendingModel> owings = [];
 
-    owingRefs.forEach((owing) {
-      spentRefs.forEach((spending) {
+    for (var owing in owingRefs) {
+      for (var spending in spentRefs) {
         final owingsFound =
             spending.participants.where((s) => s.id == owing.user.id).toList();
         if (owingsFound.isNotEmpty) {
           owings.add(owing);
         }
-      });
-    });
+      }
+    }
 
     return owings;
   }
@@ -81,14 +84,14 @@ class UserActivityRepository {
       List<GroupSpendingModel> spendingRefs, List<SpendingModel> spentRefs) {
     List<GroupSpendingModel> debts = [];
 
-    spentRefs.forEach((spent) {
-      spendingRefs.forEach((spending) {
+    for (var spent in spentRefs) {
+      for (var spending in spendingRefs) {
         final found = spent.paidBy.id != spending.user.id;
         if (found) {
           debts.add(spending);
         }
-      });
-    });
+      }
+    }
 
     return debts;
   }
@@ -133,7 +136,8 @@ class UserActivityRepository {
     final owingRefsKnown = _getOwingsFromGroups(owingRefs, spentRefs);
     final myDebtRefs = _getMyDebt(spendingsRefs, spentRefs);
 
-    final otherUsersData = _getUsersData(spendingRefs, spentRefs, debtRefs);
+    final otherUsersData =
+        await _getUsersData(spendingRefs, spentRefs, debtRefs);
 
     spendingRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     debtRefs.sort((a, b) => b.createdAt.compareTo(a.createdAt));

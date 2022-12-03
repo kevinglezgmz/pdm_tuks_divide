@@ -9,7 +9,6 @@ import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 class GroupExpensesPage extends StatelessWidget {
@@ -19,166 +18,11 @@ class GroupExpensesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GroupsBloc, GroupsState>(builder: (context, state) {
-      if (state is GroupActivityLoadedState) {
-        return Scaffold(
-          body: Column(
-            children: [
-              Stack(clipBehavior: Clip.none, children: [
-                Container(
-                  color: Colors.cyan[200],
-                  height: MediaQuery.of(context).size.height / 6,
-                ),
-                Positioned(
-                  left: 30,
-                  bottom: -40,
-                  child: AvatarWidget(
-                    backgroundColor: Colors.pink[100],
-                    radius: 50,
-                    iconSize: 50,
-                    avatarUrl: group.groupPicUrl,
-                  ),
-                ),
-              ]),
-              Container(
-                padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  group.groupName,
-                  style: const TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: const [
-                        //TODO: GET DEBTS AND OWINGS
-                        Text(
-                          "Juan Pérez te debe ",
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        Text("\$65.32",
-                            style: TextStyle(fontSize: 16, color: Colors.blue))
-                      ],
-                    ),
-                    Row(
-                      children: const [
-                        Text("Debes a Andrea ",
-                            style: TextStyle(fontSize: 16, color: Colors.grey)),
-                        Text("\$150.36",
-                            style: TextStyle(fontSize: 16, color: Colors.blue))
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 284,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: SingleChildScrollView(
-                  child: Column(
-                      children: _createActivityList(
-                          state.spendings, state.payments, state.groupUsers)),
-                ),
-              )
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            heroTag: 'Add Expense To Group',
-            onPressed: () {
-              BlocProvider.of<SpendingsBloc>(context).add(
-                SpendingsResetBlocEvent(),
-              );
-              Navigator.of(context)
-                  .push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddSpendingPage(),
-                    ),
-                  )
-                  .then(
-                    (value) => BlocProvider.of<SpendingsBloc>(context).add(
-                      SpendingsResetBlocEvent(),
-                    ),
-                  );
-            },
-            child: const FaIcon(FontAwesomeIcons.plus),
-          ),
-        );
-      } else if (state is GroupActivityLoadingState) {
-        return Scaffold(
-          body: Column(children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  color: Colors.cyan[200],
-                  height: MediaQuery.of(context).size.height / 6,
-                ),
-                Positioned(
-                  left: 30,
-                  bottom: -40,
-                  child: AvatarWidget(
-                    backgroundColor: Colors.pink[100],
-                    radius: 50,
-                    iconSize: 50,
-                    avatarUrl: group.groupPicUrl,
-                  ),
-                )
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                group.groupName,
-                style:
-                    const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: const [
-                  Center(
-                    child: CircularProgressIndicator(),
-                  )
-                ],
-              ),
-            ),
-          ]),
-          floatingActionButton: FloatingActionButton(
-            heroTag: 'Add Expense To Group',
-            onPressed: () {
-              BlocProvider.of<SpendingsBloc>(context).add(
-                SpendingsResetBlocEvent(),
-              );
-              Navigator.of(context)
-                  .push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddSpendingPage(),
-                    ),
-                  )
-                  .then(
-                    (value) => BlocProvider.of<SpendingsBloc>(context).add(
-                      SpendingsResetBlocEvent(),
-                    ),
-                  );
-            },
-            child: const FaIcon(FontAwesomeIcons.plus),
-          ),
-        );
-      }
+    return BlocConsumer<GroupsBloc, GroupsUseState>(builder: (context, state) {
       return Scaffold(
-        body: Column(children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
+        body: Column(
+          children: [
+            Stack(clipBehavior: Clip.none, children: [
               Container(
                 color: Colors.cyan[200],
                 height: MediaQuery.of(context).size.height / 6,
@@ -192,30 +36,62 @@ class GroupExpensesPage extends StatelessWidget {
                   iconSize: 50,
                   avatarUrl: group.groupPicUrl,
                 ),
-              )
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              group.groupName,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ]),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                group.groupName,
+                style:
+                    const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: const [
-                Center(
-                  child: Text(
-                      "No se pudo obtener la información, intenta de nuevo"),
-                )
-              ],
+            Container(
+              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: const [
+                      //TODO: GET DEBTS AND OWINGS
+                      Text(
+                        "Juan Pérez te debe ",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                      Text("\$65.32",
+                          style: TextStyle(fontSize: 16, color: Colors.blue))
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Text("Debes a Andrea ",
+                          style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Text("\$150.36",
+                          style: TextStyle(fontSize: 16, color: Colors.blue))
+                    ],
+                  )
+                ],
+              ),
             ),
-          ),
-        ]),
+            Positioned(
+              top: 284,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: state.isLoadingActivity
+                      ? [const Center(child: CircularProgressIndicator())]
+                      : _createActivityList(
+                          state.spendings,
+                          state.payments,
+                          state.groupUsers,
+                        ),
+                ),
+              ),
+            )
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'Add Expense To Group',
           onPressed: () {
@@ -238,11 +114,11 @@ class GroupExpensesPage extends StatelessWidget {
         ),
       );
     }, listener: (context, state) {
-      if (state is GroupActivityLoadingErrorState) {
+      if (state.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              "Error al obtener la actividad del grupo",
+              state.errorMessage,
             ),
           ),
         );
@@ -250,8 +126,11 @@ class GroupExpensesPage extends StatelessWidget {
     });
   }
 
-  List<Widget> _createActivityList(List<SpendingModel> spendings,
-      List<PaymentModel> payments, List<UserModel> users) {
+  List<Widget> _createActivityList(
+    List<SpendingModel> spendings,
+    List<PaymentModel> payments,
+    List<UserModel> users,
+  ) {
     List<Widget> activityList = [];
     int totalActivityItems = payments.length + spendings.length;
     int spendingIdx = 0;

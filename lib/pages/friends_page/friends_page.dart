@@ -137,7 +137,7 @@ class FriendsPage extends StatelessWidget {
       child: ListTile(
         title: Text(friend.displayName ?? friend.fullName ?? '<Sin Nombre>'),
         // TODO: poner cuantos grupos en comun?
-        subtitle: Text('Algunos grupos en comun'),
+        subtitle: const Text('Algunos grupos en comun'),
         leading: CircleAvatar(
             backgroundImage: friend.pictureUrl == null ||
                     friend.pictureUrl == ""

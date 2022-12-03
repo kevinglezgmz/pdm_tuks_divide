@@ -45,3 +45,12 @@ class LoadGroupActivityEvent extends GroupsEvent {
         groupData,
       ];
 }
+
+class UpdateGroupsStateEvent extends GroupsEvent {
+  final NullableGroupsUseState newState;
+
+  const UpdateGroupsStateEvent({required this.newState});
+
+  @override
+  List<Object> get props => [newState];
+}

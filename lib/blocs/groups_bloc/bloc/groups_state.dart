@@ -7,68 +7,108 @@ abstract class GroupsState extends Equatable {
   List<Object> get props => [];
 }
 
-class GroupsInitial extends GroupsState {}
-
-class NoGroupsState extends GroupsState {}
-
-class GroupsErrorState extends GroupsState {
-  final String errorMessage;
-
-  const GroupsErrorState({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
-class GroupsLoadedState extends GroupsState {
-  final List<GroupModel> groups;
-
-  const GroupsLoadedState({required this.groups});
-
-  @override
-  List<Object> get props => [groups];
-}
-
-class GroupsLoadingState extends GroupsState {}
-
-class GroupsCreatingGroupState extends GroupsState {}
-
-class GroupsCreatedGroupState extends GroupsState {}
-
-class GroupsCreatingErrorState extends GroupsState {
-  final String errorMessage;
-
-  const GroupsCreatingErrorState({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
-class GroupActivityLoadedState extends GroupsState {
+class GroupsUseState extends GroupsState {
   final List<PaymentModel> payments;
   final List<SpendingModel> spendings;
   final List<UserModel> groupUsers;
+  final List<GroupModel> userGroups;
+  final GroupModel? selectedGroup;
+  final bool hasError;
+  final bool isLoadingGroups;
+  final bool isCreatingGroup;
+  final bool isLoadingActivity;
+  final String errorMessage;
 
-  const GroupActivityLoadedState(
-      {required this.payments,
-      required this.spendings,
-      required this.groupUsers});
+  const GroupsUseState({
+    this.userGroups = const [],
+    this.hasError = false,
+    this.isLoadingGroups = false,
+    this.isCreatingGroup = false,
+    this.isLoadingActivity = false,
+    this.errorMessage = "",
+    this.spendings = const [],
+    this.payments = const [],
+    this.groupUsers = const [],
+    this.selectedGroup,
+  });
+
+  GroupsUseState copyWith({
+    List<PaymentModel>? payments,
+    List<SpendingModel>? spendings,
+    List<UserModel>? groupUsers,
+    List<GroupModel>? userGroups,
+    GroupModel? selectedGroup,
+    bool? hasError,
+    bool? isLoadingGroups,
+    bool? isCreatingGroup,
+    bool? isLoadingActivity,
+    String? errorMessage,
+  }) {
+    return GroupsUseState(
+      userGroups: userGroups ?? this.userGroups,
+      hasError: hasError ?? this.hasError,
+      isLoadingGroups: isLoadingGroups ?? this.isLoadingGroups,
+      isCreatingGroup: isCreatingGroup ?? this.isCreatingGroup,
+      isLoadingActivity: isLoadingActivity ?? this.isLoadingActivity,
+      errorMessage: errorMessage ?? this.errorMessage,
+      spendings: spendings ?? this.spendings,
+      payments: payments ?? this.payments,
+      groupUsers: groupUsers ?? this.groupUsers,
+      selectedGroup: selectedGroup ?? this.selectedGroup,
+    );
+  }
 
   @override
   List<Object> get props => [
-        payments,
+        userGroups,
+        hasError,
+        isLoadingGroups,
+        isCreatingGroup,
+        isLoadingActivity,
+        errorMessage,
         spendings,
+        payments,
         groupUsers,
+        selectedGroup ?? "No group",
       ];
 }
 
-class GroupActivityLoadingState extends GroupsState {}
+class NullableGroupsUseState extends GroupsState {
+  final String? userGroups;
+  final String? hasError;
+  final String? isLoadingGroups;
+  final DistributionType? isCreatingGroup;
+  final Map<UserModel, bool>? isLoadingActivity;
+  final Map<UserModel, double?>? errorMessage;
+  final Map<UserModel, double?>? spendings;
+  final UserModel? payments;
+  final bool? groupUsers;
+  final bool? selectedGroup;
 
-class GroupActivityLoadingErrorState extends GroupsState {
-  final String errorMessage;
-
-  const GroupActivityLoadingErrorState({required this.errorMessage});
+  const NullableGroupsUseState({
+    this.userGroups,
+    this.hasError,
+    this.isLoadingGroups,
+    this.isCreatingGroup,
+    this.isLoadingActivity,
+    this.errorMessage,
+    this.spendings,
+    this.payments,
+    this.groupUsers,
+    this.selectedGroup,
+  });
 
   @override
-  List<Object> get props => [errorMessage];
+  List<Object> get props => [
+        userGroups ?? "userGroups",
+        hasError ?? "hasError",
+        isLoadingGroups ?? "isLoadingGroups",
+        isCreatingGroup ?? "isCreatingGroup",
+        isLoadingActivity ?? "isLoadingActivity",
+        errorMessage ?? "errorMessage",
+        spendings ?? "spendings",
+        payments ?? "payments",
+        groupUsers ?? "groupUsers",
+        selectedGroup ?? "selectedGroup",
+      ];
 }

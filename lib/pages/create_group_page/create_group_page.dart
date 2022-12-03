@@ -19,6 +19,7 @@ class CreateGroupPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool creatingGroup = false;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -54,7 +55,7 @@ class CreateGroupPage extends StatelessWidget {
         ],
       ),
       body: Column(children: [
-        _getGroupPicAndNameSection(context),
+        _getGroupPicAndNameSection(context, creatingGroup),
         _getGroupDescriptionSection(),
         _getMembersSectionTitle(),
         _getMembersSection(context),
@@ -85,16 +86,19 @@ class CreateGroupPage extends StatelessWidget {
     );
   }
 
-  Padding _getGroupPicAndNameSection(BuildContext context) {
+  Padding _getGroupPicAndNameSection(BuildContext context, bool creatingGroup) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 15.0, 8.0, 0.0),
       child: Row(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: BlocListener<GroupsBloc, GroupsState>(
+            child: BlocListener<GroupsBloc, GroupsUseState>(
               listener: (context, state) {
-                if (state is GroupsCreatedGroupState) {
+                if (state.isCreatingGroup && creatingGroup == false) {
+                  creatingGroup = true;
+                }
+                if (state.isCreatingGroup == false && creatingGroup == true) {
                   Navigator.of(context).pop();
                 }
               },

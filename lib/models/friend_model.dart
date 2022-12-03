@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class FriendModel {
+class FriendModel extends Equatable {
   final Timestamp friendedAt;
   final DocumentReference<Map<String, dynamic>> userA;
   final DocumentReference<Map<String, dynamic>> userB;
 
-  FriendModel({
+  const FriendModel({
     required this.friendedAt,
     required this.userA,
     required this.userB,
@@ -15,4 +16,11 @@ class FriendModel {
       : friendedAt = item['friendedAt'],
         userA = item['userA'],
         userB = item['userB'];
+
+  @override
+  List<Object?> get props => [
+        friendedAt.toString(),
+        userA.id,
+        userB.id,
+      ];
 }

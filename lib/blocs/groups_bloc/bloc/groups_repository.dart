@@ -144,18 +144,20 @@ class GroupsRepository {
     );
   }
 
-  List<SpendingModel> _getSpendings(
-      List<GroupSpendingModel> allGroupSpendings) {
+  Future<List<SpendingModel>> _getSpendings(
+    List<GroupSpendingModel> allGroupSpendings,
+  ) async {
     List<SpendingModel> res = [];
-    allGroupSpendings.forEach((spending) async {
-      final isNewSpending =
-          res.where((element) => element.spendingId == spending.spending.id);
+    for (var groupSpending in allGroupSpendings) {
+      final isNewSpending = res
+          .where((element) => element.spendingId == groupSpending.spending.id);
       if (isNewSpending.isEmpty) {
-        final data = await spendingsCollection.doc(spending.spending.id).get();
+        final data =
+            await spendingsCollection.doc(groupSpending.spending.id).get();
         res.add(SpendingModel.fromMap(
             data.data()!..addAll({"spendingId": data.id})));
       }
-    });
+    }
     return res;
   }
 
@@ -174,9 +176,12 @@ class GroupsRepository {
         .map((doc) => GroupSpendingModel.fromMap(doc.data()))
         .toList();
 
-    final spendings = _getSpendings(allGroupSpendingsRefs);
+    final spendings = await _getSpendings(allGroupSpendingsRefs);
 
     return GroupActivityModel(
-        payments: paymentRefs, spendings: spendings, groupUsers: users);
+      payments: paymentRefs,
+      spendings: spendings,
+      groupUsers: users,
+    );
   }
 }
