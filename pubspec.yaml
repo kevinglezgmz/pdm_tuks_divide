@@ -56,6 +56,8 @@ dependencies:
   firebase_storage: 11.0.4
   date_format: ^2.0.7
   intl: ^0.17.0
+  awesome_notifications: ^0.7.4+1
+  awesome_notifications_fcm: ^0.7.4+1
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  awesome_notifications
   desktop_webview_auth
   permission_handler_windows
   share_plus

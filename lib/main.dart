@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:tuks_divide/addons/notifications_handler.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
@@ -14,7 +15,7 @@ import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_repository.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_repository.dart';
-import 'package:tuks_divide/models/user_model.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:tuks_divide/pages/home_page/home_page.dart';
 import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +23,33 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  initializeDateFormatting();
+  if (false) {
+    AwesomeNotifications().initialize(
+      // set the icon to null if you want to use the default app icon
+      null,
+      [
+        NotificationChannel(
+          channelGroupKey: 'basic_channel_group',
+          channelKey: 'basic_channel',
+          channelName: 'Basic notifications',
+          channelDescription: 'Notification channel for basic tests',
+          defaultColor: Color(0xFF9D50DD),
+          ledColor: Colors.white,
+        )
+      ],
+      // Channel groups are only visual and are not required
+      channelGroups: [
+        NotificationChannelGroup(
+            channelGroupKey: 'basic_channel_group',
+            channelGroupName: 'Basic group')
+      ],
+      debug: true,
+    );
+    await NotificationController.initializeRemoteNotifications(debug: true);
+    await Firebase.initializeApp();
+    await NotificationController.getFirebaseMessagingToken();
+  }
+  await initializeDateFormatting();
   runApp(MultiRepositoryProvider(
     providers: [
       RepositoryProvider(create: (context) => AuthRepository()),
@@ -71,8 +97,35 @@ void main() async {
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+      onNotificationCreatedMethod:
+          NotificationController.onNotificationCreatedMethod,
+      onNotificationDisplayedMethod:
+          NotificationController.onNotificationDisplayedMethod,
+      onDismissActionReceivedMethod:
+          NotificationController.onDismissActionReceivedMethod,
+    );
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        // This is just a basic example. For real apps, you must show some
+        // friendly dialog box before call the request method.
+        // This is very important to not harm the user experience
+        AwesomeNotifications().requestPermissionToSendNotifications();
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
