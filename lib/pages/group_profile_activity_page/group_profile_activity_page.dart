@@ -293,7 +293,7 @@ class GroupProfileActivityPage extends StatelessWidget {
           payback.isNotEmpty ? payback[0] : null,
           spendingDoneByMe.isNotEmpty ? spendingDoneByMe[0] : null,
           owings.isNotEmpty ? owings[0] : null,
-          owingsDate != null ? owingsDate.millisecondsSinceEpoch : null);
+          owingsDate?.millisecondsSinceEpoch);
 
       if (activity == owings[0]) {
         title = "Nueva deuda";
@@ -340,12 +340,9 @@ class GroupProfileActivityPage extends StatelessWidget {
       SpendingModel? spending, GroupSpendingModel? owing, int? owingsDate) {
     int minIdx = 0;
     final List<int?> milis = [];
-    milis
-        .add(payment != null ? payment.createdAt.millisecondsSinceEpoch : null);
-    milis
-        .add(payback != null ? payback.createdAt.millisecondsSinceEpoch : null);
-    milis.add(
-        spending != null ? spending.createdAt.millisecondsSinceEpoch : null);
+    milis.add(payment?.createdAt.millisecondsSinceEpoch);
+    milis.add(payback?.createdAt.millisecondsSinceEpoch);
+    milis.add(spending?.createdAt.millisecondsSinceEpoch);
     milis.add(owingsDate);
     for (int i = 1; i < 4; i++) {
       if (milis[i - 1] == null) {
