@@ -264,7 +264,10 @@ class GroupProfileActivityPage extends StatelessWidget {
 
     activityList.add(const SizedBox(height: 16));
     if (totalActivityItems == 0) {
-      activityList.add(const Text("No hay actividad para mostrar"));
+      activityList.add(const Text(
+        "No hay actividad para mostrar",
+        textAlign: TextAlign.center,
+      ));
       return activityList;
     }
 
