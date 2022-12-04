@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_repository.dart';
@@ -98,14 +99,18 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 30),
-                    Text(
-                      authBloc.me!.displayName ??
-                          authBloc.me!.fullName ??
-                          "<No name>",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    BlocBuilder<MeBloc, MeUseState>(
+                      builder: (context, state) {
+                        return Text(
+                          state.me!.displayName ??
+                              state.me!.fullName ??
+                              "<No name>",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -173,94 +178,105 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                 right: 0,
                 left: 0,
                 child: Center(
-                  child: CircleAvatar(
-                      radius: 55,
-                      backgroundImage: context
-                                      .read<AuthBloc>()
-                                      .me!
-                                      .pictureUrl ==
-                                  null ||
-                              authBloc.me!.pictureUrl == ""
-                          ? const NetworkImage(
-                              "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
-                          : NetworkImage(authBloc.me!.pictureUrl!)),
+                  child: BlocBuilder<MeBloc, MeUseState>(
+                    builder: (context, state) {
+                      return CircleAvatar(
+                          radius: 55,
+                          backgroundImage: state.me!.pictureUrl == null ||
+                                  state.me!.pictureUrl == ""
+                              ? const NetworkImage(
+                                  "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                              : NetworkImage(state.me!.pictureUrl!));
+                    },
+                  ),
                 )),
-            Positioned(
-              top: 128 + 48,
-              right: 0,
-              left: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 30),
-                  Text(
-                    authBloc.me!.displayName ??
-                        authBloc.me!.fullName ??
-                        "<No name>",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Builder(
-                    builder: (context) {
-                      double amountIOwe = _howMuchDoIOwe(state, authBloc.me!);
-                      if (amountIOwe <= 0.00) {
-                        return const Text(
-                          "No tienes ninguna deuda!",
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        );
-                      }
-                      return Text(
-                        "Debes un total de: \$$amountIOwe",
+            BlocBuilder<MeBloc, MeUseState>(
+              builder: (context, meState) {
+                return Positioned(
+                  top: 128 + 48,
+                  right: 0,
+                  left: 0,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 30),
+                      Text(
+                        meState.me!.displayName ??
+                            meState.me!.fullName ??
+                            "<No name>",
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          double amountIOwe = _howMuchDoIOwe(
+                            state,
+                            meState.me!,
+                          );
+                          if (amountIOwe <= 0.00) {
+                            return const Text(
+                              "No tienes ninguna deuda!",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            );
+                          }
+                          return Text(
+                            "Debes un total de: \$$amountIOwe",
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          double amountTheyOweMe =
+                              _howMuchDoTheyOweMe(state, meState.me!);
+                          if (amountTheyOweMe <= 0.00) {
+                            return const Text(
+                              "Nadie tiene deudas contigo!",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            );
+                          }
+                          return Text(
+                            'Te deben un total de: $amountTheyOweMe',
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Builder(
-                    builder: (context) {
-                      double amountTheyOweMe =
-                          _howMuchDoTheyOweMe(state, authBloc.me!);
-                      if (amountTheyOweMe <= 0.00) {
-                        return const Text(
-                          "Nadie tiene deudas contigo!",
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        );
-                      }
-                      return Text(
-                        'Te deben un total de: \$$amountTheyOweMe',
-                        style: const TextStyle(
-                          fontSize: 16,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                );
+              },
             ),
             Positioned(
                 top: 294,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: _createActivityList(
-                      state,
-                      authBloc.me!,
-                      context,
-                    ),
-                  ),
+                child: BlocBuilder<MeBloc, MeUseState>(
+                  builder: (context, meState) {
+                    return SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: _createActivityList(
+                          state,
+                          meState.me!,
+                          context,
+                        ),
+                      ),
+                    );
+                  },
                 ))
           ],
         );
@@ -494,8 +510,11 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
     );
     _userActivityStreamSubscription =
         UserActivityRepository.getUserActivitySubscription(
-      authBloc.me!,
+      context.read<MeBloc>().state.me!,
       (groupActivityState) {
+        groupActivityState
+                .userIdToUserMap?[context.read<MeBloc>().state.me!.uid] =
+            context.read<MeBloc>().state.me!;
         userActivityBloc.add(
           UserActivityUpdateStateEvent(
             newState: groupActivityState,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/models/spending_model.dart';
@@ -26,12 +26,12 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
   late UnequalDivideSpendingTabController unequalTabController;
   late PercentageDivideSpendingTabController percentageTabController;
   late final SpendingsBloc spendingsBloc;
-  late final AuthBloc authBloc;
+  late final MeBloc meBloc;
 
   @override
   void initState() {
     spendingsBloc = BlocProvider.of<SpendingsBloc>(context);
-    authBloc = BlocProvider.of<AuthBloc>(context);
+    meBloc = BlocProvider.of<MeBloc>(context);
     equalTabController = EqualDivideSpendingTabController(
       controllers: Map.fromEntries(
         spendingsBloc.state.userToEqualDistributionAmount.entries,
@@ -47,7 +47,7 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
     spendingsBloc.add(
       SpendingUpdateEvent(
         newState: NullableSpendingsUseState(
-          payer: authBloc.me,
+          payer: meBloc.state.me,
         ),
       ),
     );
@@ -266,8 +266,8 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
                 ),
                 child: BlocBuilder<SpendingsBloc, SpendingsUseState>(
                   builder: (context, state) {
-                    UserModel? payer = state.payer ?? authBloc.me;
-                    String payerName = payer == authBloc.me
+                    UserModel? payer = state.payer ?? meBloc.state.me;
+                    String payerName = payer == meBloc.state.me
                         ? 'tí'
                         : state.payer!.displayName ??
                             state.payer!.fullName ??

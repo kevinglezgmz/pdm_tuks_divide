@@ -5,7 +5,7 @@ import 'package:tuks_divide/models/collections.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class UpdateUserProfileRepository {
-  FutureOr<UserModel> updateUserProfile(String uid, String firstName,
+  static Future<UserModel> updateUserProfile(String uid, String firstName,
       String lastName, String imageUrl, String displayName) async {
     await FirebaseFirestore.instance
         .collection(FirebaseCollections.users)
@@ -31,7 +31,7 @@ class UpdateUserProfileRepository {
     return updatedUserProfile;
   }
 
-  UserModel _convertMapToUser(Map<String, dynamic> userMap) {
+  static UserModel _convertMapToUser(Map<String, dynamic> userMap) {
     return UserModel(
         displayName: userMap["displayName"],
         email: userMap["email"]!,

@@ -6,11 +6,11 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_repository.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
-import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_bloc.dart';
 import 'package:tuks_divide/blocs/update_user_profile_bloc/bloc/update_user_profile_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
@@ -24,7 +24,7 @@ import 'package:tuks_divide/pages/login_page/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-const enableNotifications = false;
+const enableNotifications = true;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +34,10 @@ void main() async {
       null,
       [
         NotificationChannel(
-          channelGroupKey: 'basic_channel_group',
-          channelKey: 'basic_channel',
-          channelName: 'Basic notifications',
-          channelDescription: 'Notification channel for basic tests',
+          channelGroupKey: 'main_channel',
+          channelKey: 'new_group_channel',
+          channelName: 'Nuevo grupo',
+          channelDescription: 'Canal para notificaciones de grupo',
           defaultColor: const Color(0xFF9D50DD),
           ledColor: Colors.white,
         )
@@ -45,8 +45,9 @@ void main() async {
       // Channel groups are only visual and are not required
       channelGroups: [
         NotificationChannelGroup(
-            channelGroupKey: 'basic_channel_group',
-            channelGroupName: 'Basic group')
+          channelGroupKey: 'main_channel',
+          channelGroupName: 'Tuks Divide',
+        )
       ],
       debug: true,
     );
@@ -79,6 +80,7 @@ void main() async {
           ),
         ),
         BlocProvider(create: (BuildContext context) => CreateGroupBloc()),
+        BlocProvider(create: (BuildContext context) => MeBloc()),
         BlocProvider(
           create: (BuildContext context) => SpendingsBloc(
             groupsRepository: context.read<GroupsRepository>(),
@@ -91,10 +93,6 @@ void main() async {
             create: (BuildContext context) => UploadImageBloc(
                 uploadImageRepository: context.read<UploadImageRepository>())),
         BlocProvider(create: (BuildContext context) => UserActivityBloc()),
-        BlocProvider(
-            create: (BuildContext context) => UpdateUserProfileBloc(
-                updateUserProfileRepository:
-                    context.read<UpdateUserProfileRepository>())),
         BlocProvider(
             create: (BuildContext context) => SpendingDetailBloc(
                 spendingDetailRepository:
@@ -149,17 +147,40 @@ class _MyAppState extends State<MyApp> {
             primary: const Color(0xff1CC19F),
             secondary: const Color(0xff1CC19F)),
       ),
-      home: BlocBuilder<AuthBloc, AuthState>(
+      home: BlocConsumer<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthNotLoggedInState) {
             return LoginPage();
           } else if (state is AuthLoggingInState) {
-            // To Do: Implement Loading Over The Home Screen
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          return const HomePage();
+          return BlocBuilder<MeBloc, MeUseState>(
+            builder: (context, state) {
+              if (state.me == null) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return const HomePage();
+            },
+          );
+        },
+        listener: (context, state) {
+          if (state is AuthNotLoggedInState) {
+            BlocProvider.of<MeBloc>(context).add(
+              const UpdateMeEvent(
+                newMe: null,
+              ),
+            );
+          } else if (state is AuthLoggedInState) {
+            BlocProvider.of<MeBloc>(context).add(
+              UpdateMeEvent(
+                newMe: state.user,
+              ),
+            );
+          }
         },
       ),
     );

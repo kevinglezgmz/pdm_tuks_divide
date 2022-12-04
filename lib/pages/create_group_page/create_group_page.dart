@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/add_picture_widget.dart';
 import 'package:tuks_divide/components/elevated_button_with_icon.dart';
@@ -24,13 +24,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       TextEditingController();
   bool creatingGroup = false;
 
-  late final AuthBloc authBloc;
+  late final MeBloc meBloc;
   late final CreateGroupBloc createGroupBloc;
   late final FriendsBloc friendsBloc;
 
   @override
   void initState() {
-    authBloc = BlocProvider.of<AuthBloc>(context);
+    meBloc = BlocProvider.of<MeBloc>(context);
     createGroupBloc = BlocProvider.of<CreateGroupBloc>(context);
     friendsBloc = BlocProvider.of<FriendsBloc>(context);
     super.initState();
@@ -330,28 +330,33 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 minWidth: double.infinity,
                 maxHeight: 325,
               ),
-              child: Column(
-                children: [
-                  MemberList(
-                    membersData: [authBloc.me!, ...selectedMembers],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
-                    child: ElevatedButtonWithIcon(
-                      icon: const FaIcon(
-                        FontAwesomeIcons.userPlus,
+              child: BlocBuilder<MeBloc, MeUseState>(
+                builder: (context, meState) {
+                  return Column(
+                    children: [
+                      MemberList(
+                        membersData: [meState.me!, ...selectedMembers],
                       ),
-                      onPressed: () {
-                        _showAddMemberSearch(
-                          createGroupContext,
-                          availableFriends,
-                        );
-                      },
-                      label: "AÑADIR MIEMBRO",
-                      backgroundColor: null,
-                    ),
-                  ),
-                ],
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 20.0),
+                        child: ElevatedButtonWithIcon(
+                          icon: const FaIcon(
+                            FontAwesomeIcons.userPlus,
+                          ),
+                          onPressed: () {
+                            _showAddMemberSearch(
+                              createGroupContext,
+                              availableFriends,
+                            );
+                          },
+                          label: "AÑADIR MIEMBRO",
+                          backgroundColor: null,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             );
           },

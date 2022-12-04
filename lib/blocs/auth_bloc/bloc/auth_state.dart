@@ -21,6 +21,4 @@ class AuthLoggedInState extends AuthState {
 
 class AuthNotSignedOutState extends AuthState {}
 
-class AuthUserUpdatedState extends AuthState {}
-
 class AuthUserNotUpdatedState extends AuthState {}

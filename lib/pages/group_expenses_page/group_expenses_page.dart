@@ -5,9 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
@@ -40,13 +40,13 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       _groupActivityStreamSubscription;
   final dateFormat = DateFormat.MMMM('es');
   late final SpendingsBloc spendingsBloc;
-  late final AuthBloc authBloc;
+  late final MeBloc meBloc;
   late final GroupsBloc groupsBloc;
 
   @override
   void initState() {
     spendingsBloc = BlocProvider.of<SpendingsBloc>(context);
-    authBloc = BlocProvider.of<AuthBloc>(context);
+    meBloc = BlocProvider.of<MeBloc>(context);
     groupsBloc = BlocProvider.of<GroupsBloc>(context);
     _listenForRealtimeUpdates();
     super.initState();
@@ -213,7 +213,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                           .push(
                         MaterialPageRoute(
                           builder: (context) => PayDebtPage(
-                            sender: authBloc.me!,
+                            sender: meBloc.state.me!,
                             receiver: selectedUser,
                             group: widget.group,
                           ),
@@ -507,7 +507,7 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
   }
 
   List<UserModel> getResults(BuildContext context) {
-    UserModel me = BlocProvider.of<AuthBloc>(context).me!;
+    UserModel me = BlocProvider.of<MeBloc>(context).state.me!;
     List<UserModel> membersInGroup = BlocProvider.of<GroupsBloc>(context)
         .state
         .groupUsers
