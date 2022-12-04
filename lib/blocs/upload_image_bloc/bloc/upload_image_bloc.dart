@@ -17,6 +17,7 @@ class UploadImageBloc extends Bloc<UploadImageEvent, UploadImageState> {
       : _uploadImageRepository = uploadImageRepository,
         super(UploadImageInitialState()) {
     on<UploadNewImageEvent>(_uploadNewImage);
+    on<ResetUploadImageBloc>(_resetUploadImageBloc);
   }
 
   FutureOr<void> _uploadNewImage(event, emit) async {
@@ -27,7 +28,9 @@ class UploadImageBloc extends Bloc<UploadImageEvent, UploadImageState> {
           : await _requestPermission(Permission.storage);
       if (permissionGranted) {
         String imgUrl = await _uploadImageRepository.pickImage(
-            event.collection, event.typeOfUpload);
+          event.collection,
+          event.typeOfUpload,
+        );
         uploadedImageUrl = imgUrl;
         emit(UploadingSuccessfulState());
       } else {
@@ -36,6 +39,12 @@ class UploadImageBloc extends Bloc<UploadImageEvent, UploadImageState> {
     } catch (error) {
       emit(UploadErrorState(message: error));
     }
+  }
+
+  FutureOr<void> _resetUploadImageBloc(
+      ResetUploadImageBloc event, Emitter<UploadImageState> emit) {
+    uploadedImageUrl = null;
+    emit(UploadImageInitialState());
   }
 }
 

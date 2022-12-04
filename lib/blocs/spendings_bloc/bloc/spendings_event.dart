@@ -20,17 +20,10 @@ class SpendingUpdateEvent extends SpendingsEvent {
   List<Object> get props => [newState];
 }
 
-class SpendingLoadGroupMembersEvent extends SpendingsEvent {
-  final GroupModel group;
-
-  const SpendingLoadGroupMembersEvent({required this.group});
-
-  @override
-  List<Object> get props => [group];
-}
-
 class SaveSpendingEvent extends SpendingsEvent {
   const SaveSpendingEvent();
   @override
   List<Object> get props => [];
 }
+
+class SpendingsSetInitialSpendingsEvent extends SpendingsEvent {}

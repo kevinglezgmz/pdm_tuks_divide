@@ -2,12 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tuks_divide/models/collections.dart';
-import 'package:tuks_divide/models/group_activity_model.dart';
 import 'package:tuks_divide/models/group_model.dart';
-import 'package:tuks_divide/models/group_spending_model.dart';
-import 'package:tuks_divide/models/groups_users_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
-import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class PaymentsRepository {

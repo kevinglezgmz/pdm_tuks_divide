@@ -16,7 +16,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
   GroupsBloc({required this.groupsRepository}) : super(const GroupsUseState()) {
     on<AddNewGroupEvent>(_addNewGroupEventHandler);
     on<CleanGroupsListOnSignOutEvent>(_resetGroupsState);
-    on<LoadGroupActivityEvent>(_loadGroupActivityHandler);
+    on<LoadGroupUsersEvent>(_loadGroupUsersHandler);
     on<UpdateGroupsStateEvent>(_updateGroupsStateEventHandler);
   }
 
@@ -50,18 +50,16 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
   }
 
   FutureOr<void> _loadGroupActivityHandler(
-    LoadGroupActivityEvent event,
     Emitter<GroupsUseState> emit,
   ) async {
     emit(state.copyWith(
       isLoadingActivity: true,
       payments: [],
       spendings: [],
-      groupUsers: [],
     ));
     try {
-      final groupActivity =
-          await groupsRepository.getGroupActivity(event.groupData);
+      final groupActivity = await groupsRepository.getGroupActivity(
+          state.selectedGroup!, state.groupUsers);
       if (groupActivity == null) {
         throw "Group Activity not found";
       }
@@ -99,6 +97,27 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
       payments: event.newState.payments,
       groupUsers: event.newState.groupUsers,
       selectedGroup: event.newState.selectedGroup,
+      isLoadingGroupUsers: event.newState.isLoadingGroupUsers,
     ));
+  }
+
+  FutureOr<void> _loadGroupUsersHandler(
+      LoadGroupUsersEvent event, Emitter<GroupsUseState> emit) async {
+    emit(state.copyWith(
+        groupUsers: [], selectedGroup: null, isLoadingGroupUsers: true));
+    try {
+      List<UserModel> usersInGroup =
+          await GroupsRepository.getMembersOfGroup(event.group);
+      emit(state.copyWith(
+        groupUsers: usersInGroup,
+        selectedGroup: event.group,
+      ));
+      await _loadGroupActivityHandler(emit);
+    } catch (e) {
+      emit(state.copyWith(
+          errorMessage: e.toString(), selectedGroup: null, hasError: true));
+    } finally {
+      emit(state.copyWith(isLoadingGroupUsers: false, hasError: false));
+    }
   }
 }

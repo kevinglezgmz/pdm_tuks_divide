@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/divide_spending_page/divide_spending_page.dart';
@@ -351,22 +352,12 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: const [
-            Text(
-              'Gasto hecho por tí y: ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            Text(
-              'Selecciona más integrantes',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ],
-        ),
-        const Text(
-          'que participaron en el gasto',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+      children: const [
+        SizedBox(height: 50),
+        Text(
+          'Nuevo gasto',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
       ],
     );
@@ -378,18 +369,42 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            onTap: () {},
+            onTap: () {
+              _showAlertDialog(context);
+            },
             child: Ink(
               color: Colors.grey,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: 28,
-                  horizontal: 28,
-                ),
-                child: Icon(
-                  Icons.add_a_photo_outlined,
-                  size: 40,
-                ),
+              child: BlocBuilder<UploadImageBloc, UploadImageState>(
+                builder: (context, state) {
+                  if (state is UploadingImageState) {
+                    return const SizedBox(
+                      height: 148,
+                      width: 106,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (state is UploadingSuccessfulState) {
+                    return SizedBox(
+                      height: 148,
+                      width: 106,
+                      child: Image.network(
+                        BlocProvider.of<UploadImageBloc>(context)
+                            .uploadedImageUrl!,
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  }
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 54,
+                      horizontal: 28,
+                    ),
+                    child: Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 40,
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -457,6 +472,15 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
       );
       return;
     }
+
+    if (spendingsBloc.state.spendingPictureUrl == "") {
+      _showDistributionErrorDialog(
+        context,
+        title: "Añade una imagen del gasto",
+        message: "Ayuda a tus amigos añadiendo una imagen del gasto.",
+      );
+      return;
+    }
     spendingsBloc.add(const SaveSpendingEvent());
   }
 
@@ -485,10 +509,58 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
         newState: NullableSpendingsUseState(
           spendingDescription: descriptionController.text,
           spendingAmount: spendingAmountController.text,
+          spendingPictureUrl:
+              BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl,
         ),
       ),
     );
     await Future.delayed(const Duration(milliseconds: 1));
+  }
+
+  void _showAlertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cargar imagen"),
+        content: const Text("¿Cómo te gustaría cargar la imagen?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              BlocProvider.of<UploadImageBloc>(context)
+                  .add(const UploadNewImageEvent("groupImg", "gallery"));
+            },
+            child: Container(
+              color: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.all(14),
+              alignment: Alignment.center,
+              child: const Text(
+                "Seleccionar de la galería",
+                style: TextStyle(color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              BlocProvider.of<UploadImageBloc>(context)
+                  .add(const UploadNewImageEvent("groupImg", "camera"));
+            },
+            child: Container(
+              alignment: Alignment.center,
+              color: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.all(14),
+              child: const Text(
+                "Usar cámara",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -643,7 +715,7 @@ class SelectPayerSearchDelegate extends SearchDelegate<UserModel?> {
 
   List<UserModel> getResults(BuildContext context) {
     List<UserModel> membersInGroup =
-        BlocProvider.of<SpendingsBloc>(context).usersInGroup;
+        BlocProvider.of<SpendingsBloc>(context).state.membersInGroup;
     String queryLC = query.toLowerCase();
     return queryLC == ""
         ? membersInGroup

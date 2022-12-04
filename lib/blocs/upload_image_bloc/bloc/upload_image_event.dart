@@ -16,3 +16,5 @@ class UploadNewImageEvent extends UploadImageEvent {
   @override
   List<dynamic> get props => [collection, typeOfUpload];
 }
+
+class ResetUploadImageBloc extends UploadImageEvent {}

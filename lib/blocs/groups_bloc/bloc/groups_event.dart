@@ -31,19 +31,6 @@ class AddNewGroupEvent extends GroupsEvent {
 
 class CleanGroupsListOnSignOutEvent extends GroupsEvent {}
 
-class LoadGroupActivityEvent extends GroupsEvent {
-  final GroupModel groupData;
-
-  const LoadGroupActivityEvent({
-    required this.groupData,
-  });
-
-  @override
-  List<Object> get props => [
-        groupData,
-      ];
-}
-
 class UpdateGroupsStateEvent extends GroupsEvent {
   final NullableGroupsUseState newState;
 
@@ -51,4 +38,13 @@ class UpdateGroupsStateEvent extends GroupsEvent {
 
   @override
   List<Object> get props => [newState];
+}
+
+class LoadGroupUsersEvent extends GroupsEvent {
+  final GroupModel group;
+
+  const LoadGroupUsersEvent({required this.group});
+
+  @override
+  List<Object> get props => [group];
 }

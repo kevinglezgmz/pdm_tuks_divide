@@ -163,9 +163,9 @@ class GroupsRepository {
     return res;
   }
 
-  Future<GroupActivityModel?> getGroupActivity(GroupModel groupData) async {
+  Future<GroupActivityModel?> getGroupActivity(
+      GroupModel groupData, List<UserModel> membersInGroup) async {
     final groupRef = groupsCollection.doc(groupData.groupId);
-    final users = await getMembersOfGroup(groupData);
     final paymentData =
         await paymentsCollection.where('group', isEqualTo: groupRef).get();
     final paymentRefs = paymentData.docs
@@ -184,7 +184,7 @@ class GroupsRepository {
     return GroupActivityModel(
       payments: paymentRefs,
       spendings: spendings,
-      groupUsers: users,
+      groupUsers: membersInGroup,
     );
   }
 

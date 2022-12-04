@@ -13,21 +13,23 @@ import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
-class EditUserProfilePage extends StatelessWidget {
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userStream;
+class EditUserProfilePage extends StatefulWidget {
+  const EditUserProfilePage({super.key});
+
+  @override
+  State<EditUserProfilePage> createState() => _EditUserProfilePageState();
+}
+
+class _EditUserProfilePageState extends State<EditUserProfilePage> {
+  late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>
+      _userStream;
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _displayNameController = TextEditingController();
-  String? _pictureUrl;
-  EditUserProfilePage({super.key, required pictureUrl})
-      : _pictureUrl = pictureUrl;
+  String? pictureUrl;
 
   @override
-  Widget build(BuildContext context) {
-    _firstNameController.text = context.read<AuthBloc>().me!.firstName ?? "";
-    _lastNameController.text = context.read<AuthBloc>().me!.lastName ?? "";
-    _displayNameController.text =
-        context.read<AuthBloc>().me!.displayName ?? "";
+  void initState() {
     _userStream = FirebaseFirestore.instance
         .collection('users')
         .doc(context.read<AuthBloc>().me!.uid)
@@ -37,18 +39,47 @@ class EditUserProfilePage extends StatelessWidget {
         return;
       }
       UserModel updatedUser = UserModel.fromMap(event.data()!);
-      _firstNameController.text = updatedUser.firstName ?? '';
-      _lastNameController.text = updatedUser.lastName ?? '';
-      _displayNameController.text = updatedUser.displayName ?? '';
-      _pictureUrl = updatedUser.pictureUrl;
+      setState(() {
+        _firstNameController.text = updatedUser.firstName ?? '';
+        _lastNameController.text = updatedUser.lastName ?? '';
+        _displayNameController.text = updatedUser.displayName ?? '';
+        pictureUrl = updatedUser.pictureUrl;
+      });
     });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _userStream.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _firstNameController.text = context.read<AuthBloc>().me!.firstName ?? "";
+    _lastNameController.text = context.read<AuthBloc>().me!.lastName ?? "";
+    _displayNameController.text =
+        context.read<AuthBloc>().me!.displayName ?? "";
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         BlocBuilder<UploadImageBloc, UploadImageState>(
           builder: (context, state) {
             if (state is UploadingSuccessfulState) {
-              _pictureUrl = context.read<UploadImageBloc>().uploadedImageUrl;
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
+                child: AddPictureWidget(
+                  backgroundColor: Colors.grey,
+                  radius: 60,
+                  iconSize: 60,
+                  avatarUrl: context.read<UploadImageBloc>().uploadedImageUrl,
+                  onPressed: () {
+                    _showAlertDialog(context);
+                  },
+                ),
+              );
             }
             return Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
@@ -56,7 +87,7 @@ class EditUserProfilePage extends StatelessWidget {
                 backgroundColor: Colors.grey,
                 radius: 60,
                 iconSize: 60,
-                avatarUrl: _pictureUrl,
+                avatarUrl: pictureUrl,
                 onPressed: () {
                   _showAlertDialog(context);
                 },
@@ -108,7 +139,7 @@ class EditUserProfilePage extends StatelessWidget {
                         firstName: _firstNameController.text.trim(),
                         lastName: _lastNameController.text.trim(),
                         displayName: _displayNameController.text.trim(),
-                        imageUrl: _pictureUrl ?? '',
+                        imageUrl: pictureUrl ?? '',
                         uid: context.read<AuthBloc>().me!.uid,
                       ),
                     );

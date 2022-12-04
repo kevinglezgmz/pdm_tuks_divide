@@ -12,10 +12,6 @@ part 'spendings_state.dart';
 
 class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
   final GroupsRepository _groupsRepository;
-  final List<UserModel> _currentUsersInGroup = [];
-  GroupModel? _currentGroup;
-
-  List<UserModel> get usersInGroup => _currentUsersInGroup;
 
   double get unequalDistributionAccumulatedValue =>
       state.userToUnEqualDistributionAmount.values
@@ -40,15 +36,14 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
       : _groupsRepository = groupsRepository,
         super(const SpendingsUseState()) {
     on<SpendingsResetBlocEvent>(_resetSpendingsBlocEventHandler);
+    on<SpendingsSetInitialSpendingsEvent>(_setEmptyInitialSpendings);
     on<SpendingUpdateEvent>(_updateSpendingEventHandler);
-    on<SpendingLoadGroupMembersEvent>(_loadGroupMembersEventHandler);
     on<SaveSpendingEvent>(_saveSpendingEventHandler);
   }
 
   FutureOr<void> _resetSpendingsBlocEventHandler(
       SpendingsResetBlocEvent event, Emitter<SpendingsState> emit) async {
     emit(const SpendingsUseState());
-    _setEmptyInitialSpendings(emit);
   }
 
   FutureOr<void> _updateSpendingEventHandler(
@@ -65,6 +60,10 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
       userToUnEqualDistributionAmount:
           event.newState.userToUnEqualDistributionAmount,
       payer: event.newState.payer,
+      isSaving: event.newState.isSaving,
+      membersInGroup: event.newState.membersInGroup,
+      saved: event.newState.saved,
+      selectedGroup: event.newState.selectedGroup,
     );
     _updateState(
       emit,
@@ -82,29 +81,19 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
       userToPercentDistributionAmount: newState.userToPercentDistributionAmount,
       userToUnEqualDistributionAmount: newState.userToUnEqualDistributionAmount,
       payer: newState.payer,
+      isSaving: newState.isSaving,
+      membersInGroup: newState.membersInGroup,
+      saved: newState.saved,
+      selectedGroup: newState.selectedGroup,
     ));
   }
 
-  FutureOr<void> _loadGroupMembersEventHandler(
-      SpendingLoadGroupMembersEvent event,
-      Emitter<SpendingsUseState> emit) async {
-    _currentUsersInGroup.clear();
-    _currentGroup = event.group;
-    try {
-      final usersInGroup =
-          await GroupsRepository.getMembersOfGroup(event.group);
-      _currentUsersInGroup.addAll(usersInGroup);
-      _setEmptyInitialSpendings(emit);
-    } catch (e) {
-      // Better handle the error
-    }
-  }
-
-  void _setEmptyInitialSpendings(Emitter<SpendingsState> emit) {
+  void _setEmptyInitialSpendings(
+      SpendingsSetInitialSpendingsEvent event, Emitter<SpendingsState> emit) {
     Map<UserModel, bool> userToEqualDistributionAmount = {};
     Map<UserModel, double?> userToUnEqualDistributionAmount = {};
     Map<UserModel, double?> userToPercentDistributionAmount = {};
-    for (final user in _currentUsersInGroup) {
+    for (final user in state.membersInGroup) {
       userToEqualDistributionAmount[user] = true;
       userToUnEqualDistributionAmount[user] = null;
       userToPercentDistributionAmount[user] = null;
@@ -123,7 +112,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
     SaveSpendingEvent event,
     Emitter<SpendingsUseState> emit,
   ) async {
-    if (_currentGroup == null) {
+    if (state.selectedGroup == null) {
       throw "Not in a group";
     }
     if (state.payer == null) {
@@ -212,7 +201,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
       return;
     }
     await _groupsRepository.saveSpendingForGroup(
-      _currentGroup!,
+      state.selectedGroup!,
       userToAmountToPayMap,
       totalAmount,
       state.spendingDescription,

@@ -1,48 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tuks_divide/blocs/participants_detail_bloc/bloc/participants_detail_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/spending_detail_page/participants_list.dart';
 
 class GroupParticipantsDetailPage extends StatelessWidget {
-  const GroupParticipantsDetailPage({super.key});
+  final List<UserModel> usersInGroup;
+
+  const GroupParticipantsDetailPage({
+    super.key,
+    required this.usersInGroup,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ParticipantsDetailBloc, ParticipantsDetailState>(
+    return BlocConsumer<GroupsBloc, GroupsUseState>(
         builder: (context, state) {
-          if (state is ParticipantsLoadedDetailState) {
+          if (state.selectedGroup != null && state.groupUsers.isNotEmpty) {
             return Scaffold(
-                appBar: AppBar(
-                  title: Text(state.group.groupName),
-                ),
-                body: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(0, 20, 0, 10),
-                      child: Text(
-                        "Participantes",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
+              appBar: AppBar(
+                title: Text(state.selectedGroup!.groupName),
+              ),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 10),
+                    child: Text(
+                      "Participantes",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    ParticipantsList(participantsData: state.participants),
-                  ],
-                ));
-          }
-          if (state is ParticipantsLoadingDetailState) {
-            return Scaffold(
-                appBar: AppBar(
-                  title: const Text("Participantes del grupo"),
-                ),
-                body: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: const [
-                    Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  ],
-                ));
+                  ),
+                  ParticipantsList(participantsData: state.groupUsers),
+                ],
+              ),
+            );
           }
           return Scaffold(
               appBar: AppBar(

@@ -17,6 +17,7 @@ class GroupsUseState extends GroupsState {
   final bool isLoadingGroups;
   final bool isCreatingGroup;
   final bool isLoadingActivity;
+  final bool isLoadingGroupUsers;
   final String errorMessage;
 
   const GroupsUseState({
@@ -25,6 +26,7 @@ class GroupsUseState extends GroupsState {
     this.isLoadingGroups = false,
     this.isCreatingGroup = false,
     this.isLoadingActivity = false,
+    this.isLoadingGroupUsers = false,
     this.errorMessage = "",
     this.spendings = const [],
     this.payments = const [],
@@ -42,6 +44,7 @@ class GroupsUseState extends GroupsState {
     bool? isLoadingGroups,
     bool? isCreatingGroup,
     bool? isLoadingActivity,
+    bool? isLoadingGroupUsers,
     String? errorMessage,
   }) {
     return GroupsUseState(
@@ -55,6 +58,7 @@ class GroupsUseState extends GroupsState {
       payments: payments ?? this.payments,
       groupUsers: groupUsers ?? this.groupUsers,
       selectedGroup: selectedGroup ?? this.selectedGroup,
+      isLoadingGroupUsers: isLoadingGroupUsers ?? this.isLoadingGroupUsers,
     );
   }
 
@@ -69,6 +73,7 @@ class GroupsUseState extends GroupsState {
         spendings,
         payments,
         groupUsers,
+        isLoadingGroupUsers,
         selectedGroup ?? "No group",
       ];
 }
@@ -83,6 +88,7 @@ class NullableGroupsUseState extends GroupsState {
   final bool? isLoadingGroups;
   final bool? isCreatingGroup;
   final bool? isLoadingActivity;
+  final bool? isLoadingGroupUsers;
   final String? errorMessage;
 
   const NullableGroupsUseState({
@@ -91,6 +97,7 @@ class NullableGroupsUseState extends GroupsState {
     this.isLoadingGroups,
     this.isCreatingGroup,
     this.isLoadingActivity,
+    this.isLoadingGroupUsers,
     this.errorMessage,
     this.spendings,
     this.payments,
@@ -110,5 +117,6 @@ class NullableGroupsUseState extends GroupsState {
         payments ?? "payments",
         groupUsers ?? "groupUsers",
         selectedGroup ?? "selectedGroup",
+        isLoadingGroupUsers ?? "isLoadingGroupUsers",
       ];
 }

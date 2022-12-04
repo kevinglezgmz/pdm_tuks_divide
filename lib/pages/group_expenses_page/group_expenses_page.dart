@@ -7,6 +7,7 @@ import 'package:tuks_divide/blocs/participants_detail_bloc/bloc/participants_det
 import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
@@ -50,12 +51,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
           actions: [
             IconButton(
                 onPressed: () {
-                  BlocProvider.of<ParticipantsDetailBloc>(context).add(
-                      GetParticipantsDetailEvent(
-                          groupId: widget.group.groupId));
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const GroupParticipantsDetailPage(),
+                      builder: (context) => GroupParticipantsDetailPage(
+                        usersInGroup: state.groupUsers,
+                      ),
                     ),
                   );
                 },
@@ -99,7 +99,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                         "Gasto total del grupo: ",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                      Text("\$${_getGroupTotalSpenfdings(state.spendings)}",
+                      Text("\$${_getGroupTotalSpendings(state.spendings)}",
                           style:
                               const TextStyle(fontSize: 16, color: Colors.blue))
                     ],
@@ -108,7 +108,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
               ),
             ),
             Expanded(
-              child: state.isLoadingActivity
+              child: state.isLoadingActivity || state.groupUsers.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                       child: Column(
@@ -130,7 +130,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 ).then(
                   (selectedUser) {
                     if (selectedUser != null) {
-                      Navigator.of(context).push(
+                      Navigator.of(context)
+                          .push(
                         MaterialPageRoute(
                           builder: (context) => PayDebtPage(
                             sender: authBloc.me!,
@@ -138,7 +139,11 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                             group: widget.group,
                           ),
                         ),
-                      );
+                      )
+                          .then((value) {
+                        BlocProvider.of<UploadImageBloc>(context)
+                            .add(ResetUploadImageBloc());
+                      });
                     }
                   },
                 );
@@ -148,16 +153,17 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             ),
             ActionButton(
               onPressed: () {
-                spendingsBloc.add(SpendingsResetBlocEvent());
+                spendingsBloc.add(SpendingsSetInitialSpendingsEvent());
                 Navigator.of(context)
                     .push(
-                      MaterialPageRoute(
-                        builder: (context) => const AddSpendingPage(),
-                      ),
-                    )
-                    .then(
-                      (value) => spendingsBloc.add(SpendingsResetBlocEvent()),
-                    );
+                  MaterialPageRoute(
+                    builder: (context) => const AddSpendingPage(),
+                  ),
+                )
+                    .then((value) {
+                  BlocProvider.of<UploadImageBloc>(context)
+                      .add(ResetUploadImageBloc());
+                });
               },
               icon: const Icon(Icons.post_add_sharp),
               message: "Añadir un gasto",
@@ -175,10 +181,28 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
           ),
         );
       }
+      if (state.selectedGroup != null) {
+        BlocProvider.of<SpendingsBloc>(context).add(
+          SpendingUpdateEvent(
+            newState: NullableSpendingsUseState(
+              selectedGroup: state.selectedGroup,
+            ),
+          ),
+        );
+      }
+      if (state.groupUsers.isNotEmpty) {
+        BlocProvider.of<SpendingsBloc>(context).add(
+          SpendingUpdateEvent(
+            newState: NullableSpendingsUseState(
+              membersInGroup: state.groupUsers,
+            ),
+          ),
+        );
+      }
     });
   }
 
-  double _getGroupTotalSpenfdings(List<SpendingModel> groupSpendings) {
+  double _getGroupTotalSpendings(List<SpendingModel> groupSpendings) {
     double total = 0;
     for (var spending in groupSpendings) {
       total += spending.amount;
@@ -376,8 +400,9 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
 
   List<UserModel> getResults(BuildContext context) {
     UserModel me = BlocProvider.of<AuthBloc>(context).me!;
-    List<UserModel> membersInGroup = BlocProvider.of<SpendingsBloc>(context)
-        .usersInGroup
+    List<UserModel> membersInGroup = BlocProvider.of<GroupsBloc>(context)
+        .state
+        .groupUsers
         .where((element) => element != me)
         .toList();
     String queryLC = query.toLowerCase();

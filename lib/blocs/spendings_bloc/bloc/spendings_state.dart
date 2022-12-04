@@ -18,6 +18,8 @@ class SpendingsUseState extends SpendingsState {
   final UserModel? payer;
   final bool isSaving;
   final bool saved;
+  final List<UserModel> membersInGroup;
+  final GroupModel? selectedGroup;
 
   const SpendingsUseState({
     this.spendingDistributionType = DistributionType.equal,
@@ -30,6 +32,8 @@ class SpendingsUseState extends SpendingsState {
     this.payer,
     this.isSaving = false,
     this.saved = false,
+    this.membersInGroup = const [],
+    this.selectedGroup,
   });
 
   SpendingsUseState copyWith({
@@ -43,6 +47,8 @@ class SpendingsUseState extends SpendingsState {
     UserModel? payer,
     bool? isSaving,
     bool? saved,
+    List<UserModel>? membersInGroup,
+    GroupModel? selectedGroup,
   }) {
     return SpendingsUseState(
       spendingAmount: spendingAmount ?? this.spendingAmount,
@@ -59,6 +65,8 @@ class SpendingsUseState extends SpendingsState {
       payer: payer ?? this.payer,
       isSaving: isSaving ?? this.isSaving,
       saved: saved ?? this.saved,
+      membersInGroup: membersInGroup ?? this.membersInGroup,
+      selectedGroup: selectedGroup ?? this.selectedGroup,
     );
   }
 
@@ -74,6 +82,8 @@ class SpendingsUseState extends SpendingsState {
         payer ?? 'Payer',
         isSaving,
         saved,
+        membersInGroup,
+        selectedGroup ?? "GroupModel",
       ];
 }
 
@@ -88,6 +98,8 @@ class NullableSpendingsUseState extends SpendingsState {
   final UserModel? payer;
   final bool? isSaving;
   final bool? saved;
+  final List<UserModel>? membersInGroup;
+  final GroupModel? selectedGroup;
 
   const NullableSpendingsUseState({
     this.spendingDistributionType,
@@ -100,6 +112,8 @@ class NullableSpendingsUseState extends SpendingsState {
     this.payer,
     this.isSaving,
     this.saved,
+    this.membersInGroup,
+    this.selectedGroup,
   });
 
   @override
@@ -114,5 +128,7 @@ class NullableSpendingsUseState extends SpendingsState {
         payer ?? "null",
         isSaving ?? "null",
         saved ?? "null",
+        membersInGroup ?? "null",
+        selectedGroup ?? "null",
       ];
 }

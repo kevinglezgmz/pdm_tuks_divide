@@ -18,18 +18,21 @@ class GroupItem extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: () {
-          BlocProvider.of<SpendingsBloc>(context).add(
-            SpendingLoadGroupMembersEvent(group: groupData),
-          );
           BlocProvider.of<GroupsBloc>(context)
-              .add(LoadGroupActivityEvent(groupData: groupData));
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => GroupExpensesPage(
-                group: groupData,
-              ),
-            ),
-          );
+              .add(LoadGroupUsersEvent(group: groupData));
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (context) => GroupExpensesPage(
+                    group: groupData,
+                  ),
+                ),
+              )
+              .then(
+                (value) => BlocProvider.of<SpendingsBloc>(context).add(
+                  SpendingsResetBlocEvent(),
+                ),
+              );
         },
         child: ListTile(
           //TODO: add logic to put group image
