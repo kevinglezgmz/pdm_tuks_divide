@@ -58,6 +58,7 @@ dependencies:
   intl: ^0.17.0
   awesome_notifications: ^0.7.4+1
   awesome_notifications_fcm: ^0.7.4+1
+  syncfusion_flutter_charts: ^20.3.59
 
 dev_dependencies:
   flutter_test:
