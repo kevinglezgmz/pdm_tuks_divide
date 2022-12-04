@@ -32,7 +32,13 @@ class GroupParticipantsDetailPage extends StatelessWidget {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ),
-                  ParticipantsList(participantsData: state.groupUsers),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child:
+                          ParticipantsList(participantsData: state.groupUsers),
+                    ),
+                  ),
                 ],
               ),
             );

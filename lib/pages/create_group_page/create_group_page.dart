@@ -38,91 +38,95 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const FaIcon(FontAwesomeIcons.xmark),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Crear un grupo",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (_groupNameController.text == "" ||
-                  _groupDescriptionController.text == "") {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Datos no válidos"),
-                    content: const Text(
-                      "Recuerda agregar un nombre y una descripción al grupo.",
+    return GestureDetector(
+      onTapDown: (details) => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const FaIcon(FontAwesomeIcons.xmark),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            "Crear un grupo",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (_groupNameController.text == "" ||
+                    _groupDescriptionController.text == "") {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Datos no válidos"),
+                      content: const Text(
+                        "Recuerda agregar un nombre y una descripción al grupo.",
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Aceptar"),
+                        )
+                      ],
                     ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Aceptar"),
-                      )
-                    ],
+                  );
+                  return;
+                }
+                if (createGroupBloc.state.membersInGroup.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Agrega miembros al grupo"),
+                      content: const Text(
+                        "Para crear el grupo es necesario añadir al menos un amigo.",
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Aceptar"),
+                        )
+                      ],
+                    ),
+                  );
+                  return;
+                }
+                final String pictureUrl =
+                    BlocProvider.of<UploadImageBloc>(context)
+                            .uploadedImageUrl ??
+                        '';
+                BlocProvider.of<GroupsBloc>(context).add(
+                  AddNewGroupEvent(
+                    description: _groupDescriptionController.text,
+                    groupName: _groupNameController.text,
+                    pictureUrl: pictureUrl,
+                    members: createGroupBloc.state.membersInGroup,
                   ),
                 );
-                return;
-              }
-              if (createGroupBloc.state.membersInGroup.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Agrega miembros al grupo"),
-                    content: const Text(
-                      "Para crear el grupo es necesario añadir al menos un amigo.",
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Aceptar"),
-                      )
-                    ],
-                  ),
-                );
-                return;
-              }
-              final String pictureUrl =
-                  BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl ??
-                      '';
-              BlocProvider.of<GroupsBloc>(context).add(
-                AddNewGroupEvent(
-                  description: _groupDescriptionController.text,
-                  groupName: _groupNameController.text,
-                  pictureUrl: pictureUrl,
-                  members: createGroupBloc.state.membersInGroup,
+              },
+              child: const Text(
+                "Guardar",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.normal,
                 ),
-              );
-            },
-            child: const Text(
-              "Guardar",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.normal,
               ),
-            ),
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _getGroupPicAndNameSection(context),
-            _getGroupDescriptionSection(),
-            _getMembersSectionTitle(),
-            _getMembersSection(context),
+            )
           ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _getGroupPicAndNameSection(context),
+              _getGroupDescriptionSection(),
+              _getMembersSectionTitle(),
+              _getMembersSection(context),
+            ],
+          ),
         ),
       ),
     );

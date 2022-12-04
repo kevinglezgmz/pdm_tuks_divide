@@ -58,58 +58,61 @@ class _DivideSpendingPageState extends State<DivideSpendingPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Ajustar gasto',
+    return GestureDetector(
+      onTapDown: (details) => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Ajustar gasto',
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                _validateDistribution(
+                  context,
+                  distributionType,
+                );
+              },
+              icon: const Icon(
+                Icons.check,
+              ),
+            )
+          ],
+          bottom: TabBar(
+            isScrollable: true,
+            unselectedLabelColor: Colors.white.withOpacity(0.3),
+            indicatorColor: Colors.white,
+            controller: _tabController,
+            tabs: const [
+              Tab(
+                child: Text('En partes iguales'),
+              ),
+              Tab(
+                child: Text('En partes desiguales'),
+              ),
+              Tab(
+                child: Text('En porcentajes'),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              _validateDistribution(
-                context,
-                distributionType,
-              );
-            },
-            icon: const Icon(
-              Icons.check,
-            ),
-          )
-        ],
-        bottom: TabBar(
-          isScrollable: true,
-          unselectedLabelColor: Colors.white.withOpacity(0.3),
-          indicatorColor: Colors.white,
+        body: TabBarView(
           controller: _tabController,
-          tabs: const [
-            Tab(
-              child: Text('En partes iguales'),
+          children: [
+            EqualDistributionTab(
+              controller: widget.equalTabController,
+              totalAmount: widget.totalAmount,
             ),
-            Tab(
-              child: Text('En partes desiguales'),
+            UnequalDistributionTab(
+              controller: widget.unequalTabController,
+              totalAmount: widget.totalAmount,
             ),
-            Tab(
-              child: Text('En porcentajes'),
+            PercentageDistributionTab(
+              controller: widget.percentageTabController,
+              totalAmount: widget.totalAmount,
             ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          EqualDistributionTab(
-            controller: widget.equalTabController,
-            totalAmount: widget.totalAmount,
-          ),
-          UnequalDistributionTab(
-            controller: widget.unequalTabController,
-            totalAmount: widget.totalAmount,
-          ),
-          PercentageDistributionTab(
-            controller: widget.percentageTabController,
-            totalAmount: widget.totalAmount,
-          ),
-        ],
       ),
     );
   }

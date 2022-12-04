@@ -222,7 +222,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                       );
                     },
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Builder(
                     builder: (context) {
                       double amountTheyOweMe =
@@ -247,7 +247,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               ),
             ),
             Positioned(
-                top: 284,
+                top: 294,
                 left: 0,
                 right: 0,
                 bottom: 0,
@@ -342,7 +342,6 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
       return timestampB.compareTo(timestampA);
     });
 
-    activityList.add(const SizedBox(height: 16));
     if (allUserActivity.isEmpty) {
       activityList.add(const Text(
         "No hay actividad para mostrar",
@@ -353,7 +352,8 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
 
     DateTime currMonth = DateTime.now();
 
-    for (final activity in allUserActivity) {
+    for (int i = 0; i < allUserActivity.length; i++) {
+      final dynamic activity = allUserActivity[i];
       UserModel? user;
       String title = "";
       String subtitle = "";
@@ -364,12 +364,12 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           title = activity.description;
           user = userIdToUserMap[activity.receiver.id];
           subtitle =
-              "Pagaste \$${activity.amount} a ${user?.displayName ?? user?.fullName ?? "<Sin nombre>"}";
+              "Realizaste un pago de \$${activity.amount} a ${user?.displayName ?? user?.fullName ?? "<Sin nombre>"}";
         } else if (paymentsMadeToMe.contains(activity)) {
           title = activity.description;
           user = userIdToUserMap[activity.payer.id];
           subtitle =
-              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te pagó ${activity.amount}";
+              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te hizo un pago de \$${activity.amount}";
         }
         onTap = () {
           Navigator.of(context).push(
@@ -382,7 +382,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
             ),
           );
         };
-        if (activity.createdAt.toDate().month != currMonth.month) {
+        if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
           currMonth = activity.createdAt.toDate();
           activityList.add(_getActivityDateDivider(
               dateFormat.format(currMonth), currMonth.year));
@@ -415,10 +415,13 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
             ),
           );
         };
-        if (activity.createdAt.toDate().month != currMonth.month) {
+        if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
           currMonth = activity.createdAt.toDate();
           activityList.add(_getActivityDateDivider(
               dateFormat.format(currMonth), currMonth.year));
+          activityList.add(
+            const SizedBox(height: 8),
+          );
         }
       }
 
@@ -432,13 +435,12 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   Widget _getActivityDateDivider(String month, int year) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: 16,
+        vertical: 16,
       ),
       child: Text(
         '${month[0].toUpperCase() + month.substring(1)} del $year',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        textAlign: TextAlign.center,
       ),
     );
   }

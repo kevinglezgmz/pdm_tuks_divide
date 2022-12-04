@@ -8,16 +8,14 @@ class ParticipantsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: participantsData.length,
-        itemBuilder: (BuildContext context, int index) {
-          return ParticipantItem(
-            userData: participantsData[index],
-            onTap: () {},
-          );
-        },
-      ),
+    return ListView.builder(
+      itemCount: participantsData.length,
+      itemBuilder: (BuildContext context, int index) {
+        return ParticipantItem(
+          userData: participantsData[index],
+          onTap: () {},
+        );
+      },
     );
   }
 }

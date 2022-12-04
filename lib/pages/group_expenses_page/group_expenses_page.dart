@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -80,12 +81,26 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
           children: [
             Stack(clipBehavior: Clip.none, children: [
               Container(
-                color: Colors.cyan[200],
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                        "assets/bg-${Random(widget.group.groupId.hashCode).nextInt(9) + 1}.png"),
+                    fit: BoxFit.cover,
+                  ),
+                ),
                 height: MediaQuery.of(context).size.height / 6,
               ),
               Positioned(
+                left: 27,
+                bottom: -53,
+                child: CircleAvatar(
+                  radius: 53,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                ),
+              ),
+              Positioned(
                 left: 30,
-                bottom: -40,
+                bottom: -50,
                 child: AvatarWidget(
                   backgroundColor: Colors.pink[100],
                   radius: 50,
@@ -94,6 +109,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 ),
               ),
             ]),
+            const SizedBox(height: 22),
             Container(
               padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
               alignment: Alignment.centerLeft,
@@ -104,13 +120,13 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 0.0, 8.0),
+              padding: const EdgeInsets.fromLTRB(20, 4, 0, 16),
               child: Column(
                 children: [
                   Row(
                     children: [
                       const Text(
-                        "Gasto total del grupo: ",
+                        "Gastos totales del grupo: ",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                       Text("\$${_getGroupTotalSpendings(state.spendings)}",
@@ -124,16 +140,51 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             Expanded(
               child: state.isLoadingActivity || state.groupUsers.isEmpty
                   ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      child: Column(
-                        children: _createActivityList(
-                          state.spendings,
-                          state.payments,
-                          state.groupUsers,
-                          context,
+                  : state.spendings.isEmpty && state.payments.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                "No han realizado ningún gasto.",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  spendingsBloc
+                                      .add(SpendingsSetInitialSpendingsEvent());
+                                  Navigator.of(context)
+                                      .push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const AddSpendingPage(),
+                                    ),
+                                  )
+                                      .then((value) {
+                                    BlocProvider.of<UploadImageBloc>(context)
+                                        .add(ResetUploadImageBloc());
+                                  });
+                                },
+                                child: const Text(
+                                  "Agrega uno!",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                              const SizedBox(height: 90),
+                            ],
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          child: Column(
+                            children: _createActivityList(
+                              state.spendings,
+                              state.payments,
+                              state.groupUsers,
+                              context,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
             )
           ],
         ),
@@ -257,18 +308,12 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       return timestampB.compareTo(timestampA);
     });
 
-    if (spendingsAndPayments.isEmpty) {
-      activityWidgetsList.add(const Text("No hay actividad para mostrar"));
-      return activityWidgetsList;
-    }
-
     final Map<DocumentReference<Map<String, dynamic>>, UserModel>
         userRefToUserModelMap = Map.fromEntries(users
             .map((user) =>
                 MapEntry(GroupsRepository.usersCollection.doc(user.uid), user))
             .toList());
     DateTime currMonth = DateTime.now();
-    activityWidgetsList.add(const SizedBox(height: 16));
     for (int i = 0; i < spendingsAndPayments.length; i++) {
       String title = "";
       String subtitle = "";
@@ -329,13 +374,12 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   Widget _getActivityDateDivider(String month, int year) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: 16,
+        vertical: 16,
       ),
       child: Text(
         '${month[0].toUpperCase() + month.substring(1)} del $year',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        textAlign: TextAlign.center,
       ),
     );
   }

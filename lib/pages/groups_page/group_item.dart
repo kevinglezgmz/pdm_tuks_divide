@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/pages/group_expenses_page/group_expenses_page.dart';
 
@@ -32,17 +33,25 @@ class GroupItem extends StatelessWidget {
                 (value) => BlocProvider.of<SpendingsBloc>(context).add(
                   SpendingsResetBlocEvent(),
                 ),
-              );
+              )
+              .then((value) => BlocProvider.of<UploadImageBloc>(context)
+                  .add(ResetUploadImageBloc()));
         },
-        child: ListTile(
-          title: Text(groupData.groupName),
-          // TODO: realizar algún cálculo dependiendo de los datos disponibles
-          subtitle: Text(groupData.description),
-          leading: CircleAvatar(
-              backgroundImage: groupData.groupPicUrl == ""
-                  ? const NetworkImage(
-                      "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
-                  : NetworkImage(groupData.groupPicUrl)),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 12),
+          child: ListTile(
+            title: Text(groupData.groupName),
+            // TODO: realizar algún cálculo dependiendo de los datos disponibles
+            subtitle: Text(
+              "${groupData.description}\n",
+              maxLines: 2,
+            ),
+            leading: CircleAvatar(
+                backgroundImage: groupData.groupPicUrl == ""
+                    ? const NetworkImage(
+                        "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                    : NetworkImage(groupData.groupPicUrl)),
+          ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
+import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/pages/create_group_page/create_group_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_list.dart';
 
@@ -107,10 +108,13 @@ class _GroupsPageState extends State<GroupsPage> {
             onPressed: () {
               BlocProvider.of<CreateGroupBloc>(context)
                   .add(InitGroupCreateEvent());
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => const CreateGroupPage()),
-              );
+              Navigator.of(context)
+                  .push(
+                    MaterialPageRoute(
+                        builder: (context) => const CreateGroupPage()),
+                  )
+                  .then((value) => BlocProvider.of<UploadImageBloc>(context)
+                      .add(ResetUploadImageBloc()));
             },
             child: const FaIcon(FontAwesomeIcons.plus),
           ),

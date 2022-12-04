@@ -12,7 +12,7 @@ class ExpandableFab extends StatefulWidget {
 
   final bool? initialOpen;
   final double distance;
-  final List<Widget> children;
+  final List<ActionButton> children;
 
   @override
   State<ExpandableFab> createState() => _ExpandableFabState();
@@ -59,15 +59,26 @@ class _ExpandableFabState extends State<ExpandableFab>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        clipBehavior: Clip.none,
-        children: [
-          _buildTapToCloseFab(),
-          ..._buildExpandingActionButtons(),
-          _buildTapToOpenFab(),
-        ],
+    return GestureDetector(
+      behavior: _open ? HitTestBehavior.opaque : HitTestBehavior.deferToChild,
+      onTap: () {
+        if (_open) {
+          setState(() {
+            _controller.reverse();
+            _open = !_open;
+          });
+        }
+      },
+      child: SizedBox.expand(
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          clipBehavior: Clip.none,
+          children: [
+            _buildTapToCloseFab(),
+            ..._buildExpandingActionButtons(),
+            _buildTapToOpenFab(),
+          ],
+        ),
       ),
     );
   }
@@ -101,12 +112,21 @@ class _ExpandableFabState extends State<ExpandableFab>
     final children = <Widget>[];
     final count = widget.children.length;
     for (var i = 0; i < count; i++) {
+      final originalChild = widget.children[i];
+      void Function() assignedFunction = originalChild.onPressed;
+      ActionButton child = ActionButton(
+          onPressed: () {
+            assignedFunction();
+            _toggle();
+          },
+          icon: originalChild.icon,
+          message: originalChild.message);
       children.add(
         _ExpandingActionButton(
           directionInDegrees: 90,
           maxDistance: widget.distance * (i + 1),
           progress: _expandAnimation,
-          child: widget.children[i],
+          child: child,
         ),
       );
     }
@@ -183,55 +203,38 @@ class _ExpandingActionButton extends StatelessWidget {
 }
 
 @immutable
-class ActionButton extends StatelessWidget {
+class ActionButton extends StatefulWidget {
   final String message;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
   final Widget icon;
 
   const ActionButton({
     super.key,
-    this.onPressed,
+    required this.onPressed,
     required this.icon,
     required this.message,
   });
 
   @override
+  State<ActionButton> createState() => _ActionButtonState();
+}
+
+class _ActionButtonState extends State<ActionButton> {
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Tooltip(
-      message: message,
+      message: widget.message,
       child: Material(
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         color: theme.colorScheme.secondary,
         elevation: 4.0,
         child: IconButton(
-          onPressed: onPressed,
-          icon: icon,
+          onPressed: widget.onPressed,
+          icon: widget.icon,
           color: theme.colorScheme.onSecondary,
         ),
-      ),
-    );
-  }
-}
-
-@immutable
-class FakeItem extends StatelessWidget {
-  const FakeItem({
-    super.key,
-    required this.isBig,
-  });
-
-  final bool isBig;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 24.0),
-      height: isBig ? 128.0 : 36.0,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-        color: Colors.grey.shade300,
       ),
     );
   }

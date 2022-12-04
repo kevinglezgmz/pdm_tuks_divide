@@ -56,53 +56,56 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Añadir gasto'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await updateSpendingBloc();
-              _saveSpending();
-            },
-            icon: const Icon(
-              Icons.check,
+    return GestureDetector(
+      onTapDown: (details) => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Añadir gasto'),
+          actions: [
+            IconButton(
+              onPressed: () async {
+                await updateSpendingBloc();
+                _saveSpending();
+              },
+              icon: const Icon(
+                Icons.check,
+              ),
             ),
-          ),
-        ],
-      ),
-      resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: BlocConsumer<SpendingsBloc, SpendingsUseState>(
-          listener: (context, state) {
-            if (state.saved) {
-              Navigator.pop(context);
-            }
-          },
-          builder: (context, state) {
-            if (state.isSaving) {
-              return const Center(
-                child: CircularProgressIndicator(),
+          ],
+        ),
+        resizeToAvoidBottomInset: false,
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: BlocConsumer<SpendingsBloc, SpendingsUseState>(
+            listener: (context, state) {
+              if (state.saved) {
+                Navigator.pop(context);
+              }
+            },
+            builder: (context, state) {
+              if (state.isSaving) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  _getParticipantsHeader(),
+                  _getInputsSection(),
+                  const SizedBox(height: 16),
+                  _getPaidBySection(),
+                  const SizedBox(height: 16),
+                  _getDistributionSection(context),
+                  const SizedBox(
+                    height: 64,
+                  ),
+                  _getAddImageButton(),
+                ],
               );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                _getParticipantsHeader(),
-                _getInputsSection(),
-                const SizedBox(height: 16),
-                _getPaidBySection(),
-                const SizedBox(height: 16),
-                _getDistributionSection(context),
-                const SizedBox(
-                  height: 64,
-                ),
-                _getAddImageButton(),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
     );
