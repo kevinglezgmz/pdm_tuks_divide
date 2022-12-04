@@ -70,7 +70,10 @@ class _FriendsPageState extends State<FriendsPage> {
           onPressed: () {
             _addFriendDialog(context);
           },
-          child: const FaIcon(FontAwesomeIcons.plus),
+          child: const FaIcon(
+            FontAwesomeIcons.plus,
+            color: Colors.white,
+          ),
         ),
       )
     ]);

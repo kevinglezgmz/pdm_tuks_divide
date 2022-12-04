@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 @immutable
 class ExpandableFab extends StatefulWidget {
   const ExpandableFab({
@@ -151,9 +153,9 @@ class _ExpandableFabState extends State<ExpandableFab>
           duration: const Duration(milliseconds: 250),
           child: FloatingActionButton(
             onPressed: _toggle,
-            child: const Icon(
-              Icons.add,
-              size: 32,
+            child: const FaIcon(
+              FontAwesomeIcons.plus,
+              color: Colors.white,
             ),
           ),
         ),

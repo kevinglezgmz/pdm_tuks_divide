@@ -116,7 +116,10 @@ class _GroupsPageState extends State<GroupsPage> {
                   .then((value) => BlocProvider.of<UploadImageBloc>(context)
                       .add(ResetUploadImageBloc()));
             },
-            child: const FaIcon(FontAwesomeIcons.plus),
+            child: const FaIcon(
+              FontAwesomeIcons.plus,
+              color: Colors.white,
+            ),
           ),
         )
       ],
