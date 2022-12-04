@@ -11,18 +11,18 @@ class GroupGraphPage extends StatelessWidget {
   GroupGraphPage({super.key});
 
   List<Color> colors = <Color>[
-    const Color(0xff114b5f),
-    const Color(0xff217180),
-    const Color(0xff43bba5),
-    const Color(0xff70dcb9),
-    const Color(0xffc6dabf),
-    const Color(0xfff3e9a2),
-    const Color(0xfff3e9d2),
-    const Color(0xffe1cd3a),
-    const Color(0xff4fc663),
-    const Color(0xff6ca753),
-    const Color(0xffa1e8af),
-    const Color(0xff43aabb),
+    const Color(0xffd0b8e8),
+    const Color(0xffa59be0),
+    const Color(0xff84c4f2),
+    const Color(0xff68f0fe),
+    const Color(0xffd1f3a7),
+    const Color(0xffd1f3a7),
+    const Color(0xfffffea4),
+    const Color(0xffffc78e),
+    const Color(0xfff4a467),
+    const Color(0xfffa7f56),
+    const Color(0xfffa5750),
+    const Color(0xffeea3db),
   ];
 
   @override
