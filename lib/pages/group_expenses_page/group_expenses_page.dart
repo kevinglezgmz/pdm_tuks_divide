@@ -94,24 +94,16 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
               child: Column(
                 children: [
                   Row(
-                    children: const [
-                      //TODO: GET DEBTS AND OWINGS
-                      Text(
-                        "Juan Pérez te debe ",
+                    children: [
+                      const Text(
+                        "Gasto total del grupo: ",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                      Text("\$65.32",
-                          style: TextStyle(fontSize: 16, color: Colors.blue))
+                      Text("\$${_getGroupTotalSpenfdings(state.spendings)}",
+                          style:
+                              const TextStyle(fontSize: 16, color: Colors.blue))
                     ],
                   ),
-                  Row(
-                    children: const [
-                      Text("Debes a Andrea ",
-                          style: TextStyle(fontSize: 16, color: Colors.grey)),
-                      Text("\$150.36",
-                          style: TextStyle(fontSize: 16, color: Colors.blue))
-                    ],
-                  )
                 ],
               ),
             ),
@@ -184,6 +176,14 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         );
       }
     });
+  }
+
+  double _getGroupTotalSpenfdings(List<SpendingModel> groupSpendings) {
+    double total = 0;
+    for (var spending in groupSpendings) {
+      total += spending.amount;
+    }
+    return total;
   }
 
   List<Widget> _createActivityList(List<SpendingModel> spendings,
