@@ -7,6 +7,7 @@ import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart'
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
 import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
+import 'package:tuks_divide/blocs/notifications_bloc/bloc/notifications_bloc.dart';
 import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_repository.dart';
@@ -38,9 +39,33 @@ void main() async {
           channelKey: 'new_group_channel',
           channelName: 'Nuevo grupo',
           channelDescription: 'Canal para notificaciones de grupo',
-          defaultColor: const Color(0xFF9D50DD),
-          ledColor: Colors.white,
-        )
+          defaultColor: const Color(0xff1CC19F),
+          ledColor: const Color(0xff1CC19F),
+        ),
+        NotificationChannel(
+          channelGroupKey: 'main_channel',
+          channelKey: 'new_friend_channel',
+          channelName: 'Nuevo amigo',
+          channelDescription: 'Canal para notificaciones de amigos',
+          defaultColor: const Color(0xff1CC19F),
+          ledColor: const Color(0xff1CC19F),
+        ),
+        NotificationChannel(
+          channelGroupKey: 'main_channel',
+          channelKey: 'new_spending_channel',
+          channelName: 'Nuevo gasto',
+          channelDescription: 'Canal para notificaciones de gastos',
+          defaultColor: const Color(0xff1CC19F),
+          ledColor: const Color(0xff1CC19F),
+        ),
+        NotificationChannel(
+          channelGroupKey: 'main_channel',
+          channelKey: 'new_payment_channel',
+          channelName: 'Nuevo gasto',
+          channelDescription: 'Canal para notificaciones de pagos',
+          defaultColor: const Color(0xff1CC19F),
+          ledColor: const Color(0xff1CC19F),
+        ),
       ],
       // Channel groups are only visual and are not required
       channelGroups: [
@@ -81,6 +106,7 @@ void main() async {
         ),
         BlocProvider(create: (BuildContext context) => CreateGroupBloc()),
         BlocProvider(create: (BuildContext context) => MeBloc()),
+        BlocProvider(create: (BuildContext context) => NotificationsBloc()),
         BlocProvider(
           create: (BuildContext context) => SpendingsBloc(
             groupsRepository: context.read<GroupsRepository>(),

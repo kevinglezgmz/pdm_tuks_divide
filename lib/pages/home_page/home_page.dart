@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/pages/edit_user_profile_page/edit_user_profile_page.dart';
+import 'package:tuks_divide/pages/edit_user_profile_page/notifications_page.dart';
 import 'package:tuks_divide/pages/friends_page/friends_page.dart';
 import 'package:tuks_divide/pages/user_profile_activity_page/user_profile_activity_page.dart';
 import 'package:tuks_divide/pages/groups_page/groups_page.dart';
@@ -18,6 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String windowTitle = "Tuks Divide";
   int index = 0;
+  List<Widget> actions = [];
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -25,6 +27,7 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(windowTitle),
+          actions: actions,
         ),
         body: IndexedStack(
           index: index,
@@ -41,6 +44,7 @@ class _HomePageState extends State<HomePage> {
             BlocProvider.of<UploadImageBloc>(context)
                 .add(ResetUploadImageBloc());
             setState(() {
+              actions = [];
               if (newIndex == 1) {
                 windowTitle = "Mis amigos";
               } else if (newIndex == 2) {
@@ -48,6 +52,18 @@ class _HomePageState extends State<HomePage> {
                     "Actividad de ${context.read<MeBloc>().state.me!.displayName ?? context.read<MeBloc>().state.me!.fullName ?? "<No name>"}";
               } else if (newIndex == 3) {
                 windowTitle = "Editar perfil";
+                actions = [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.notifications),
+                  )
+                ];
               } else {
                 windowTitle = "Tuks Divide";
               }

@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
+import 'package:tuks_divide/blocs/notifications_bloc/bloc/notifications_bloc.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
@@ -16,7 +19,7 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  late final StreamSubscription<List<UserModel>> _myFriendsSubscription;
+  late final StreamSubscription<FriendsStreamResult> _myFriendsSubscription;
   late final FriendsBloc friendsBloc;
   bool isAddingFriend = false;
 
@@ -194,16 +197,33 @@ class _FriendsPageState extends State<FriendsPage> {
       ),
     );
     _myFriendsSubscription = FriendsRepository.getUserFriendsSubscription(
-      (friends) {
+      (friendsResult) {
+        if (friendsResult.newFriend != null &&
+            BlocProvider.of<NotificationsBloc>(context)
+                .state
+                .friendNotificationsEnabled) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: 2,
+              channelKey: 'new_friend_channel',
+              title:
+                  '${friendsResult.newFriend?.displayName ?? friendsResult.newFriend?.fullName ?? "Sin nombre"} te ha añadido como amigo!',
+              body: 'Dirígete a la pantalla de amigos para verlo!',
+              actionType: ActionType.DismissAction,
+              notificationLayout: NotificationLayout.Default,
+            ),
+          );
+        }
         friendsBloc.add(
           UpdateFriendsStateEvent(
             newState: NullableFriendsUseState(
-              friends: friends,
+              friends: friendsResult.friends,
               isLoadingFriends: false,
             ),
           ),
         );
       },
+      BlocProvider.of<MeBloc>(context).state.me!,
     );
   }
 }

@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
+import 'package:tuks_divide/blocs/notifications_bloc/bloc/notifications_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_repository.dart';
@@ -512,6 +514,44 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         UserActivityRepository.getUserActivitySubscription(
       context.read<MeBloc>().state.me!,
       (groupActivityState) {
+        if (groupActivityState.newPaymentMadeToMe != null &&
+            BlocProvider.of<NotificationsBloc>(context)
+                .state
+                .paymentNotificationsEnabled) {
+          UserModel? payer = groupActivityState.userIdToUserMap?[
+              groupActivityState.newPaymentMadeToMe?.payer.id];
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: 3,
+              channelKey: 'new_payment_channel',
+              title:
+                  '${payer?.displayName ?? payer?.fullName} te ha hecho un pago de \$${groupActivityState.newPaymentMadeToMe?.amount.toStringAsFixed(2)}!',
+              body:
+                  'Dirígete a la pantalla de actividad para ver los detalles del pago con concepto \'${groupActivityState.newPaymentMadeToMe?.description}\'!',
+              actionType: ActionType.DismissAction,
+              notificationLayout: NotificationLayout.BigText,
+            ),
+          );
+        }
+        if (groupActivityState.newSpendingIParticipatedIn != null &&
+            BlocProvider.of<NotificationsBloc>(context)
+                .state
+                .spendingNotificationsEnabled) {
+          UserModel? addedBy = groupActivityState.userIdToUserMap?[
+              groupActivityState.newSpendingIParticipatedIn?.addedBy.id];
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: 4,
+              channelKey: 'new_spending_channel',
+              title:
+                  '${addedBy?.displayName ?? addedBy?.fullName} te ha incluido en un gasto de \$${groupActivityState.newSpendingIParticipatedIn?.amount.toStringAsFixed(2)}!',
+              body:
+                  'Dirígete a la pantalla de actividad para ver los detalles del gasto \'${groupActivityState.newSpendingIParticipatedIn?.description}\'!',
+              actionType: ActionType.DismissAction,
+              notificationLayout: NotificationLayout.BigText,
+            ),
+          );
+        }
         groupActivityState
                 .userIdToUserMap?[context.read<MeBloc>().state.me!.uid] =
             context.read<MeBloc>().state.me!;

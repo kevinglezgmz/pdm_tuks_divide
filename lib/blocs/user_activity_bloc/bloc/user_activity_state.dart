@@ -81,6 +81,8 @@ class NullableUserActivityUseState extends UserActivityState {
   final bool? isLoadingPaymentsToMe;
   final bool? isLoadingPaymentsByMe;
   final Map<String, UserModel>? userIdToUserMap;
+  final PaymentModel? newPaymentMadeToMe;
+  final SpendingModel? newSpendingIParticipatedIn;
 
   const NullableUserActivityUseState({
     this.paymentsMadeByMe,
@@ -92,6 +94,8 @@ class NullableUserActivityUseState extends UserActivityState {
     this.isLoadingPaymentsToMe,
     this.isLoadingPaymentsByMe,
     this.userIdToUserMap,
+    this.newPaymentMadeToMe,
+    this.newSpendingIParticipatedIn,
   });
 
   NullableUserActivityUseState copyWith({
@@ -104,6 +108,8 @@ class NullableUserActivityUseState extends UserActivityState {
     bool? isLoadingPaymentsToMe,
     bool? isLoadingPaymentsByMe,
     Map<String, UserModel>? userIdToUserMap,
+    PaymentModel? newPaymentMadeToMe,
+    SpendingModel? newSpendingIParticipatedIn,
   }) {
     return NullableUserActivityUseState(
       paymentsMadeByMe: paymentsMadeByMe ?? this.paymentsMadeByMe,
@@ -118,6 +124,9 @@ class NullableUserActivityUseState extends UserActivityState {
           isLoadingPaymentsToMe ?? this.isLoadingPaymentsToMe,
       isLoadingSpendings: isLoadingSpendings ?? this.isLoadingSpendings,
       userIdToUserMap: userIdToUserMap ?? this.userIdToUserMap,
+      newPaymentMadeToMe: newPaymentMadeToMe ?? this.newPaymentMadeToMe,
+      newSpendingIParticipatedIn:
+          newSpendingIParticipatedIn ?? this.newSpendingIParticipatedIn,
     );
   }
 
@@ -132,5 +141,7 @@ class NullableUserActivityUseState extends UserActivityState {
         isLoadingPaymentsToMe,
         isLoadingSpendings,
         userIdToUserMap,
+        newPaymentMadeToMe,
+        newSpendingIParticipatedIn,
       ];
 }

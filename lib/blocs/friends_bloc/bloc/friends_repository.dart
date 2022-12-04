@@ -62,15 +62,18 @@ class FriendsRepository {
     return UserModel.fromMap(usersQuery.docs[0].data());
   }
 
-  static StreamSubscription<List<UserModel>> getUserFriendsSubscription(
-      Function(List<UserModel>) callback) {
+  static StreamSubscription<FriendsStreamResult> getUserFriendsSubscription(
+    Function(FriendsStreamResult) callback,
+    UserModel me,
+  ) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       throw "No user id";
     }
-    final userRef = usersCollection.doc(uid);
+    final userRef = usersCollection.doc(me.uid);
     return FriendsStream(
       userRef: userRef,
+      me: me,
       usersCollection: usersCollection,
       friendsCollection: friendsCollection,
     ).listen((event) {
@@ -79,10 +82,21 @@ class FriendsRepository {
   }
 }
 
+class FriendsStreamResult {
+  final List<UserModel> friends;
+  final UserModel? newFriend;
+
+  FriendsStreamResult({
+    required this.friends,
+    required this.newFriend,
+  });
+}
+
 class FriendsStream extends Stream {
   DocumentReference<Map<String, dynamic>> userRef;
   CollectionReference<Map<String, dynamic>> usersCollection;
   CollectionReference<Map<String, dynamic>> friendsCollection;
+  final UserModel me;
 
   List<UserModel> friendsA = [];
   List<UserModel> friendsB = [];
@@ -91,11 +105,12 @@ class FriendsStream extends Stream {
     required this.userRef,
     required this.usersCollection,
     required this.friendsCollection,
+    required this.me,
   });
 
   @override
-  StreamSubscription<List<UserModel>> listen(
-    void Function(List<UserModel> event)? onData, {
+  StreamSubscription<FriendsStreamResult> listen(
+    void Function(FriendsStreamResult event)? onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
@@ -103,34 +118,62 @@ class FriendsStream extends Stream {
     return _createFriendsStream().listen(onData);
   }
 
-  Stream<List<UserModel>> _createFriendsStream() {
-    final StreamController<List<UserModel>> controller = StreamController();
+  Stream<FriendsStreamResult> _createFriendsStream() {
+    final StreamController<FriendsStreamResult> controller = StreamController();
+    List<FriendModel> friendModelsA = [];
+    List<FriendModel> friendModelsB = [];
     friendsCollection.where('userA', isEqualTo: userRef).snapshots().listen(
       (userFriendRefsA) async {
-        final userFriendsA = userFriendRefsA.docs
+        friendModelsA = userFriendRefsA.docs
             .map((doc) => FriendModel.fromMap(doc.data()))
             .toList();
-
-        final usersDataFutures =
-            userFriendsA.map((friendDoc) => friendDoc.userB.get()).toList();
+        final totalFriends = [...friendModelsA, ...friendModelsB];
+        totalFriends.sort((friendA, friendB) =>
+            friendA.friendedAt.compareTo(friendB.friendedAt));
+        final usersDataFutures = totalFriends.map((friendDoc) {
+          if (friendDoc.userA == userRef) {
+            return friendDoc.userB.get();
+          } else {
+            return friendDoc.userA.get();
+          }
+        }).toList();
         final friendsData = await Future.wait(usersDataFutures);
-        friendsA =
+        final friends =
             friendsData.map((doc) => UserModel.fromMap(doc.data()!)).toList();
-        controller.sink.add([...friendsA, ...friendsB]);
+        controller.sink.add(FriendsStreamResult(
+          friends: friends,
+          newFriend: null,
+        ));
       },
     );
+    bool isFirstRun = true;
     friendsCollection.where('userB', isEqualTo: userRef).snapshots().listen(
       (userFriendRefsB) async {
-        final userFriendsB = userFriendRefsB.docs
+        friendModelsB = userFriendRefsB.docs
             .map((doc) => FriendModel.fromMap(doc.data()))
             .toList();
 
-        final usersDataFutures =
-            userFriendsB.map((friendDoc) => friendDoc.userA.get()).toList();
+        final totalFriends = [...friendModelsA, ...friendModelsB];
+        totalFriends.sort((friendA, friendB) =>
+            friendA.friendedAt.compareTo(friendB.friendedAt));
+        final usersDataFutures = totalFriends.map((friendDoc) {
+          if (friendDoc.userA == userRef) {
+            return friendDoc.userB.get();
+          } else {
+            return friendDoc.userA.get();
+          }
+        }).toList();
         final friendsData = await Future.wait(usersDataFutures);
-        friendsB =
+        final friends =
             friendsData.map((doc) => UserModel.fromMap(doc.data()!)).toList();
-        controller.sink.add([...friendsA, ...friendsB]);
+        if (isFirstRun) {
+          isFirstRun = false;
+          controller.sink
+              .add(FriendsStreamResult(friends: friends, newFriend: null));
+        } else {
+          controller.sink.add(
+              FriendsStreamResult(friends: friends, newFriend: friends.last));
+        }
       },
     );
 

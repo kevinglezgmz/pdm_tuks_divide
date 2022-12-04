@@ -213,6 +213,8 @@ class GroupsRepository {
                   GroupModel.fromMap(doc.data()!..addAll({'groupId': doc.id})),
             )
             .toList();
+        groups.sort(
+            (groupA, groupB) => groupA.createdAt.compareTo(groupB.createdAt));
         callback(groups);
       } else {
         callback([]);

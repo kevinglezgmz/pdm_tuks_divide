@@ -162,6 +162,8 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
         StreamController();
     userIdToUserMap[me.uid] = me;
 
+    // Get spendings where I participate
+    bool isFirstSpendingsRun = true;
     UserActivityRepository.spendingsCollection
         .where('participants',
             arrayContains: UserActivityRepository.usersCollection.doc(me.uid))
@@ -171,14 +173,26 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
           .map((doc) =>
               SpendingModel.fromMap(doc.data()..addAll({"spendingId": doc.id})))
           .toList();
+      spendingsWhereIParticipate.sort((spendingA, spendingB) =>
+          spendingA.createdAt.compareTo(spendingB.createdAt));
+      if (isFirstSpendingsRun == false &&
+          spendingsWhereIParticipate.isNotEmpty &&
+          spendingsWhereIParticipate.last.addedBy.id != me.uid) {
+        activityUseState = activityUseState.copyWith(
+          newSpendingIParticipatedIn: spendingsWhereIParticipate.last,
+        );
+      }
+      isFirstSpendingsRun = false;
       if (event.docs.isEmpty) {
         activityUseState = activityUseState.copyWith(
           spendingsDetails: [],
           spendingsWhereIDidNotPay: [],
           spendingsWhereIPaid: [],
           isLoadingSpendings: false,
+          newSpendingIParticipatedIn: null,
         );
         controller.sink.add(activityUseState);
+
         return;
       }
       List<GroupSpendingModel> spendingsDetails = await Future.wait(
@@ -190,13 +204,13 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
                         isEqualTo: UserActivityRepository.spendingsCollection
                             .doc(spending.spendingId))
                     .get();
-            if (data.size == 0) {
-              data = await UserActivityRepository.groupsSpendingsCollection
-                  .where("spending",
-                      isEqualTo: UserActivityRepository.spendingsCollection
-                          .doc(spending.spendingId))
-                  .get(const GetOptions(source: Source.server));
-            }
+
+            data = await UserActivityRepository.groupsSpendingsCollection
+                .where("spending",
+                    isEqualTo: UserActivityRepository.spendingsCollection
+                        .doc(spending.spendingId))
+                .get();
+
             return data.docs
                 .map((doc) => GroupSpendingModel.fromMap(doc.data()))
                 .toList();
@@ -235,8 +249,12 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
         userIdToUserMap: userIdToUserMap,
       );
       controller.sink.add(activityUseState);
+      activityUseState = activityUseState.copyWith(
+        newSpendingIParticipatedIn: null,
+      );
     });
 
+    // Get payments made by me
     UserActivityRepository.paymentsCollection
         .where('payer',
             isEqualTo: UserActivityRepository.usersCollection.doc(me.uid))
@@ -266,6 +284,8 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
       controller.sink.add(activityUseState);
     });
 
+    // Get payments made to me
+    bool isFirstPaymentsRun = true;
     UserActivityRepository.paymentsCollection
         .where('receiver',
             isEqualTo: UserActivityRepository.usersCollection.doc(me.uid))
@@ -286,6 +306,16 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
               UserModel.fromMap(userData.data()!);
         }
       }));
+      paymentsMadeToMe.sort(
+        (paymentA, paymentB) =>
+            paymentA.createdAt.compareTo(paymentB.createdAt),
+      );
+      if (isFirstPaymentsRun == false && paymentsMadeToMe.isNotEmpty) {
+        activityUseState = activityUseState.copyWith(
+          newPaymentMadeToMe: paymentsMadeToMe.last,
+        );
+      }
+      isFirstPaymentsRun = false;
 
       activityUseState = activityUseState.copyWith(
         paymentsMadeToMe: paymentsMadeToMe,
@@ -293,6 +323,9 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
         userIdToUserMap: userIdToUserMap,
       );
       controller.sink.add(activityUseState);
+      activityUseState = activityUseState.copyWith(
+        newPaymentMadeToMe: null,
+      );
     });
 
     return controller.stream;
