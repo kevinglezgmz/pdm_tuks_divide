@@ -15,4 +15,6 @@ class UpdateUserProfileLoadedState extends UpdateUserProfileState {}
 
 class UpdateUserProfileRefreshState extends UpdateUserProfileState {}
 
+class UpdateUserProfileMissingFieldErrorState extends UpdateUserProfileState {}
+
 class UpdateUserProfileErrorState extends UpdateUserProfileState {}

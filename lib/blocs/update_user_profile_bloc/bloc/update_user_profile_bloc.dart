@@ -14,6 +14,11 @@ class UpdateUserProfileBloc
       : _updateUserProfileRepository = updateUserProfileRepository,
         super(UpdateUserProfileInitialState()) {
     on<UpdateNewUserProfileInfoEvent>(_updateUserProfileHandler);
+    on<UpdateUserMissingFieldEvent>(_updateUserMissingFieldEventHandler);
+  }
+
+  FutureOr<void> _updateUserMissingFieldEventHandler(event, emit) async {
+    emit(UpdateUserProfileMissingFieldErrorState());
   }
 
   FutureOr<void> _updateUserProfileHandler(event, emit) async {

@@ -66,35 +66,34 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         BlocBuilder<UploadImageBloc, UploadImageState>(
-          builder: (context, state) {
-            if (state is UploadingSuccessfulState) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
-                child: AddPictureWidget(
-                  backgroundColor: Colors.grey,
-                  radius: 60,
-                  iconSize: 60,
-                  avatarUrl: context.read<UploadImageBloc>().uploadedImageUrl,
-                  onPressed: () {
-                    _showAlertDialog(context);
-                  },
-                ),
-              );
-            }
+            builder: (context, state) {
+          if (state is UploadingSuccessfulState) {
             return Padding(
               padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
               child: AddPictureWidget(
                 backgroundColor: Colors.grey,
                 radius: 60,
                 iconSize: 60,
-                avatarUrl: pictureUrl,
+                avatarUrl: context.read<UploadImageBloc>().uploadedImageUrl,
                 onPressed: () {
                   _showAlertDialog(context);
                 },
               ),
             );
-          },
-        ),
+          }
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 30.0),
+            child: AddPictureWidget(
+              backgroundColor: Colors.grey,
+              radius: 60,
+              iconSize: 60,
+              avatarUrl: pictureUrl,
+              onPressed: () {
+                _showAlertDialog(context);
+              },
+            ),
+          );
+        }),
         _createInputField(
           TextInputField(
             inputController: _firstNameController,
@@ -114,39 +113,82 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
           ),
         ),
         BlocListener<UpdateUserProfileBloc, UpdateUserProfileState>(
-          listener: (context, state) {
-            if (state is UpdateUserProfileErrorState) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "Error al actualizar datos de la cuenta",
-                  ),
-                ),
-              );
-            } else if (state is UpdateUserProfileLoadedState) {
-              context.read<AuthBloc>().add(
-                    AuthUserDataUpdatedEvent(),
-                  );
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
-            child: BasicElevatedButton(
-              label: "ACTUALIZAR CUENTA",
-              onPressed: () {
-                context.read<UpdateUserProfileBloc>().add(
-                      UpdateNewUserProfileInfoEvent(
-                        firstName: _firstNameController.text.trim(),
-                        lastName: _lastNameController.text.trim(),
-                        displayName: _displayNameController.text.trim(),
-                        imageUrl: pictureUrl ?? '',
-                        uid: context.read<AuthBloc>().me!.uid,
+            listener: (context, state) {
+              if (state is UpdateUserProfileErrorState) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Error actualizando los datos de usuario',
                       ),
+                    ),
+                  );
+                return;
+              } else if (state is UpdateUserProfileMissingFieldErrorState) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Ingresa datos en por lo menos 1 de los 3 campos',
+                      ),
+                    ),
+                  );
+                return;
+              } else if (state is UpdateUserProfileLoadedState) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Datos actualizados de manera exitosa',
+                      ),
+                    ),
+                  );
+                context.read<AuthBloc>().add(
+                      AuthUserDataUpdatedEvent(),
                     );
+                return;
+              }
+            },
+            child: BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthUserUpdatedState) {
+                  _firstNameController.text =
+                      context.read<AuthBloc>().me!.firstName ?? "";
+                  _lastNameController.text =
+                      context.read<AuthBloc>().me!.lastName ?? "";
+                  _displayNameController.text =
+                      context.read<AuthBloc>().me!.displayName ?? "";
+                }
               },
-            ),
-          ),
-        ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
+                child: BasicElevatedButton(
+                  label: "ACTUALIZAR CUENTA",
+                  onPressed: () {
+                    if (_firstNameController.text.trim() == '' &&
+                        _lastNameController.text.trim() == '' &&
+                        _displayNameController.text.trim() == '') {
+                      context
+                          .read<UpdateUserProfileBloc>()
+                          .add(UpdateUserMissingFieldEvent());
+                      return;
+                    }
+                    context.read<UpdateUserProfileBloc>().add(
+                          UpdateNewUserProfileInfoEvent(
+                            firstName: _firstNameController.text.trim(),
+                            lastName: _lastNameController.text.trim(),
+                            displayName: _displayNameController.text.trim(),
+                            imageUrl: pictureUrl ?? '',
+                            uid: context.read<AuthBloc>().me!.uid,
+                          ),
+                        );
+                  },
+                ),
+              ),
+            )),
         Padding(
           padding: const EdgeInsets.fromLTRB(15.0, 30.0, 15.0, 15.0),
           child: BasicElevatedButton(

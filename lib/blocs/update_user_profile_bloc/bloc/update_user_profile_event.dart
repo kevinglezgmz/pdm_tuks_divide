@@ -7,6 +7,8 @@ abstract class UpdateUserProfileEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class UpdateUserMissingFieldEvent extends UpdateUserProfileEvent {}
+
 class UpdateNewUserProfileInfoEvent extends UpdateUserProfileEvent {
   final String uid;
   final String firstName;
