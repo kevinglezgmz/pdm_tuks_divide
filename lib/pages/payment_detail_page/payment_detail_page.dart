@@ -51,7 +51,7 @@ class PaymentDetailPage extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            "Fecha: ${date.day} de ${date.month} del ${date.year}",
+                            "Fecha: ${date.day} de ${dateFormat.format(date)} del ${date.year}",
                             textAlign: TextAlign.center,
                           ),
                         ],

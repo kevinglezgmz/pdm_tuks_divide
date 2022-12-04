@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
+import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/spending_detail_page/participants_list.dart';
 import 'package:intl/intl.dart';
@@ -40,6 +41,14 @@ class SpendingDetailPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 2, 0, 15),
+                      child: Text(
+                        "Distribuido en ${SpendingModel.distributionTypeText(state.spending.distributionType)}",
+                        style: const TextStyle(fontSize: 20),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                     Container(
                       padding: const EdgeInsets.fromLTRB(0, 2, 0, 20),
                       child: Column(
@@ -53,7 +62,7 @@ class SpendingDetailPage extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            "Fecha: ${date.day} de ${date.month} del ${date.year}",
+                            "Fecha: ${date.day} de ${dateFormat.format(date)} del ${date.year}",
                             textAlign: TextAlign.center,
                           ),
                         ],
