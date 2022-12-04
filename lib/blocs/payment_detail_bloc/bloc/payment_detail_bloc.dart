@@ -15,8 +15,10 @@ class PaymentDetailBloc extends Bloc<PaymentDetailEvent, PaymentDetailState> {
   FutureOr<void> _getPaymentDetailEventHandler(event, emit) async {
     emit(PaymentLoadingDetailState());
     try {
-      final payer = await event.payment.payer.get();
-      final receiver = await event.payment.receiver.get();
+      final payerRefs = await event.payment.payer.get();
+      final receiverRefs = await event.payment.receiver.get();
+      final payer = UserModel.fromMap(payerRefs.data());
+      final receiver = UserModel.fromMap(receiverRefs.data());
       emit(PaymentLoadedDetailState(
           payer: payer, receiver: receiver, payment: event.payment));
     } catch (error) {

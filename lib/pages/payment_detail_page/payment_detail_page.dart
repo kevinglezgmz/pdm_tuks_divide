@@ -18,23 +18,23 @@ class PaymentDetailPage extends StatelessWidget {
                   title: const Text("Detalle de pago"),
                 ),
                 body: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
                       child: Text(
                         "\$${state.payment.amount}",
                         style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                            fontSize: 36, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                       child: Text(
                         state.payment.description,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 22, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -62,19 +62,19 @@ class PaymentDetailPage extends StatelessWidget {
                       child: Text(
                         "Comprobante de pago",
                         style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    /*Container(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 30),
-                        height: 325,
-                        width: 400,
-                        child: state.payment.PaymentPic == null ||
-                                state.payment.PaymentPic == ""
-                            ? Image.network(
-                                "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png",
-                                fit: BoxFit.fill)
-                            : Image.network(state.payment.PaymentPic!,
-                                fit: BoxFit.fill)),*/
+                    Expanded(
+                        child: Container(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 30),
+                            child: state.payment.paymentPic == null ||
+                                    state.payment.paymentPic == ""
+                                ? Image.network(
+                                    "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png",
+                                    fit: BoxFit.fill)
+                                : Image.network(state.payment.paymentPic!,
+                                    fit: BoxFit.fill))),
                   ],
                 ));
           }
