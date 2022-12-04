@@ -26,6 +26,12 @@ class UserModel extends Equatable {
         uid = item['uid'];
 
   String? get fullName {
+    if (firstName != null && firstName != "" && lastName == null) {
+      return firstName;
+    }
+    if (lastName != null && lastName != "" && firstName == null) {
+      return firstName;
+    }
     if (firstName != null &&
         firstName != "" &&
         lastName != null &&

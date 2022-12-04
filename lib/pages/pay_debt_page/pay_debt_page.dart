@@ -61,7 +61,7 @@ class _PayDebtPageState extends State<PayDebtPage> {
               RepositoryProvider.of<PaymentsRepository>(context)
                   .addPaymentDetail(
                 amount,
-                "Descripcion temporal",
+                _descriptionController.text,
                 widget.sender,
                 widget.receiver,
                 picture,

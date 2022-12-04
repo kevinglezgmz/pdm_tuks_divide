@@ -3,8 +3,9 @@ import 'package:tuks_divide/models/user_model.dart';
 
 class ParticipantItem extends StatelessWidget {
   final UserModel userData;
-  VoidCallback onTap;
-  ParticipantItem({super.key, required this.userData, required this.onTap});
+  final VoidCallback onTap;
+  const ParticipantItem(
+      {super.key, required this.userData, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

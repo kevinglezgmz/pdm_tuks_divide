@@ -129,6 +129,9 @@ class GroupsRepository {
       "addedBy": usersCollection.doc(
         FirebaseAuth.instance.currentUser!.uid,
       ),
+      "group": groupsCollection.doc(
+        group.groupId,
+      ),
     };
     final spendingRef = await spendingsCollection.add(spendingModel);
     await Future.wait(
@@ -163,8 +166,7 @@ class GroupsRepository {
     return res;
   }
 
-  Future<GroupActivityModel?> getGroupActivity(
-      GroupModel groupData, List<UserModel> membersInGroup) async {
+  Future<GroupActivityModel?> getGroupActivity(GroupModel groupData) async {
     final groupRef = groupsCollection.doc(groupData.groupId);
     final paymentData =
         await paymentsCollection.where('group', isEqualTo: groupRef).get();
@@ -184,7 +186,6 @@ class GroupsRepository {
     return GroupActivityModel(
       payments: paymentRefs,
       spendings: spendings,
-      groupUsers: membersInGroup,
     );
   }
 
@@ -217,5 +218,70 @@ class GroupsRepository {
         callback([]);
       }
     });
+  }
+
+  static StreamSubscription<GroupActivityModel> getActivitySubscription(
+      GroupModel group, Function(GroupActivityModel) callback) {
+    return GroupActivityStream(group: group).listen(callback);
+  }
+}
+
+class GroupActivityStream extends Stream {
+  GroupModel group;
+  List<PaymentModel> payments = [];
+  List<SpendingModel> spendings = [];
+
+  GroupActivityStream({
+    required this.group,
+  });
+
+  @override
+  StreamSubscription<GroupActivityModel> listen(
+    void Function(GroupActivityModel event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return _createGroupActivityStream().listen(
+      onData,
+      onDone: onDone,
+      onError: onError,
+      cancelOnError: cancelOnError,
+    );
+  }
+
+  Stream<GroupActivityModel> _createGroupActivityStream() {
+    final StreamController<GroupActivityModel> controller = StreamController();
+    GroupsRepository.paymentsCollection
+        .where('group',
+            isEqualTo: GroupsRepository.groupsCollection.doc(group.groupId))
+        .snapshots()
+        .listen((event) {
+      payments = event.docs
+          .map((doc) =>
+              PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
+          .toList();
+      controller.sink.add(GroupActivityModel(
+        payments: payments,
+        spendings: spendings,
+      ));
+    });
+
+    GroupsRepository.spendingsCollection
+        .where('group',
+            isEqualTo: GroupsRepository.groupsCollection.doc(group.groupId))
+        .snapshots()
+        .listen((event) {
+      spendings = event.docs
+          .map((doc) =>
+              SpendingModel.fromMap(doc.data()..addAll({"spendingId": doc.id})))
+          .toList();
+      controller.sink.add(GroupActivityModel(
+        payments: payments,
+        spendings: spendings,
+      ));
+    });
+
+    return controller.stream;
   }
 }

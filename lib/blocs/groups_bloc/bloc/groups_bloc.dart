@@ -49,41 +49,6 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
     emit(const GroupsUseState());
   }
 
-  FutureOr<void> _loadGroupActivityHandler(
-    Emitter<GroupsUseState> emit,
-  ) async {
-    emit(state.copyWith(
-      isLoadingActivity: true,
-      payments: [],
-      spendings: [],
-    ));
-    try {
-      final groupActivity = await groupsRepository.getGroupActivity(
-          state.selectedGroup!, state.groupUsers);
-      if (groupActivity == null) {
-        throw "Group Activity not found";
-      }
-      emit(
-        state.copyWith(
-          payments: groupActivity.payments,
-          spendings: groupActivity.spendings,
-          groupUsers: groupActivity.groupUsers,
-        ),
-      );
-    } catch (e) {
-      emit(state.copyWith(
-        errorMessage: "Error al obtener la actividad del grupo",
-        hasError: true,
-      ));
-    } finally {
-      emit(state.copyWith(
-        isLoadingActivity: false,
-        errorMessage: "",
-        hasError: false,
-      ));
-    }
-  }
-
   void _updateGroupsStateEventHandler(
       UpdateGroupsStateEvent event, Emitter<GroupsUseState> emit) {
     emit(state.copyWith(
@@ -112,7 +77,6 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsUseState> {
         groupUsers: usersInGroup,
         selectedGroup: event.group,
       ));
-      await _loadGroupActivityHandler(emit);
     } catch (e) {
       emit(state.copyWith(
           errorMessage: e.toString(), selectedGroup: null, hasError: true));

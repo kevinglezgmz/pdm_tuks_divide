@@ -1,13 +1,17 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
-import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
+import 'package:tuks_divide/models/group_activity_model.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
@@ -30,15 +34,26 @@ class GroupExpensesPage extends StatefulWidget {
 }
 
 class _GroupExpensesPageState extends State<GroupExpensesPage> {
+  late final StreamSubscription<GroupActivityModel>
+      _groupActivityStreamSubscription;
   final dateFormat = DateFormat.MMMM('es');
   late final SpendingsBloc spendingsBloc;
   late final AuthBloc authBloc;
+  late final GroupsBloc groupsBloc;
 
   @override
   void initState() {
     spendingsBloc = BlocProvider.of<SpendingsBloc>(context);
     authBloc = BlocProvider.of<AuthBloc>(context);
+    groupsBloc = BlocProvider.of<GroupsBloc>(context);
+    _listenForRealtimeUpdates();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _groupActivityStreamSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -111,8 +126,12 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                       child: Column(
-                        children: _createActivityList(state.spendings,
-                            state.payments, state.groupUsers, context),
+                        children: _createActivityList(
+                          state.spendings,
+                          state.payments,
+                          state.groupUsers,
+                          context,
+                        ),
                       ),
                     ),
             )
@@ -209,44 +228,64 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     return total;
   }
 
-  List<Widget> _createActivityList(List<SpendingModel> spendings,
-      List<PaymentModel> payments, List<UserModel> users, context) {
-    List<Widget> activityList = [];
-    int totalActivityItems = payments.length + spendings.length;
-    int spendingIdx = 0;
-    int paymentsIdx = 0;
-    DateTime currMonth = DateTime.now();
+  List<Widget> _createActivityList(
+    List<SpendingModel> spendings,
+    List<PaymentModel> payments,
+    List<UserModel> users,
+    BuildContext context,
+  ) {
+    List<Widget> activityWidgetsList = [];
+    final List<dynamic> spendingsAndPayments = [...spendings, ...payments];
+    spendingsAndPayments.sort((itemA, itemB) {
+      late final Timestamp timestampA;
+      late final Timestamp timestampB;
+      if (itemA is SpendingModel) {
+        timestampA = itemA.createdAt;
+      } else if (itemA is PaymentModel) {
+        timestampA = itemA.createdAt;
+      } else {
+        throw "Only spendings and payments should be used";
+      }
 
-    if (spendings.isEmpty && payments.isEmpty) {
-      activityList.add(const Text("No hay actividad para mostrar"));
-      return activityList;
+      if (itemB is SpendingModel) {
+        timestampB = itemB.createdAt;
+      } else if (itemB is PaymentModel) {
+        timestampB = itemB.createdAt;
+      } else {
+        throw "Only spendings and payments should be used";
+      }
+      return timestampB.compareTo(timestampA);
+    });
+
+    if (spendingsAndPayments.isEmpty) {
+      activityWidgetsList.add(const Text("No hay actividad para mostrar"));
+      return activityWidgetsList;
     }
 
-    activityList.add(const SizedBox(height: 16));
-
-    for (int item = 0; item < totalActivityItems; item++) {
+    final Map<DocumentReference<Map<String, dynamic>>, UserModel>
+        userRefToUserModelMap = Map.fromEntries(users
+            .map((user) =>
+                MapEntry(GroupsRepository.usersCollection.doc(user.uid), user))
+            .toList());
+    DateTime currMonth = DateTime.now();
+    activityWidgetsList.add(const SizedBox(height: 16));
+    for (int i = 0; i < spendingsAndPayments.length; i++) {
       String title = "";
       String subtitle = "";
       VoidCallback onTap = () {};
-      dynamic activity = _getLatestActivity(
-          payments.isNotEmpty && paymentsIdx < payments.length
-              ? payments[paymentsIdx]
-              : null,
-          spendings.isNotEmpty && spendingIdx < spendings.length
-              ? spendings[spendingIdx]
-              : null);
-
-      if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
-        currMonth = activity.createdAt.toDate();
-        activityList.add(_getActivityDateDivider(
-            dateFormat.format(currMonth), currMonth.year));
-      }
-
-      title = activity.description;
-      if (spendings.isNotEmpty && activity == spendings[spendingIdx]) {
-        final user = users
-            .firstWhere((user) => user.uid == spendings[spendingIdx].paidBy.id);
-        subtitle = "${user.displayName} pagó ${activity.amount}";
+      dynamic activity = spendingsAndPayments[i];
+      if (activity is SpendingModel) {
+        title = activity.description;
+        if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
+          currMonth = activity.createdAt.toDate();
+          activityWidgetsList.add(
+            _getActivityDateDivider(
+                dateFormat.format(currMonth), currMonth.year),
+          );
+        }
+        final user = userRefToUserModelMap[activity.paidBy]!;
+        subtitle =
+            "${user.displayName ?? user.fullName ?? '<No username>'} realizó un pago de ${activity.amount}";
         onTap = () {
           BlocProvider.of<SpendingDetailBloc>(context)
               .add(GetSpendingDetailEvent(spending: activity));
@@ -256,41 +295,35 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             ),
           );
         };
-        spendingIdx++;
-      } else if (payments.isNotEmpty && activity == payments[paymentsIdx]) {
-        final payer = users
-            .firstWhere((user) => user.uid == payments[spendingIdx].payer.id);
-        final receiver = users.firstWhere(
-            (user) => user.uid == payments[spendingIdx].receiver.id);
+      } else if (activity is PaymentModel) {
+        title = activity.description;
+        if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
+          currMonth = activity.createdAt.toDate();
+          activityWidgetsList.add(
+            _getActivityDateDivider(
+                dateFormat.format(currMonth), currMonth.year),
+          );
+        }
+        final payer = userRefToUserModelMap[activity.payer]!;
+        final receiver = userRefToUserModelMap[activity.receiver]!;
         subtitle =
-            "${payer.displayName} pagó a ${receiver.displayName} ${activity.amount}";
+            "${payer.displayName ?? payer.fullName ?? '<No username>'} pagó a ${receiver.displayName ?? receiver.fullName ?? '<No username>'} ${activity.amount}";
         onTap = () {
-          BlocProvider.of<PaymentDetailBloc>(context)
-              .add(GetPaymentDetailEvent(payment: activity));
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => PaymentDetailPage(),
+              builder: (context) => PaymentDetailPage(
+                payer: payer,
+                receiver: receiver,
+                payment: activity,
+              ),
             ),
           );
         };
-        paymentsIdx++;
       }
-      activityList.add(_getActivityTile(
+      activityWidgetsList.add(_getActivityTile(
           title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
     }
-    return activityList;
-  }
-
-  dynamic _getLatestActivity(PaymentModel? payment, SpendingModel? spending) {
-    if (payment == null) {
-      return spending;
-    } else if (spending == null) {
-      return payment;
-    } else if (payment.createdAt.millisecondsSinceEpoch >
-        spending.createdAt.millisecondsSinceEpoch) {
-      return payment;
-    }
-    return spending;
+    return activityWidgetsList;
   }
 
   Widget _getActivityDateDivider(String month, int year) {
@@ -338,6 +371,28 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         trailing: const FaIcon(FontAwesomeIcons.receipt),
       ),
     ));
+  }
+
+  void _listenForRealtimeUpdates() {
+    groupsBloc.add(
+      const UpdateGroupsStateEvent(
+        newState: NullableGroupsUseState(isLoadingActivity: true),
+      ),
+    );
+    _groupActivityStreamSubscription = GroupsRepository.getActivitySubscription(
+      widget.group,
+      (groupActivity) {
+        groupsBloc.add(
+          UpdateGroupsStateEvent(
+            newState: NullableGroupsUseState(
+              isLoadingActivity: false,
+              payments: groupActivity.payments,
+              spendings: groupActivity.spendings,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

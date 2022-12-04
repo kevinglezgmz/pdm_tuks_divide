@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
-import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
@@ -329,26 +328,25 @@ class UserProfileActivityPage extends StatelessWidget {
         subtitle = "Pagaste ${activity.amount} a ${user.displayName}";
         myPayments.removeAt(0);
         onTap = () {
-          BlocProvider.of<PaymentDetailBloc>(context)
-              .add(GetPaymentDetailEvent(payment: activity));
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PaymentDetailPage(),
-            ),
-          );
+          //TODO repair this
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (context) => PaymentDetailPage(),
+          //   ),
+          // );
         };
       } else if (payback.isNotEmpty && activity == payback[0]) {
         user = users.firstWhere((user) => user.uid == payback[0].payer.id);
         subtitle = "${user.displayName} te pagó ${activity.amount}";
         payback.removeAt(0);
         onTap = () {
-          BlocProvider.of<PaymentDetailBloc>(context)
-              .add(GetPaymentDetailEvent(payment: activity));
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PaymentDetailPage(),
-            ),
-          );
+          //TODO repair this
+
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (context) => PaymentDetailPage(),
+          //   ),
+          // );
         };
       } else if (spendingDoneByMe.isNotEmpty &&
           activity == spendingDoneByMe[0]) {

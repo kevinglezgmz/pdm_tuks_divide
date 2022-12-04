@@ -17,6 +17,7 @@ class SpendingModel extends Equatable {
   final List<DocumentReference<Map<String, dynamic>>> participants;
   final String? spendingPic;
   final String spendingId;
+  final DocumentReference<Map<String, dynamic>> group;
 
   const SpendingModel({
     required this.amount,
@@ -28,6 +29,7 @@ class SpendingModel extends Equatable {
     required this.spendingPic,
     required this.addedBy,
     required this.spendingId,
+    required this.group,
   });
 
   SpendingModel.fromMap(Map<String, dynamic> item)
@@ -40,6 +42,7 @@ class SpendingModel extends Equatable {
         participants = List<DocumentReference<Map<String, dynamic>>>.from(
             item['participants']),
         spendingId = item['spendingId'],
+        group = item["group"],
         spendingPic = item['spendingPic'];
 
   Map<String, dynamic> toMap() {
@@ -51,6 +54,7 @@ class SpendingModel extends Equatable {
       'paidBy': paidBy,
       'participants': participants,
       'spendingPic': spendingPic,
+      'group': group,
       'addedBy': addedBy,
     };
   }
@@ -73,6 +77,7 @@ class SpendingModel extends Equatable {
         distributionType,
         paidBy,
         addedBy,
+        group,
         participants.toString(),
         spendingPic,
       ];
