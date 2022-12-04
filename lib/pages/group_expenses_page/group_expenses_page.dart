@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
@@ -10,11 +11,29 @@ import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
 import 'package:intl/intl.dart';
+import 'package:tuks_divide/pages/group_expenses_page/expandable_fab.dart';
+import 'package:tuks_divide/pages/pay_debt_page/pay_debt_page.dart';
 
-class GroupExpensesPage extends StatelessWidget {
+class GroupExpensesPage extends StatefulWidget {
   final GroupModel group;
+
+  const GroupExpensesPage({super.key, required this.group});
+
+  @override
+  State<GroupExpensesPage> createState() => _GroupExpensesPageState();
+}
+
+class _GroupExpensesPageState extends State<GroupExpensesPage> {
   final dateFormat = DateFormat.MMMM('es');
-  GroupExpensesPage({super.key, required this.group});
+  late final SpendingsBloc spendingsBloc;
+  late final AuthBloc authBloc;
+
+  @override
+  void initState() {
+    spendingsBloc = BlocProvider.of<SpendingsBloc>(context);
+    authBloc = BlocProvider.of<AuthBloc>(context);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +53,7 @@ class GroupExpensesPage extends StatelessWidget {
                   backgroundColor: Colors.pink[100],
                   radius: 50,
                   iconSize: 50,
-                  avatarUrl: group.groupPicUrl,
+                  avatarUrl: widget.group.groupPicUrl,
                 ),
               ),
             ]),
@@ -42,7 +61,7 @@ class GroupExpensesPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20.0, 50.0, 0.0, 8.0),
               alignment: Alignment.centerLeft,
               child: Text(
-                group.groupName,
+                widget.group.groupName,
                 style:
                     const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
@@ -88,25 +107,50 @@ class GroupExpensesPage extends StatelessWidget {
             )
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'Add Expense To Group',
-          onPressed: () {
-            BlocProvider.of<SpendingsBloc>(context).add(
-              SpendingsResetBlocEvent(),
-            );
-            Navigator.of(context)
-                .push(
-                  MaterialPageRoute(
-                    builder: (context) => const AddSpendingPage(),
-                  ),
-                )
-                .then(
-                  (value) => BlocProvider.of<SpendingsBloc>(context).add(
-                    SpendingsResetBlocEvent(),
-                  ),
+        floatingActionButton: ExpandableFab(
+          distance: 80.0,
+          children: [
+            ActionButton(
+              onPressed: () {
+                showSearch(
+                  context: context,
+                  delegate: SelectPayeeSearchDelegate(),
+                ).then(
+                  (selectedUser) {
+                    if (selectedUser != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PayDebtPage(
+                            sender: authBloc.me!,
+                            receiver: selectedUser,
+                            group: widget.group,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 );
-          },
-          child: const FaIcon(FontAwesomeIcons.plus),
+              },
+              icon: const Icon(Icons.payments_outlined),
+              message: "Añadir un pago",
+            ),
+            ActionButton(
+              onPressed: () {
+                spendingsBloc.add(SpendingsResetBlocEvent());
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const AddSpendingPage(),
+                      ),
+                    )
+                    .then(
+                      (value) => spendingsBloc.add(SpendingsResetBlocEvent()),
+                    );
+              },
+              icon: const Icon(Icons.post_add_sharp),
+              message: "Añadir un gasto",
+            ),
+          ],
         ),
       );
     }, listener: (context, state) {
@@ -144,8 +188,12 @@ class GroupExpensesPage extends StatelessWidget {
       String title = "";
       String subtitle = "";
       dynamic activity = _getLatestActivity(
-          payments.isNotEmpty ? payments[paymentsIdx] : null,
-          spendings.isNotEmpty ? spendings[spendingIdx] : null);
+          payments.isNotEmpty && paymentsIdx < payments.length
+              ? payments[paymentsIdx]
+              : null,
+          spendings.isNotEmpty && spendingIdx < spendings.length
+              ? spendings[spendingIdx]
+              : null);
 
       if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
         currMonth = activity.createdAt.toDate();
@@ -227,6 +275,117 @@ class GroupExpensesPage extends StatelessWidget {
         title: Text(title),
         subtitle: Text(subtitle),
         trailing: const FaIcon(FontAwesomeIcons.receipt),
+      ),
+    );
+  }
+}
+
+class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
+  SelectPayeeSearchDelegate() : super(searchFieldLabel: "Pago hecho a...");
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    List<UserModel> queryResult = getResults(context);
+    return ListView.builder(
+      itemCount: queryResult.length + 1,
+      itemBuilder: (BuildContext context, int index) {
+        if (index == 0) {
+          return const SizedBox(height: 16);
+        }
+        UserModel user = queryResult[index - 1];
+        return getUserTile(context, user);
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    List<UserModel> queryResult = getResults(context);
+    queryResult = queryResult.sublist(
+      0,
+      queryResult.length > 10 ? 10 : queryResult.length,
+    );
+    return ListView.builder(
+      itemCount: queryResult.length,
+      itemBuilder: (BuildContext context, int index) {
+        UserModel user = queryResult[index];
+        return getUserTile(context, user);
+      },
+    );
+  }
+
+  List<UserModel> getResults(BuildContext context) {
+    UserModel me = BlocProvider.of<AuthBloc>(context).me!;
+    List<UserModel> membersInGroup = BlocProvider.of<SpendingsBloc>(context)
+        .usersInGroup
+        .where((element) => element != me)
+        .toList();
+    String queryLC = query.toLowerCase();
+    return queryLC == ""
+        ? membersInGroup
+        : membersInGroup
+            .where(
+              (element) =>
+                  ((element.displayName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0) ||
+                  ((element.firstName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0) ||
+                  ((element.lastName
+                              ?.toLowerCase()
+                              .indexOf(queryLC.toLowerCase()) ??
+                          -1) >=
+                      0),
+            )
+            .toList();
+  }
+
+  Widget getUserTile(BuildContext context, UserModel user) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        child: InkWell(
+          onTap: () {
+            close(context, user);
+          },
+          child: ListTile(
+            title: Text(user.displayName ?? user.fullName ?? '<Sin Nombre>'),
+            leading: CircleAvatar(
+              backgroundImage: user.pictureUrl == null || user.pictureUrl == ""
+                  ? const NetworkImage(
+                      "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png",
+                    )
+                  : NetworkImage(user.pictureUrl!),
+            ),
+          ),
+        ),
       ),
     );
   }

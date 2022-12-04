@@ -7,6 +7,7 @@ import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart'
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
 import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
+import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_repository.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
@@ -64,6 +65,7 @@ void main() async {
       RepositoryProvider(create: (context) => UserActivityRepository()),
       RepositoryProvider(create: (context) => UpdateUserProfileRepository()),
       RepositoryProvider(create: (context) => SpendingDetailRepository()),
+      RepositoryProvider(create: (context) => PaymentsRepository()),
     ],
     child: MultiBlocProvider(
       providers: [

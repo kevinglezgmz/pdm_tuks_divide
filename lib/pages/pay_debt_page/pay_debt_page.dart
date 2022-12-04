@@ -1,9 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
+import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/utils/text_input_utils.dart';
 
-class PayDebtPage extends StatelessWidget {
+class PayDebtPage extends StatefulWidget {
+  final UserModel sender;
+  final UserModel receiver;
+  final GroupModel group;
+  const PayDebtPage({
+    super.key,
+    required this.sender,
+    required this.receiver,
+    required this.group,
+  });
+
+  @override
+  State<PayDebtPage> createState() => _PayDebtPageState();
+}
+
+class _PayDebtPageState extends State<PayDebtPage> {
   final TextEditingController _moneyController = TextEditingController();
-  PayDebtPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +31,26 @@ class PayDebtPage extends StatelessWidget {
         title: const Text('Añadir pago'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              double? amount = double.tryParse(_moneyController.text);
+              if (amount == null) {
+                return;
+              }
+              RepositoryProvider.of<PaymentsRepository>(context)
+                  .addPaymentDetail(
+                amount,
+                "Descripcion temporal",
+                widget.sender,
+                widget.receiver,
+                null,
+                widget.group,
+              )
+                  .then((value) {
+                if (value != null) {
+                  Navigator.of(context).pop();
+                }
+              });
+            },
             icon: const Icon(
               Icons.check,
             ),
@@ -27,38 +65,36 @@ class PayDebtPage extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               CircleAvatar(
-                backgroundColor: Colors.grey,
-                radius: 36,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.black87,
-                  size: 58,
-                ),
+                backgroundImage: widget.sender.pictureUrl == null ||
+                        widget.sender.pictureUrl == ""
+                    ? const NetworkImage(
+                        "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                    : NetworkImage(widget.sender.pictureUrl!),
+                radius: 48,
               ),
-              SizedBox(width: 16),
-              Icon(
+              const SizedBox(width: 16),
+              const Icon(
                 Icons.arrow_forward,
                 size: 58,
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               CircleAvatar(
-                backgroundColor: Colors.grey,
-                radius: 36,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.black87,
-                  size: 58,
-                ),
+                backgroundImage: widget.receiver.pictureUrl == null ||
+                        widget.receiver.pictureUrl == ""
+                    ? const NetworkImage(
+                        "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                    : NetworkImage(widget.receiver.pictureUrl!),
+                radius: 48,
               ),
             ],
           ),
           const SizedBox(height: 36),
-          const Text(
-            'Registrando pago a Persona',
+          Text(
+            'Registrando pago a ${widget.receiver.displayName ?? widget.receiver.fullName ?? '<Sin Nombre>'}',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
           const SizedBox(height: 24),
           Container(
@@ -121,6 +157,7 @@ class PayDebtPage extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );

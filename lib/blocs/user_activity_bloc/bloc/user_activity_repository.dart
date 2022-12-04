@@ -79,13 +79,14 @@ class UserActivityRepository {
     final myPaymentsRefs =
         await paymentsCollection.where('payer', isEqualTo: userRef).get();
     final myPayments = myPaymentsRefs.docs
-        .map((doc) => PaymentModel.fromMap(doc.data()))
+        .map((doc) =>
+            PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
         .toList();
 
     final paybackRefs =
         await paymentsCollection.where('receiver', isEqualTo: userRef).get();
     final payback = paybackRefs.docs
-        .map((doc) => PaymentModel.fromMap(doc.data()))
+        .map((doc) => PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
         .toList();
 
     final spendingDoneByMeRefs =

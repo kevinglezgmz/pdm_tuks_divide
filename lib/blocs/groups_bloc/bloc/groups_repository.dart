@@ -169,7 +169,8 @@ class GroupsRepository {
     final paymentData =
         await paymentsCollection.where('group', isEqualTo: groupRef).get();
     final paymentRefs = paymentData.docs
-        .map((doc) => PaymentModel.fromMap(doc.data()))
+        .map((doc) =>
+            PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
         .toList();
     final allGroupSpendingsData = await groupsSpendingsCollection
         .where('group', isEqualTo: groupRef)
