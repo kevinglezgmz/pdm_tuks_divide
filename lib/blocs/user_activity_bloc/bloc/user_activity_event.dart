@@ -7,4 +7,11 @@ abstract class UserActivityEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class UserActivityLoadEvent extends UserActivityEvent {}
+class UserActivityUpdateStateEvent extends UserActivityEvent {
+  final NullableUserActivityUseState newState;
+
+  const UserActivityUpdateStateEvent({required this.newState});
+
+  @override
+  List<Object> get props => [newState];
+}

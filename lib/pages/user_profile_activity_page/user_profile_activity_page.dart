@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_repository.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
@@ -12,15 +15,42 @@ import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
 import 'package:tuks_divide/pages/spending_detail_page/spending_detail_page.dart';
 
-class UserProfileActivityPage extends StatelessWidget {
+class UserProfileActivityPage extends StatefulWidget {
+  const UserProfileActivityPage({super.key});
+
+  @override
+  State<UserProfileActivityPage> createState() =>
+      _UserProfileActivityPageState();
+}
+
+class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
+  late final StreamSubscription<NullableUserActivityUseState>
+      _userActivityStreamSubscription;
+  late final AuthBloc authBloc;
+  late final UserActivityBloc userActivityBloc;
   final dateFormat = DateFormat.MMMM('es');
-  UserProfileActivityPage({super.key});
+
+  @override
+  void initState() {
+    authBloc = BlocProvider.of<AuthBloc>(context);
+    userActivityBloc = BlocProvider.of<UserActivityBloc>(context);
+    _listenForRealtimeUpdates();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _userActivityStreamSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UserActivityBloc, UserActivityState>(
+    return BlocBuilder<UserActivityBloc, UserActivityUseState>(
       builder: (context, state) {
-        if (state is UserActivityLoadedState) {
+        if (state.isLoadingPaymentsByMe ||
+            state.isLoadingPaymentsToMe ||
+            state.isLoadingSpendings) {
           return Stack(
             children: [
               const SizedBox(width: double.infinity, height: double.infinity),
@@ -46,24 +76,20 @@ class UserProfileActivityPage extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(
-                  top: 128 - 48,
-                  right: 0,
-                  left: 0,
-                  child: Center(
-                    child: CircleAvatar(
-                        radius: 55,
-                        backgroundImage: context
-                                        .read<AuthBloc>()
-                                        .me!
-                                        .pictureUrl ==
-                                    null ||
-                                context.read<AuthBloc>().me!.pictureUrl == ""
-                            ? const NetworkImage(
-                                "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
-                            : NetworkImage(
-                                context.read<AuthBloc>().me!.pictureUrl!)),
-                  )),
+              const Positioned(
+                top: 128 - 48,
+                right: 0,
+                left: 0,
+                child: CircleAvatar(
+                  radius: 48,
+                  backgroundColor: Colors.indigo,
+                  child: Icon(
+                    Icons.person,
+                    size: 64,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
               Positioned(
                 top: 128 + 48,
                 right: 0,
@@ -71,10 +97,10 @@ class UserProfileActivityPage extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 30),
                     Text(
-                      context.read<AuthBloc>().me!.displayName ??
-                          context.read<AuthBloc>().me!.fullName ??
+                      authBloc.me!.displayName ??
+                          authBloc.me!.fullName ??
                           "<No name>",
                       style: const TextStyle(
                         fontSize: 20,
@@ -82,16 +108,16 @@ class UserProfileActivityPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      "Debes \$${_getMyDebt(state.myPayments, state.myDebts, context.read<AuthBloc>().me!.uid)}",
-                      style: const TextStyle(
+                    const Text(
+                      'Cargando adeudos...',
+                      style: TextStyle(
                         fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Te deben \$${_calculateOwing(state.owings, state.payback, context.read<AuthBloc>().me!.uid)}',
-                      style: const TextStyle(
+                    const Text(
+                      'Cargando saldos pendientes...',
+                      style: TextStyle(
                         fontSize: 16,
                       ),
                     ),
@@ -107,14 +133,11 @@ class UserProfileActivityPage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _createActivityList(
-                          state.myPayments,
-                          state.payback,
-                          state.spendingDoneByMe,
-                          state.owings,
-                          state.otherUsers,
-                          context.read<AuthBloc>().me!,
-                          context),
+                      children: const [
+                        Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      ],
                     ),
                   ))
             ],
@@ -145,20 +168,23 @@ class UserProfileActivityPage extends StatelessWidget {
                 ),
               ),
             ),
-            const Positioned(
-              top: 128 - 48,
-              right: 0,
-              left: 0,
-              child: CircleAvatar(
-                radius: 48,
-                backgroundColor: Colors.indigo,
-                child: Icon(
-                  Icons.person,
-                  size: 64,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            Positioned(
+                top: 128 - 48,
+                right: 0,
+                left: 0,
+                child: Center(
+                  child: CircleAvatar(
+                      radius: 55,
+                      backgroundImage: context
+                                      .read<AuthBloc>()
+                                      .me!
+                                      .pictureUrl ==
+                                  null ||
+                              authBloc.me!.pictureUrl == ""
+                          ? const NetworkImage(
+                              "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
+                          : NetworkImage(authBloc.me!.pictureUrl!)),
+                )),
             Positioned(
               top: 128 + 48,
               right: 0,
@@ -166,10 +192,10 @@ class UserProfileActivityPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 30),
                   Text(
-                    context.read<AuthBloc>().me!.displayName ??
-                        context.read<AuthBloc>().me!.fullName ??
+                    authBloc.me!.displayName ??
+                        authBloc.me!.fullName ??
                         "<No name>",
                     style: const TextStyle(
                       fontSize: 20,
@@ -177,18 +203,45 @@ class UserProfileActivityPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Debe: <No disponible>',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      double amountIOwe = _howMuchDoIOwe(state, authBloc.me!);
+                      if (amountIOwe <= 0.00) {
+                        return const Text(
+                          "No tienes ninguna deuda!",
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        );
+                      }
+                      return Text(
+                        "Debes un total de: \$$amountIOwe",
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Le deben <No disponible>',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      double amountTheyOweMe =
+                          _howMuchDoTheyOweMe(state, authBloc.me!);
+                      if (amountTheyOweMe <= 0.00) {
+                        return const Text(
+                          "Nadie tiene deudas contigo!",
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        );
+                      }
+                      return Text(
+                        'Te deben un total de: \$$amountTheyOweMe',
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -202,11 +255,11 @@ class UserProfileActivityPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: const [
-                      Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    ],
+                    children: _createActivityList(
+                      state,
+                      authBloc.me!,
+                      context,
+                    ),
                   ),
                 ))
           ],
@@ -215,62 +268,82 @@ class UserProfileActivityPage extends StatelessWidget {
     );
   }
 
-  double _getMyDebt(List<PaymentModel> myPayments,
-      List<GroupSpendingModel> myDebts, String uid) {
-    double total = 0;
-    if (myDebts.isEmpty) {
-      return total;
-    }
-
-    for (var debt in myDebts) {
-      total += debt.amountToPay;
-    }
-
-    if (myPayments.isEmpty) {
-      return total;
-    }
-
-    for (var payment in myPayments) {
-      total -= payment.amount;
-    }
-
-    return total;
-  }
-
-  double _calculateOwing(
-      List<GroupSpendingModel> owings, List<PaymentModel> paybacks, String me) {
-    double total = 0;
-    if (owings.isEmpty) {
-      return total;
-    }
-    for (var owing in owings) {
-      if (owing.user.id != me) {
-        total += owing.amountToPay;
+  double _howMuchDoIOwe(UserActivityUseState state, UserModel me) {
+    double totalIOwe = 0;
+    for (final SpendingModel spending in state.spendingsWhereIDidNotPay) {
+      try {
+        final spendingDetail = state.spendingsDetails.firstWhere(
+          (spendingDetail) =>
+              spendingDetail.user.id == me.uid &&
+              spendingDetail.spending.id == spending.spendingId,
+        );
+        totalIOwe += spendingDetail.amountToPay;
+      } catch (e) {
+        totalIOwe;
       }
     }
-    for (var payback in paybacks) {
-      total -= payback.amount;
+    for (final PaymentModel payment in state.paymentsMadeByMe) {
+      totalIOwe -= payment.amount;
     }
-    return total;
+    return double.parse(totalIOwe.toStringAsFixed(2));
+  }
+
+  double _howMuchDoTheyOweMe(UserActivityUseState state, UserModel me) {
+    double totalTheyOweMe = 0;
+    for (final SpendingModel spending in state.spendingsWhereIPaid) {
+      for (final GroupSpendingModel spendingDetail in state.spendingsDetails) {
+        if (spendingDetail.spending.id == spending.spendingId &&
+            spendingDetail.user.id != me.uid) {
+          totalTheyOweMe += spendingDetail.amountToPay;
+        }
+      }
+    }
+    for (final PaymentModel payment in state.paymentsMadeToMe) {
+      totalTheyOweMe -= payment.amount;
+    }
+    return double.parse(totalTheyOweMe.toStringAsFixed(2));
   }
 
   List<Widget> _createActivityList(
-      List<PaymentModel> myPayments,
-      List<PaymentModel> payback,
-      List<SpendingModel> spendingDoneByMe,
-      List<GroupSpendingModel> owings,
-      List<UserModel> users,
-      UserModel me,
-      context) {
-    List<SpendingModel> pastSpendings = [];
+    UserActivityUseState state,
+    UserModel me,
+    BuildContext context,
+  ) {
     List<Widget> activityList = [];
-    int totalActivityItems = payback.length +
-        payback.length +
-        spendingDoneByMe.length +
-        owings.length;
+    Set<SpendingModel> spendingsIPaid = Set.from(state.spendingsWhereIPaid);
+    Set<SpendingModel> spendingsIDidNotPay =
+        Set.from(state.spendingsWhereIDidNotPay);
+    Set<PaymentModel> paymentsMadeByMe = Set.from(state.paymentsMadeByMe);
+    Set<PaymentModel> paymentsMadeToMe = Set.from(state.paymentsMadeToMe);
+    List<dynamic> allUserActivity = [
+      ...state.paymentsMadeByMe,
+      ...state.paymentsMadeToMe,
+      ...state.spendingsWhereIPaid,
+      ...state.spendingsWhereIDidNotPay,
+    ];
+    Map<String, UserModel> userIdToUserMap = state.userIdToUserMap;
+    allUserActivity.sort((activityA, activityB) {
+      late final Timestamp timestampA;
+      late final Timestamp timestampB;
+      if (activityA is SpendingModel) {
+        timestampA = activityA.createdAt;
+      } else if (activityA is PaymentModel) {
+        timestampA = activityA.createdAt;
+      } else {
+        throw "Only spendings and payments are allowed";
+      }
+      if (activityB is SpendingModel) {
+        timestampB = activityB.createdAt;
+      } else if (activityB is PaymentModel) {
+        timestampB = activityB.createdAt;
+      } else {
+        throw "Only spendings and payments are allowed";
+      }
+      return timestampB.compareTo(timestampA);
+    });
 
     activityList.add(const SizedBox(height: 16));
-    if (totalActivityItems == 0) {
+    if (allUserActivity.isEmpty) {
       activityList.add(const Text(
         "No hay actividad para mostrar",
         textAlign: TextAlign.center,
@@ -280,78 +353,59 @@ class UserProfileActivityPage extends StatelessWidget {
 
     DateTime currMonth = DateTime.now();
 
-    for (int item = 0; item < totalActivityItems; item++) {
+    for (final activity in allUserActivity) {
       UserModel? user;
       String title = "";
       String subtitle = "";
-      Timestamp? owingsDate;
       VoidCallback onTap = () {};
-      if (owings.isNotEmpty) {
-        final currSpending = spendingDoneByMe
-            .where((element) => owings[0].spending.id == element.spendingId)
-            .toList();
-        owingsDate = currSpending.isNotEmpty ? currSpending[0].createdAt : null;
-        if (owingsDate == null) {
-          final pastSpending = pastSpendings
-              .where((element) => owings[0].spending.id == element.spendingId)
-              .toList();
-          owingsDate =
-              pastSpending.isNotEmpty ? pastSpending[0].createdAt : null;
-        }
-      }
-      dynamic activity = _getLatestActivity(
-          myPayments.isNotEmpty ? myPayments[0] : null,
-          payback.isNotEmpty ? payback[0] : null,
-          spendingDoneByMe.isNotEmpty ? spendingDoneByMe[0] : null,
-          owings.isNotEmpty ? owings[0] : null,
-          owingsDate?.millisecondsSinceEpoch);
 
-      if (activity == owings[0]) {
-        title = "Nueva deuda";
-        if (owingsDate!.toDate().month != currMonth.month) {
-          currMonth = owingsDate.toDate();
-          activityList.add(_getActivityDateDivider(
-              dateFormat.format(currMonth), currMonth.year));
+      if (activity is PaymentModel) {
+        if (paymentsMadeByMe.contains(activity)) {
+          title = activity.description;
+          user = userIdToUserMap[activity.receiver.id];
+          subtitle =
+              "Pagaste \$${activity.amount} a ${user?.displayName ?? user?.fullName ?? "<Sin nombre>"}";
+        } else if (paymentsMadeToMe.contains(activity)) {
+          title = activity.description;
+          user = userIdToUserMap[activity.payer.id];
+          subtitle =
+              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te pagó ${activity.amount}";
         }
-      } else if (activity != owings[0]) {
-        title = activity.description;
-        if (activity.createdAt.toDate().month != currMonth.month || item == 0) {
+        onTap = () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailPage(
+                payment: activity,
+                payer: userIdToUserMap[activity.payer.id]!,
+                receiver: userIdToUserMap[activity.receiver.id]!,
+              ),
+            ),
+          );
+        };
+        if (activity.createdAt.toDate().month != currMonth.month) {
           currMonth = activity.createdAt.toDate();
           activityList.add(_getActivityDateDivider(
               dateFormat.format(currMonth), currMonth.year));
         }
-      }
-
-      if (myPayments.isNotEmpty && activity == myPayments[0]) {
-        user =
-            users.firstWhere((user) => user.uid == myPayments[0].receiver.id);
-        subtitle = "Pagaste ${activity.amount} a ${user.displayName}";
-        myPayments.removeAt(0);
-        onTap = () {
-          //TODO repair this
-          // Navigator.of(context).push(
-          //   MaterialPageRoute(
-          //     builder: (context) => PaymentDetailPage(),
-          //   ),
-          // );
-        };
-      } else if (payback.isNotEmpty && activity == payback[0]) {
-        user = users.firstWhere((user) => user.uid == payback[0].payer.id);
-        subtitle = "${user.displayName} te pagó ${activity.amount}";
-        payback.removeAt(0);
-        onTap = () {
-          //TODO repair this
-
-          // Navigator.of(context).push(
-          //   MaterialPageRoute(
-          //     builder: (context) => PaymentDetailPage(),
-          //   ),
-          // );
-        };
-      } else if (spendingDoneByMe.isNotEmpty &&
-          activity == spendingDoneByMe[0]) {
-        subtitle = "Pagaste la cuenta de \$${activity.amount}";
-        pastSpendings.add(spendingDoneByMe.removeAt(0));
+      } else if (activity is SpendingModel) {
+        if (spendingsIDidNotPay.contains(activity)) {
+          user = userIdToUserMap[activity.paidBy.id];
+          GroupSpendingModel? spendingDetail;
+          try {
+            spendingDetail = state.spendingsDetails.firstWhere((element) =>
+                element.spending.id == activity.spendingId &&
+                element.user.id == me.uid);
+          } catch (e) {
+            spendingDetail = null;
+          }
+          title = "${activity.description} (deuda) ";
+          subtitle =
+              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te prestó un total de \$${spendingDetail?.amountToPay.toStringAsFixed(2) ?? "0.00"}";
+        } else if (spendingsIPaid.contains(activity)) {
+          title = activity.description;
+          subtitle =
+              "Pagaste una cuenta de \$${activity.amount.toStringAsFixed(2)}";
+        }
         onTap = () {
           BlocProvider.of<SpendingDetailBloc>(context)
               .add(GetSpendingDetailEvent(spending: activity));
@@ -361,45 +415,18 @@ class UserProfileActivityPage extends StatelessWidget {
             ),
           );
         };
-      } else if (activity != null) {
-        user = users.firstWhere((user) => user.uid == owings[0].user.id);
-        subtitle =
-            "${user.displayName} debe a ${me.displayName} \$${activity.amountToPay}";
-        owings.removeAt(0);
+        if (activity.createdAt.toDate().month != currMonth.month) {
+          currMonth = activity.createdAt.toDate();
+          activityList.add(_getActivityDateDivider(
+              dateFormat.format(currMonth), currMonth.year));
+        }
       }
+
       activityList.add(_getActivityTile(
           title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
     }
-    return activityList;
-  }
 
-  dynamic _getLatestActivity(PaymentModel? payment, PaymentModel? payback,
-      SpendingModel? spending, GroupSpendingModel? owing, int? owingsDate) {
-    int minIdx = 0;
-    final List<int?> milis = [];
-    milis.add(payment?.createdAt.millisecondsSinceEpoch);
-    milis.add(payback?.createdAt.millisecondsSinceEpoch);
-    milis.add(spending?.createdAt.millisecondsSinceEpoch);
-    milis.add(owingsDate);
-    for (int i = 1; i < 4; i++) {
-      if (milis[i - 1] == null) {
-        minIdx = i;
-        continue;
-      }
-      if (milis[i] != null &&
-          milis[minIdx] != null &&
-          milis[i]! > milis[minIdx]!) {
-        minIdx = i;
-      }
-    }
-    if (minIdx == 0) {
-      return payment;
-    } else if (minIdx == 1) {
-      return payback;
-    } else if (minIdx == 2) {
-      return spending;
-    }
-    return owing;
+    return activityList;
   }
 
   Widget _getActivityDateDivider(String month, int year) {
@@ -442,10 +469,37 @@ class UserProfileActivityPage extends StatelessWidget {
           ),
         ),
         minLeadingWidth: 28,
-        title: Text(title),
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.attach_money),
       ),
     ));
+  }
+
+  void _listenForRealtimeUpdates() {
+    userActivityBloc.add(
+      const UserActivityUpdateStateEvent(
+        newState: NullableUserActivityUseState(
+          isLoadingPaymentsByMe: true,
+          isLoadingPaymentsToMe: true,
+          isLoadingSpendings: true,
+        ),
+      ),
+    );
+    _userActivityStreamSubscription =
+        UserActivityRepository.getUserActivitySubscription(
+      authBloc.me!,
+      (groupActivityState) {
+        userActivityBloc.add(
+          UserActivityUpdateStateEvent(
+            newState: groupActivityState,
+          ),
+        );
+      },
+    );
   }
 }

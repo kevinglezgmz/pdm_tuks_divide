@@ -90,10 +90,7 @@ void main() async {
         BlocProvider(
             create: (BuildContext context) => UploadImageBloc(
                 uploadImageRepository: context.read<UploadImageRepository>())),
-        BlocProvider(
-            create: (BuildContext context) => UserActivityBloc(
-                userActivityRepository:
-                    context.read<UserActivityRepository>())),
+        BlocProvider(create: (BuildContext context) => UserActivityBloc()),
         BlocProvider(
             create: (BuildContext context) => UpdateUserProfileBloc(
                 updateUserProfileRepository:

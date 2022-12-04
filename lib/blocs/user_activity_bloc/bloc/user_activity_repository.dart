@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/models/collections.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/group_spending_model.dart';
@@ -13,17 +14,17 @@ import 'package:tuks_divide/models/user_activity_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class UserActivityRepository {
-  final usersCollection =
+  static final usersCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.users);
-  final spendingsCollection =
+  static final spendingsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.spendings);
-  final paymentsCollection =
+  static final paymentsCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.payments);
-  final groupsSpendingsCollection = FirebaseFirestore.instance
+  static final groupsSpendingsCollection = FirebaseFirestore.instance
       .collection(FirebaseCollections.groupsSpendings);
-  final groupsUsersCollection =
+  static final groupsUsersCollection =
       FirebaseFirestore.instance.collection(FirebaseCollections.groupsUsers);
-  final groupsRepository = GroupsRepository();
+  static final groupsRepository = GroupsRepository();
 
   FutureOr<List<UserModel>> _getUsersData(
       List<GroupsUsersModel> groups, UserModel user) async {
@@ -123,5 +124,177 @@ class UserActivityRepository {
         otherUsers: otherUsersData,
         myDebts: myDebts,
         owings: owings);
+  }
+
+  static StreamSubscription<NullableUserActivityUseState>
+      getUserActivitySubscription(
+    UserModel me,
+    Function(NullableUserActivityUseState) callback,
+  ) {
+    return UserActivityStream(me: me).listen(callback);
+  }
+}
+
+class UserActivityStream extends Stream<NullableUserActivityUseState> {
+  NullableUserActivityUseState activityUseState =
+      const NullableUserActivityUseState();
+  Map<String, UserModel> userIdToUserMap = {};
+  final UserModel me;
+  UserActivityStream({required this.me});
+
+  @override
+  StreamSubscription<NullableUserActivityUseState> listen(
+    void Function(NullableUserActivityUseState event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return _createUserActivityStream().listen(
+      onData,
+      onDone: onDone,
+      onError: onError,
+      cancelOnError: cancelOnError,
+    );
+  }
+
+  Stream<NullableUserActivityUseState> _createUserActivityStream() {
+    final StreamController<NullableUserActivityUseState> controller =
+        StreamController();
+    userIdToUserMap[me.uid] = me;
+
+    UserActivityRepository.spendingsCollection
+        .where('participants',
+            arrayContains: UserActivityRepository.usersCollection.doc(me.uid))
+        .snapshots()
+        .listen((event) async {
+      List<SpendingModel> spendingsWhereIParticipate = event.docs
+          .map((doc) =>
+              SpendingModel.fromMap(doc.data()..addAll({"spendingId": doc.id})))
+          .toList();
+      if (event.docs.isEmpty) {
+        activityUseState = activityUseState.copyWith(
+          spendingsDetails: [],
+          spendingsWhereIDidNotPay: [],
+          spendingsWhereIPaid: [],
+          isLoadingSpendings: false,
+        );
+        controller.sink.add(activityUseState);
+        return;
+      }
+      List<GroupSpendingModel> spendingsDetails = await Future.wait(
+        spendingsWhereIParticipate.map(
+          (spending) async {
+            QuerySnapshot<Map<String, dynamic>> data =
+                await UserActivityRepository.groupsSpendingsCollection
+                    .where("spending",
+                        isEqualTo: UserActivityRepository.spendingsCollection
+                            .doc(spending.spendingId))
+                    .get();
+            if (data.size == 0) {
+              data = await UserActivityRepository.groupsSpendingsCollection
+                  .where("spending",
+                      isEqualTo: UserActivityRepository.spendingsCollection
+                          .doc(spending.spendingId))
+                  .get(const GetOptions(source: Source.server));
+            }
+            return data.docs
+                .map((doc) => GroupSpendingModel.fromMap(doc.data()))
+                .toList();
+          },
+        ),
+      ).then((value) =>
+          value.reduce((value, spendings) => [...value, ...spendings]));
+
+      List<SpendingModel> spendingsWhereIPaid = [];
+      List<SpendingModel> spendingsWhereIDidNotPay = [];
+      for (final SpendingModel spending in spendingsWhereIParticipate) {
+        if (spending.paidBy ==
+            UserActivityRepository.usersCollection.doc(me.uid)) {
+          spendingsWhereIPaid.add(spending);
+        } else {
+          spendingsWhereIDidNotPay.add(spending);
+        }
+      }
+
+      await Future.wait(spendingsWhereIDidNotPay.map((spending) async {
+        if (userIdToUserMap[spending.paidBy.id] != null) {
+          return;
+        }
+        final userData = await spending.paidBy.get();
+        if (userData.exists) {
+          userIdToUserMap[spending.paidBy.id] =
+              UserModel.fromMap(userData.data()!);
+        }
+      }));
+
+      activityUseState = activityUseState.copyWith(
+        spendingsDetails: spendingsDetails,
+        spendingsWhereIDidNotPay: spendingsWhereIDidNotPay,
+        spendingsWhereIPaid: spendingsWhereIPaid,
+        isLoadingSpendings: false,
+        userIdToUserMap: userIdToUserMap,
+      );
+      controller.sink.add(activityUseState);
+    });
+
+    UserActivityRepository.paymentsCollection
+        .where('payer',
+            isEqualTo: UserActivityRepository.usersCollection.doc(me.uid))
+        .snapshots()
+        .listen((event) async {
+      final List<PaymentModel> paymentsMadeByMe = event.docs
+          .map((doc) =>
+              PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
+          .toList();
+
+      await Future.wait(paymentsMadeByMe.map((payment) async {
+        if (userIdToUserMap[payment.receiver.id] != null) {
+          return;
+        }
+        final userData = await payment.receiver.get();
+        if (userData.exists) {
+          userIdToUserMap[payment.receiver.id] =
+              UserModel.fromMap(userData.data()!);
+        }
+      }));
+
+      activityUseState = activityUseState.copyWith(
+        paymentsMadeByMe: paymentsMadeByMe,
+        isLoadingPaymentsByMe: false,
+        userIdToUserMap: userIdToUserMap,
+      );
+      controller.sink.add(activityUseState);
+    });
+
+    UserActivityRepository.paymentsCollection
+        .where('receiver',
+            isEqualTo: UserActivityRepository.usersCollection.doc(me.uid))
+        .snapshots()
+        .listen((event) async {
+      final List<PaymentModel> paymentsMadeToMe = event.docs
+          .map((doc) =>
+              PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
+          .toList();
+
+      await Future.wait(paymentsMadeToMe.map((payment) async {
+        if (userIdToUserMap[payment.receiver.id] != null) {
+          return;
+        }
+        final userData = await payment.receiver.get();
+        if (userData.exists) {
+          userIdToUserMap[payment.receiver.id] =
+              UserModel.fromMap(userData.data()!);
+        }
+      }));
+
+      activityUseState = activityUseState.copyWith(
+        paymentsMadeToMe: paymentsMadeToMe,
+        isLoadingPaymentsToMe: false,
+        userIdToUserMap: userIdToUserMap,
+      );
+      controller.sink.add(activityUseState);
+    });
+
+    return controller.stream;
   }
 }

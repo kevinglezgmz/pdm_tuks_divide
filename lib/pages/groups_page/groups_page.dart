@@ -108,7 +108,8 @@ class _GroupsPageState extends State<GroupsPage> {
               BlocProvider.of<CreateGroupBloc>(context)
                   .add(InitGroupCreateEvent());
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => CreateGroupPage()),
+                MaterialPageRoute(
+                    builder: (context) => const CreateGroupPage()),
               );
             },
             child: const FaIcon(FontAwesomeIcons.plus),

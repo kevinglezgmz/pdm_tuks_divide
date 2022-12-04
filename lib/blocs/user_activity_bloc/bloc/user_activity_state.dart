@@ -7,29 +7,130 @@ abstract class UserActivityState extends Equatable {
   List<dynamic> get props => [];
 }
 
-class UserActivityInitialState extends UserActivityState {}
+class UserActivityUseState extends UserActivityState {
+  final List<PaymentModel> paymentsMadeByMe;
+  final List<PaymentModel> paymentsMadeToMe;
+  final List<SpendingModel> spendingsWhereIPaid;
+  final List<SpendingModel> spendingsWhereIDidNotPay;
+  final List<GroupSpendingModel> spendingsDetails;
+  final bool isLoadingSpendings;
+  final bool isLoadingPaymentsToMe;
+  final bool isLoadingPaymentsByMe;
+  final Map<String, UserModel> userIdToUserMap;
 
-class UserActivityLoadingState extends UserActivityState {}
+  const UserActivityUseState({
+    this.paymentsMadeByMe = const [],
+    this.paymentsMadeToMe = const [],
+    this.spendingsWhereIPaid = const [],
+    this.spendingsWhereIDidNotPay = const [],
+    this.spendingsDetails = const [],
+    this.isLoadingSpendings = false,
+    this.isLoadingPaymentsToMe = false,
+    this.isLoadingPaymentsByMe = false,
+    this.userIdToUserMap = const {},
+  });
 
-class UserActivityErrorState extends UserActivityState {}
-
-class UserActivityLoadedState extends UserActivityState {
-  final List<PaymentModel> myPayments;
-  final List<PaymentModel> payback;
-  final List<SpendingModel> spendingDoneByMe;
-  final List<UserModel> otherUsers;
-  final List<GroupSpendingModel> myDebts;
-  final List<GroupSpendingModel> owings;
-
-  const UserActivityLoadedState(
-      {required this.myPayments,
-      required this.payback,
-      required this.spendingDoneByMe,
-      required this.otherUsers,
-      required this.myDebts,
-      required this.owings});
+  UserActivityUseState copyWith({
+    List<PaymentModel>? paymentsMadeByMe,
+    List<PaymentModel>? paymentsMadeToMe,
+    List<SpendingModel>? spendingsWhereIPaid,
+    List<SpendingModel>? spendingsWhereIDidNotPay,
+    List<GroupSpendingModel>? spendingsDetails,
+    bool? isLoadingSpendings,
+    bool? isLoadingPaymentsToMe,
+    bool? isLoadingPaymentsByMe,
+    Map<String, UserModel>? userIdToUserMap,
+  }) {
+    return UserActivityUseState(
+      paymentsMadeByMe: paymentsMadeByMe ?? this.paymentsMadeByMe,
+      paymentsMadeToMe: paymentsMadeToMe ?? this.paymentsMadeToMe,
+      spendingsWhereIPaid: spendingsWhereIPaid ?? this.spendingsWhereIPaid,
+      spendingsWhereIDidNotPay:
+          spendingsWhereIDidNotPay ?? this.spendingsWhereIDidNotPay,
+      spendingsDetails: spendingsDetails ?? this.spendingsDetails,
+      isLoadingPaymentsByMe:
+          isLoadingPaymentsByMe ?? this.isLoadingPaymentsByMe,
+      isLoadingPaymentsToMe:
+          isLoadingPaymentsToMe ?? this.isLoadingPaymentsToMe,
+      isLoadingSpendings: isLoadingSpendings ?? this.isLoadingSpendings,
+      userIdToUserMap: userIdToUserMap ?? this.userIdToUserMap,
+    );
+  }
 
   @override
-  List<dynamic> get props =>
-      [myPayments, payback, spendingDoneByMe, otherUsers, myDebts, owings];
+  List get props => [
+        paymentsMadeByMe,
+        paymentsMadeToMe,
+        spendingsWhereIPaid,
+        spendingsWhereIDidNotPay,
+        spendingsDetails,
+        isLoadingPaymentsByMe,
+        isLoadingPaymentsToMe,
+        isLoadingSpendings,
+        userIdToUserMap,
+      ];
+}
+
+class NullableUserActivityUseState extends UserActivityState {
+  final List<PaymentModel>? paymentsMadeByMe;
+  final List<PaymentModel>? paymentsMadeToMe;
+  final List<SpendingModel>? spendingsWhereIPaid;
+  final List<SpendingModel>? spendingsWhereIDidNotPay;
+  final List<GroupSpendingModel>? spendingsDetails;
+  final bool? isLoadingSpendings;
+  final bool? isLoadingPaymentsToMe;
+  final bool? isLoadingPaymentsByMe;
+  final Map<String, UserModel>? userIdToUserMap;
+
+  const NullableUserActivityUseState({
+    this.paymentsMadeByMe,
+    this.paymentsMadeToMe,
+    this.spendingsWhereIPaid,
+    this.spendingsWhereIDidNotPay,
+    this.spendingsDetails,
+    this.isLoadingSpendings,
+    this.isLoadingPaymentsToMe,
+    this.isLoadingPaymentsByMe,
+    this.userIdToUserMap,
+  });
+
+  NullableUserActivityUseState copyWith({
+    List<PaymentModel>? paymentsMadeByMe,
+    List<PaymentModel>? paymentsMadeToMe,
+    List<SpendingModel>? spendingsWhereIPaid,
+    List<SpendingModel>? spendingsWhereIDidNotPay,
+    List<GroupSpendingModel>? spendingsDetails,
+    bool? isLoadingSpendings,
+    bool? isLoadingPaymentsToMe,
+    bool? isLoadingPaymentsByMe,
+    Map<String, UserModel>? userIdToUserMap,
+  }) {
+    return NullableUserActivityUseState(
+      paymentsMadeByMe: paymentsMadeByMe ?? this.paymentsMadeByMe,
+      paymentsMadeToMe: paymentsMadeToMe ?? this.paymentsMadeToMe,
+      spendingsWhereIPaid: spendingsWhereIPaid ?? this.spendingsWhereIPaid,
+      spendingsWhereIDidNotPay:
+          spendingsWhereIDidNotPay ?? this.spendingsWhereIDidNotPay,
+      spendingsDetails: spendingsDetails ?? this.spendingsDetails,
+      isLoadingPaymentsByMe:
+          isLoadingPaymentsByMe ?? this.isLoadingPaymentsByMe,
+      isLoadingPaymentsToMe:
+          isLoadingPaymentsToMe ?? this.isLoadingPaymentsToMe,
+      isLoadingSpendings: isLoadingSpendings ?? this.isLoadingSpendings,
+      userIdToUserMap: userIdToUserMap ?? this.userIdToUserMap,
+    );
+  }
+
+  @override
+  List get props => [
+        paymentsMadeByMe,
+        paymentsMadeToMe,
+        spendingsWhereIPaid,
+        spendingsWhereIDidNotPay,
+        spendingsDetails,
+        isLoadingPaymentsByMe,
+        isLoadingPaymentsToMe,
+        isLoadingSpendings,
+        userIdToUserMap,
+      ];
 }

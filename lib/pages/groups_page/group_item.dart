@@ -35,11 +35,9 @@ class GroupItem extends StatelessWidget {
               );
         },
         child: ListTile(
-          //TODO: add logic to put group image
           title: Text(groupData.groupName),
           // TODO: realizar algún cálculo dependiendo de los datos disponibles
           subtitle: Text(groupData.description),
-          //TODO: add logic to put group image
           leading: CircleAvatar(
               backgroundImage: groupData.groupPicUrl == ""
                   ? const NetworkImage(
