@@ -20,6 +20,7 @@ import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
 import 'package:intl/intl.dart';
 import 'package:tuks_divide/pages/group_expenses_page/expandable_fab.dart';
+import 'package:tuks_divide/pages/group_graph_page/group_graph_page.dart';
 import 'package:tuks_divide/pages/group_participants_detail_page/group_participants_detail_page.dart';
 import 'package:tuks_divide/pages/pay_debt_page/pay_debt_page.dart';
 import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
@@ -74,7 +75,16 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                     ),
                   );
                 },
-                icon: const FaIcon(FontAwesomeIcons.peopleGroup))
+                icon: const FaIcon(FontAwesomeIcons.peopleGroup)),
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => GroupGraphPage(),
+                    ),
+                  );
+                },
+                icon: const FaIcon(FontAwesomeIcons.chartLine))
           ],
         ),
         body: Column(
