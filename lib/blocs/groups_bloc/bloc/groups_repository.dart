@@ -83,7 +83,7 @@ class GroupsRepository {
     return GroupModel.fromMap(dataToUpload..addAll({'groupId': groupRef.id}));
   }
 
-  Future<List<UserModel>> getMembersOfGroup(GroupModel group) async {
+  static Future<List<UserModel>> getMembersOfGroup(GroupModel group) async {
     final groupsUsersDocs = await groupsUsersCollection
         .where(
           "group",

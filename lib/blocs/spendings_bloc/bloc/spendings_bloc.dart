@@ -92,7 +92,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
     _currentGroup = event.group;
     try {
       final usersInGroup =
-          await _groupsRepository.getMembersOfGroup(event.group);
+          await GroupsRepository.getMembersOfGroup(event.group);
       _currentUsersInGroup.addAll(usersInGroup);
       _setEmptyInitialSpendings(emit);
     } catch (e) {

@@ -37,7 +37,7 @@ class UserActivityRepository {
 
     for (int i = 0; i < groupsRefsToModel.length; i++) {
       final members =
-          await groupsRepository.getMembersOfGroup(groupsRefsToModel[i]);
+          await GroupsRepository.getMembersOfGroup(groupsRefsToModel[i]);
       users.addAll(members);
     }
     users = users.toSet().toList();
@@ -63,7 +63,7 @@ class UserActivityRepository {
       owings.addAll(spendingOwings);
     }
 
-    owings.removeWhere((owing) => owing.user.id == user.uid);
+    //owings.removeWhere((owing) => owing.user.id == user.uid);
     return owings;
   }
 
@@ -86,7 +86,8 @@ class UserActivityRepository {
     final paybackRefs =
         await paymentsCollection.where('receiver', isEqualTo: userRef).get();
     final payback = paybackRefs.docs
-        .map((doc) => PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
+        .map((doc) =>
+            PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
         .toList();
 
     final spendingDoneByMeRefs =

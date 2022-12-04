@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_bloc.dart';
 import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_bloc.dart';
+import 'package:tuks_divide/blocs/participants_detail_bloc/bloc/participants_detail_bloc.dart';
 import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:tuks_divide/models/user_model.dart';
 import 'package:tuks_divide/pages/add_spending_page/add_spending_page.dart';
 import 'package:intl/intl.dart';
 import 'package:tuks_divide/pages/group_expenses_page/expandable_fab.dart';
+import 'package:tuks_divide/pages/group_participants_detail_page/group_participants_detail_page.dart';
 import 'package:tuks_divide/pages/pay_debt_page/pay_debt_page.dart';
 import 'package:tuks_divide/pages/payment_detail_page/payment_detail_page.dart';
 import 'package:tuks_divide/pages/spending_detail_page/spending_detail_page.dart';
@@ -43,6 +45,23 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<GroupsBloc, GroupsUseState>(builder: (context, state) {
       return Scaffold(
+        appBar: AppBar(
+          title: const Text("Detalles de grupo"),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  BlocProvider.of<ParticipantsDetailBloc>(context).add(
+                      GetParticipantsDetailEvent(
+                          groupId: widget.group.groupId));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const GroupParticipantsDetailPage(),
+                    ),
+                  );
+                },
+                icon: const FaIcon(FontAwesomeIcons.peopleGroup))
+          ],
+        ),
         body: Column(
           children: [
             Stack(clipBehavior: Clip.none, children: [

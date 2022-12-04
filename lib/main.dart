@@ -6,6 +6,7 @@ import 'package:tuks_divide/blocs/auth_bloc/bloc/auth_repository.dart';
 import 'package:tuks_divide/blocs/create_group_bloc/bloc/create_group_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
+import 'package:tuks_divide/blocs/participants_detail_bloc/bloc/participants_detail_bloc.dart';
 import 'package:tuks_divide/blocs/payment_detail_bloc/bloc/payment_detail_bloc.dart';
 import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
@@ -103,7 +104,8 @@ void main() async {
             create: (BuildContext context) => SpendingDetailBloc(
                 spendingDetailRepository:
                     context.read<SpendingDetailRepository>())),
-        BlocProvider(create: (BuildContext context) => PaymentDetailBloc())
+        BlocProvider(create: (BuildContext context) => PaymentDetailBloc()),
+        BlocProvider(create: (BuildContext context) => ParticipantsDetailBloc())
       ],
       child: const MyApp(),
     ),
