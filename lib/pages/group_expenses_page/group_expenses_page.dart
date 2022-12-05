@@ -181,7 +181,10 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                                 },
                                 child: const Text(
                                   "Agrega uno!",
-                                  style: TextStyle(fontSize: 16),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 90),
@@ -244,7 +247,10 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                   },
                 );
               },
-              icon: const Icon(Icons.payments_outlined),
+              icon: const Icon(
+                Icons.payments_outlined,
+                color: Colors.white,
+              ),
               message: "Añadir un pago",
             ),
             ActionButton(
@@ -261,7 +267,10 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                       .add(ResetUploadImageBloc());
                 });
               },
-              icon: const Icon(Icons.post_add_sharp),
+              icon: const Icon(
+                Icons.post_add_sharp,
+                color: Colors.white,
+              ),
               message: "Añadir un gasto",
             ),
           ],
