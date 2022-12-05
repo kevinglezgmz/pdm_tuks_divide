@@ -539,6 +539,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
     DateTime currMonth = DateTime.now();
 
     for (int i = 0; i < allUserActivity.length; i++) {
+      late final Timestamp currentActivityDate;
       final dynamic activity = allUserActivity[i];
       UserModel? user;
       String title = "";
@@ -546,6 +547,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
       VoidCallback onTap = () {};
 
       if (activity is PaymentModel) {
+        currentActivityDate = activity.createdAt;
         if (paymentsMadeByMe.contains(activity)) {
           title = activity.description;
           user = userIdToUserMap[activity.receiver.id];
@@ -574,6 +576,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               dateFormat.format(currMonth), currMonth.year));
         }
       } else if (activity is SpendingModel) {
+        currentActivityDate = activity.createdAt;
         if (spendingsIDidNotPay.contains(activity)) {
           user = userIdToUserMap[activity.paidBy.id];
           GroupSpendingModel? spendingDetail;
@@ -603,13 +606,24 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         };
         if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
           currMonth = activity.createdAt.toDate();
-          activityList.add(_getActivityDateDivider(
-              dateFormat.format(currMonth), currMonth.year));
+          activityList.add(
+            _getActivityDateDivider(
+              dateFormat.format(currMonth),
+              currMonth.year,
+            ),
+          );
         }
       }
 
-      activityList.add(_getActivityTile(
-          title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
+      activityList.add(
+        _getActivityTile(
+          title,
+          subtitle,
+          dateFormat.format(currentActivityDate.toDate()),
+          currentActivityDate.toDate().day,
+          onTap,
+        ),
+      );
     }
 
     return activityList;

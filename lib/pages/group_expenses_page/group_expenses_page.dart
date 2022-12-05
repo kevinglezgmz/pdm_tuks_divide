@@ -440,11 +440,13 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
             .toList());
     DateTime currMonth = DateTime.now();
     for (int i = 0; i < spendingsAndPayments.length; i++) {
+      late final Timestamp currentActivityDate;
       String title = "";
       String subtitle = "";
       VoidCallback onTap = () {};
       dynamic activity = spendingsAndPayments[i];
       if (activity is SpendingModel) {
+        currentActivityDate = activity.createdAt;
         title = activity.description;
         if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
           currMonth = activity.createdAt.toDate();
@@ -466,6 +468,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
           );
         };
       } else if (activity is PaymentModel) {
+        currentActivityDate = activity.createdAt;
         title = activity.description;
         if (activity.createdAt.toDate().month != currMonth.month || i == 0) {
           currMonth = activity.createdAt.toDate();
@@ -490,8 +493,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
           );
         };
       }
-      activityWidgetsList.add(_getActivityTile(
-          title, subtitle, dateFormat.format(currMonth), currMonth.day, onTap));
+      activityWidgetsList.add(
+        _getActivityTile(
+          title,
+          subtitle,
+          dateFormat.format(currentActivityDate.toDate()),
+          currentActivityDate.toDate().day,
+          onTap,
+        ),
+      );
     }
     return activityWidgetsList;
   }
