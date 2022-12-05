@@ -11,6 +11,8 @@
 migrate_working_dir/
 google-services.json
 secrets.dart
+upload-keystore.jks
+upload-keystore.jks.old
 
 # IntelliJ related
 *.iml
