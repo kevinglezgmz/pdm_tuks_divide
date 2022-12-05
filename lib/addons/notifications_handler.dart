@@ -57,11 +57,6 @@ class NotificationsHandler {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      'assets/images/animated-clock.gif',
-                      height: MediaQuery.of(context).size.height * 0.3,
-                      fit: BoxFit.fitWidth,
-                    ),
                     Text(
                       'To proceed, you need to enable the permissions above${channelKey?.isEmpty ?? true ? '' : ' on channel $channelKey'}:',
                       maxLines: 2,

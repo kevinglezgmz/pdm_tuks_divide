@@ -80,7 +80,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => GroupGraphPage(),
+                      builder: (context) => const GroupGraphPage(),
                     ),
                   );
                 },
@@ -340,7 +340,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         }
         final user = userRefToUserModelMap[activity.paidBy]!;
         subtitle =
-            "${user.displayName ?? user.fullName ?? '<No username>'} realizó un pago de ${activity.amount}";
+            "${user.displayName ?? user.fullName ?? '<No username>'} realizó un pago de \$${activity.amount}";
         onTap = () {
           BlocProvider.of<SpendingDetailBloc>(context)
               .add(GetSpendingDetailEvent(spending: activity));
@@ -362,7 +362,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         final payer = userRefToUserModelMap[activity.payer]!;
         final receiver = userRefToUserModelMap[activity.receiver]!;
         subtitle =
-            "${payer.displayName ?? payer.fullName ?? '<No username>'} pagó a ${receiver.displayName ?? receiver.fullName ?? '<No username>'} ${activity.amount}";
+            "${payer.displayName ?? payer.fullName ?? '<No username>'} pagó a ${receiver.displayName ?? receiver.fullName ?? '<No username>'} \$${activity.amount}";
         onTap = () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -451,7 +451,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
 }
 
 class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
-  SelectPayeeSearchDelegate() : super(searchFieldLabel: "Pago hecho a...");
+  SelectPayeeSearchDelegate() : super(searchFieldLabel: "Registrar pago a...");
 
   @override
   List<Widget> buildActions(BuildContext context) {

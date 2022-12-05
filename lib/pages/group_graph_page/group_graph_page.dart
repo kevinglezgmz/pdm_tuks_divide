@@ -6,11 +6,24 @@ import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:intl/intl.dart';
 
-class GroupGraphPage extends StatelessWidget {
-  final dateFormat = DateFormat.MMMM('es');
-  GroupGraphPage({super.key});
+class GroupGraphPage extends StatefulWidget {
+  const GroupGraphPage({super.key});
 
-  List<Color> colors = <Color>[
+  @override
+  State<GroupGraphPage> createState() => _GroupGraphPageState();
+}
+
+class _GroupGraphPageState extends State<GroupGraphPage> {
+  final dateFormat = DateFormat.MMMM('es');
+  late final GroupsBloc groupsBloc;
+
+  @override
+  void initState() {
+    groupsBloc = BlocProvider.of<GroupsBloc>(context);
+    super.initState();
+  }
+
+  final List<Color> colors = <Color>[
     const Color(0xffd0b8e8),
     const Color(0xffa59be0),
     const Color(0xff84c4f2),
@@ -27,93 +40,112 @@ class GroupGraphPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GroupsBloc, GroupsUseState>(
-        builder: (context, state) {
-          if (state.selectedGroup != null &&
-              state.payments.isNotEmpty &&
-              state.spendings.isNotEmpty) {
-            return Scaffold(
-                appBar: AppBar(
-                  title: Text(state.selectedGroup!.groupName),
-                ),
-                body: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SfCircularChart(
-                          title: ChartTitle(
-                              text: "Total de gastos y pagos del grupo"),
-                          legend: Legend(isVisible: true),
-                          tooltipBehavior: TooltipBehavior(enable: true),
-                          series: <CircularSeries>[
-                            PieSeries<ChartData, String>(
-                              dataSource: _createChartData(
-                                  state.spendings, state.payments),
-                              xValueMapper: (ChartData data, _) => data.x,
-                              yValueMapper: (ChartData data, _) => data.y,
-                              dataLabelMapper: (ChartData data, _) => data.text,
-                              pointColorMapper: (ChartData data, _) =>
-                                  data.color,
-                              dataLabelSettings:
-                                  const DataLabelSettings(isVisible: true),
-                              enableTooltip: true,
-                            )
-                          ]),
-                      SfCircularChart(
-                          title: ChartTitle(text: "Total de gastos por mes"),
-                          legend: Legend(isVisible: true),
-                          tooltipBehavior: TooltipBehavior(enable: true),
-                          series: <CircularSeries>[
-                            PieSeries<ChartData, String>(
-                              dataSource:
-                                  _getTotalSpendingsByMonth(state.spendings),
-                              xValueMapper: (ChartData data, _) => data.x,
-                              yValueMapper: (ChartData data, _) => data.y,
-                              dataLabelMapper: (ChartData data, _) => data.text,
-                              pointColorMapper: (ChartData data, _) =>
-                                  data.color,
-                              dataLabelSettings:
-                                  const DataLabelSettings(isVisible: true),
-                              enableTooltip: true,
-                            )
-                          ]),
-                      SfCircularChart(
-                          title: ChartTitle(text: "Total de pagos por mes"),
-                          legend: Legend(isVisible: true),
-                          tooltipBehavior: TooltipBehavior(enable: true),
-                          series: <CircularSeries>[
-                            PieSeries<ChartData, String>(
-                              dataSource:
-                                  _getTotalPaymentsByMonth(state.payments),
-                              xValueMapper: (ChartData data, _) => data.x,
-                              yValueMapper: (ChartData data, _) => data.y,
-                              dataLabelMapper: (ChartData data, _) => data.text,
-                              pointColorMapper: (ChartData data, _) =>
-                                  data.color,
-                              dataLabelSettings:
-                                  const DataLabelSettings(isVisible: true),
-                              enableTooltip: true,
-                            )
-                          ])
-                    ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Métricas: ${groupsBloc.state.selectedGroup!.groupName}",
+        ),
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          BlocConsumer<GroupsBloc, GroupsUseState>(
+              builder: (context, state) {
+                if (state.selectedGroup != null) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (state.payments.isNotEmpty)
+                          SfCircularChart(
+                              title: ChartTitle(
+                                  text: "Total de gastos y pagos del grupo"),
+                              legend: Legend(isVisible: true),
+                              tooltipBehavior: TooltipBehavior(enable: true),
+                              series: <CircularSeries>[
+                                PieSeries<ChartData, String>(
+                                  dataSource: _createChartData(
+                                      state.spendings, state.payments),
+                                  xValueMapper: (ChartData data, _) => data.x,
+                                  yValueMapper: (ChartData data, _) => data.y,
+                                  dataLabelMapper: (ChartData data, _) =>
+                                      data.text,
+                                  pointColorMapper: (ChartData data, _) =>
+                                      data.color,
+                                  dataLabelSettings:
+                                      const DataLabelSettings(isVisible: true),
+                                  enableTooltip: true,
+                                )
+                              ]),
+                        if (state.spendings.isNotEmpty)
+                          SfCircularChart(
+                              title:
+                                  ChartTitle(text: "Total de gastos por mes"),
+                              legend: Legend(isVisible: true),
+                              tooltipBehavior: TooltipBehavior(enable: true),
+                              series: <CircularSeries>[
+                                PieSeries<ChartData, String>(
+                                  dataSource: _getTotalSpendingsByMonth(
+                                      state.spendings),
+                                  xValueMapper: (ChartData data, _) => data.x,
+                                  yValueMapper: (ChartData data, _) => data.y,
+                                  dataLabelMapper: (ChartData data, _) =>
+                                      data.text,
+                                  pointColorMapper: (ChartData data, _) =>
+                                      data.color,
+                                  dataLabelSettings:
+                                      const DataLabelSettings(isVisible: true),
+                                  enableTooltip: true,
+                                )
+                              ]),
+                        if (state.payments.isNotEmpty)
+                          SfCircularChart(
+                              title: ChartTitle(text: "Total de pagos por mes"),
+                              legend: Legend(isVisible: true),
+                              tooltipBehavior: TooltipBehavior(enable: true),
+                              series: <CircularSeries>[
+                                PieSeries<ChartData, String>(
+                                  dataSource:
+                                      _getTotalPaymentsByMonth(state.payments),
+                                  xValueMapper: (ChartData data, _) => data.x,
+                                  yValueMapper: (ChartData data, _) => data.y,
+                                  dataLabelMapper: (ChartData data, _) =>
+                                      data.text,
+                                  pointColorMapper: (ChartData data, _) =>
+                                      data.color,
+                                  dataLabelSettings:
+                                      const DataLabelSettings(isVisible: true),
+                                  enableTooltip: true,
+                                )
+                              ])
+                      ],
+                    ),
+                  );
+                }
+                return Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          "No hay movimientos en el grupo!",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "Empieza por crear un gasto!",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 72),
+                      ],
+                    ),
                   ),
-                ));
-          }
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Finanzas del grupo"),
-            ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                Center(
-                  child: Text("Ups! No encontramos las finanzas del grupo"),
-                )
-              ],
-            ),
-          );
-        },
-        listener: (context, state) {});
+                );
+              },
+              listener: (context, state) {}),
+        ],
+      ),
+    );
   }
 
   double _getGroupTotalSpendings(List<SpendingModel> spendings) {

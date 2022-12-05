@@ -41,7 +41,6 @@ class GroupItem extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 12),
           child: ListTile(
             title: Text(groupData.groupName),
-            // TODO: realizar algún cálculo dependiendo de los datos disponibles
             subtitle: Text(
               "${groupData.description}\n",
               maxLines: 2,

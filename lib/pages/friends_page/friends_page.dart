@@ -8,7 +8,11 @@ import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_bloc.dart';
 import 'package:tuks_divide/blocs/friends_bloc/bloc/friends_repository.dart';
 import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/notifications_bloc/bloc/notifications_bloc.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
+import 'package:tuks_divide/models/group_spending_model.dart';
+import 'package:tuks_divide/models/payment_model.dart';
+import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
 class FriendsPage extends StatefulWidget {
@@ -59,8 +63,30 @@ class _FriendsPageState extends State<FriendsPage> {
                 ),
               );
             }
-            return _getFriendsList(
-              state.friends,
+            if (state.friends.isNotEmpty) {
+              return _getFriendsList(
+                state.friends,
+              );
+            }
+            return Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: const [
+                  Expanded(flex: 40, child: SizedBox.shrink()),
+                  Text(
+                    "No tienes ningún amigo!",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Añade uno!",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Expanded(flex: 60, child: SizedBox.shrink()),
+                ],
+              ),
             );
           },
         )
@@ -177,9 +203,18 @@ class _FriendsPageState extends State<FriendsPage> {
   Widget _getFriendTile(UserModel friend) {
     return Card(
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         title: Text(friend.displayName ?? friend.fullName ?? '<Sin Nombre>'),
-        // TODO: poner cuantos grupos en comun?
-        subtitle: const Text('Algunos grupos en comun'),
+        subtitle: BlocBuilder<UserActivityBloc, UserActivityUseState>(
+          builder: (context, state) {
+            if (state.isLoadingPaymentsByMe ||
+                state.isLoadingPaymentsToMe ||
+                state.isLoadingSpendings) {
+              return const Text('Cargando información...');
+            }
+            return _getFriendTextBetweenAllGroups(friend, state);
+          },
+        ),
         leading: CircleAvatar(
             backgroundImage: friend.pictureUrl == null ||
                     friend.pictureUrl == ""
@@ -193,12 +228,16 @@ class _FriendsPageState extends State<FriendsPage> {
   void _listenForRealtimeUpdates() {
     friendsBloc.add(
       const UpdateFriendsStateEvent(
-        newState: NullableFriendsUseState(isLoadingFriends: true),
+        newState: NullableFriendsUseState(
+          isLoadingFriends: true,
+        ),
       ),
     );
+    UserModel? lastFriendNotification;
     _myFriendsSubscription = FriendsRepository.getUserFriendsSubscription(
       (friendsResult) {
         if (friendsResult.newFriend != null &&
+            friendsResult.newFriend != lastFriendNotification &&
             BlocProvider.of<NotificationsBloc>(context)
                 .state
                 .friendNotificationsEnabled) {
@@ -213,6 +252,7 @@ class _FriendsPageState extends State<FriendsPage> {
               notificationLayout: NotificationLayout.Default,
             ),
           );
+          lastFriendNotification = friendsResult.newFriend;
         }
         friendsBloc.add(
           UpdateFriendsStateEvent(
@@ -225,5 +265,59 @@ class _FriendsPageState extends State<FriendsPage> {
       },
       BlocProvider.of<MeBloc>(context).state.me!,
     );
+  }
+
+  Widget _getFriendTextBetweenAllGroups(
+    UserModel friend,
+    UserActivityUseState state,
+  ) {
+    double howMuchDoesFriendOweMe = 0;
+    double howMuchDoIOweHim = 0;
+
+    for (final GroupSpendingModel spendingDetail in state.spendingsDetails) {
+      if (spendingDetail.user.id == friend.uid) {
+        try {
+          SpendingModel spending = state.spendingsWhereIPaid.firstWhere(
+            (spendingWhereIPaid) =>
+                spendingWhereIPaid.spendingId == spendingDetail.spending.id,
+          );
+          spending.paidBy;
+          howMuchDoesFriendOweMe += spendingDetail.amountToPay;
+        } catch (e) {
+          howMuchDoesFriendOweMe;
+        }
+      } else if (spendingDetail.user.id ==
+          BlocProvider.of<MeBloc>(context).state.me!.uid) {
+        try {
+          SpendingModel spending = state.spendingsWhereIDidNotPay.firstWhere(
+            (spendingWhereIDidNotPay) =>
+                spendingWhereIDidNotPay.spendingId ==
+                    spendingDetail.spending.id &&
+                spendingWhereIDidNotPay.paidBy.id == friend.uid,
+          );
+          spending.paidBy;
+          howMuchDoIOweHim += spendingDetail.amountToPay;
+        } catch (e) {
+          howMuchDoIOweHim;
+        }
+      }
+    }
+
+    for (final PaymentModel paymentMadeToMe in state.paymentsMadeToMe) {
+      if (paymentMadeToMe.payer.id == friend.uid) {
+        howMuchDoesFriendOweMe -= paymentMadeToMe.amount;
+      }
+    }
+
+    for (final PaymentModel paymentMadeByMe in state.paymentsMadeByMe) {
+      if (paymentMadeByMe.receiver.id == friend.uid) {
+        howMuchDoIOweHim -= paymentMadeByMe.amount;
+      }
+    }
+    if (howMuchDoIOweHim <= 0 && howMuchDoesFriendOweMe <= 0) {
+      return const Text("No tienen deudas pendientes.\nHurra!");
+    }
+    return Text(
+        "Le debes un total de \$${howMuchDoIOweHim.toStringAsFixed(2)}\nTe debe un total de \$${howMuchDoesFriendOweMe.toStringAsFixed(2)}");
   }
 }

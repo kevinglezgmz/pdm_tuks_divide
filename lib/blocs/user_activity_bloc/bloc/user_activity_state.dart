@@ -123,7 +123,9 @@ class NullableUserActivityUseState extends UserActivityState {
       isLoadingPaymentsToMe:
           isLoadingPaymentsToMe ?? this.isLoadingPaymentsToMe,
       isLoadingSpendings: isLoadingSpendings ?? this.isLoadingSpendings,
-      userIdToUserMap: userIdToUserMap ?? this.userIdToUserMap,
+      userIdToUserMap: userIdToUserMap != null
+          ? Map.fromEntries(userIdToUserMap.entries)
+          : this.userIdToUserMap,
       newPaymentMadeToMe: newPaymentMadeToMe ?? this.newPaymentMadeToMe,
       newSpendingIParticipatedIn:
           newSpendingIParticipatedIn ?? this.newSpendingIParticipatedIn,

@@ -231,9 +231,6 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
       }
 
       await Future.wait(spendingsWhereIDidNotPay.map((spending) async {
-        if (userIdToUserMap[spending.paidBy.id] != null) {
-          return;
-        }
         final userData = await spending.paidBy.get();
         if (userData.exists) {
           userIdToUserMap[spending.paidBy.id] =
@@ -266,9 +263,6 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
           .toList();
 
       await Future.wait(paymentsMadeByMe.map((payment) async {
-        if (userIdToUserMap[payment.receiver.id] != null) {
-          return;
-        }
         final userData = await payment.receiver.get();
         if (userData.exists) {
           userIdToUserMap[payment.receiver.id] =
@@ -296,16 +290,15 @@ class UserActivityStream extends Stream<NullableUserActivityUseState> {
               PaymentModel.fromMap(doc.data()..addAll({"paymentId": doc.id})))
           .toList();
 
-      await Future.wait(paymentsMadeToMe.map((payment) async {
-        if (userIdToUserMap[payment.receiver.id] != null) {
-          return;
-        }
-        final userData = await payment.receiver.get();
-        if (userData.exists) {
-          userIdToUserMap[payment.receiver.id] =
-              UserModel.fromMap(userData.data()!);
-        }
-      }));
+      await Future.wait(
+        paymentsMadeToMe.map((payment) async {
+          final userData = await payment.payer.get();
+          if (userData.exists) {
+            userIdToUserMap[payment.payer.id] =
+                UserModel.fromMap(userData.data()!);
+          }
+        }).toList(),
+      );
       paymentsMadeToMe.sort(
         (paymentA, paymentB) =>
             paymentA.createdAt.compareTo(paymentB.createdAt),

@@ -88,7 +88,8 @@ class SpendingDetailPage extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: ParticipantsList(
-                            participantsData: state.participants),
+                          participantsData: state.participants,
+                        ),
                       ),
                     ),
                     const Padding(

@@ -11,7 +11,6 @@ import 'package:tuks_divide/blocs/groups_bloc/bloc/groups_repository.dart';
 import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/notifications_bloc/bloc/notifications_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
-import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/pages/create_group_page/create_group_page.dart';
 import 'package:tuks_divide/pages/groups_page/group_list.dart';
 
@@ -137,29 +136,27 @@ class _GroupsPageState extends State<GroupsPage> {
       ),
     );
     Timestamp currTime = Timestamp.now();
-
     _myGroupsSubscription = GroupsRepository.getUserGroupsSubscription(
       (groups) {
-        for (final GroupModel group in groups) {
-          if (group.createdAt.compareTo(currTime) > 0 &&
-              group.owner.id !=
-                  BlocProvider.of<MeBloc>(context).state.me!.uid &&
-              BlocProvider.of<NotificationsBloc>(context)
-                  .state
-                  .groupNotificationsEnabled) {
-            AwesomeNotifications().createNotification(
-              content: NotificationContent(
-                id: 1,
-                channelKey: 'new_group_channel',
-                title: 'Has sido agregado a un nuevo grupo!',
-                body:
-                    'Dirígete a la pantalla de grupos para ver el nuevo grupo ${group.groupName}',
-                actionType: ActionType.DismissAction,
-                notificationLayout: NotificationLayout.BigText,
-              ),
-            );
-            currTime = group.createdAt;
-          }
+        if (groups.isNotEmpty &&
+            groups.last.createdAt.compareTo(currTime) > 0 &&
+            groups.last.owner.id !=
+                BlocProvider.of<MeBloc>(context).state.me!.uid &&
+            BlocProvider.of<NotificationsBloc>(context)
+                .state
+                .groupNotificationsEnabled) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: 1,
+              channelKey: 'new_group_channel',
+              title: 'Has sido agregado a un nuevo grupo!',
+              body:
+                  'Dirígete a la pantalla de grupos para ver el nuevo grupo ${groups.last.groupName}',
+              actionType: ActionType.DismissAction,
+              notificationLayout: NotificationLayout.BigText,
+            ),
+          );
+          currTime = groups.last.createdAt;
         }
         groupsBloc.add(
           UpdateGroupsStateEvent(

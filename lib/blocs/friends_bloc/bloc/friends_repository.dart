@@ -171,8 +171,10 @@ class FriendsStream extends Stream {
           controller.sink
               .add(FriendsStreamResult(friends: friends, newFriend: null));
         } else {
-          controller.sink.add(
-              FriendsStreamResult(friends: friends, newFriend: friends.last));
+          controller.sink.add(FriendsStreamResult(
+            friends: friends,
+            newFriend: friends.isNotEmpty ? friends.last : null,
+          ));
         }
       },
     );

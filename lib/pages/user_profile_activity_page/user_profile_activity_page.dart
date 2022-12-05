@@ -267,17 +267,34 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                 bottom: 0,
                 child: BlocBuilder<MeBloc, MeUseState>(
                   builder: (context, meState) {
-                    return SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: _createActivityList(
-                          state,
-                          meState.me!,
-                          context,
-                        ),
-                      ),
+                    final List<Widget> activityList = _createActivityList(
+                      state,
+                      meState.me!,
+                      context,
                     );
+                    if (activityList.isNotEmpty) {
+                      return SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: activityList,
+                        ),
+                      );
+                    } else {
+                      return SizedBox.expand(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text("No hay actividad para mostrar."),
+                              SizedBox(height: 16),
+                              Text("Empiezan creando un grupo!"),
+                              SizedBox(height: 48),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
                   },
                 ))
           ],
@@ -365,7 +382,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         "No hay actividad para mostrar",
         textAlign: TextAlign.center,
       ));
-      return activityList;
+      return [];
     }
 
     DateTime currMonth = DateTime.now();
@@ -510,14 +527,18 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         ),
       ),
     );
+    PaymentModel? lastPaymentNotiFor;
+    SpendingModel? lastSpendingNotiFor;
     _userActivityStreamSubscription =
         UserActivityRepository.getUserActivitySubscription(
       context.read<MeBloc>().state.me!,
       (groupActivityState) {
         if (groupActivityState.newPaymentMadeToMe != null &&
+            lastPaymentNotiFor != groupActivityState.newPaymentMadeToMe &&
             BlocProvider.of<NotificationsBloc>(context)
                 .state
                 .paymentNotificationsEnabled) {
+          lastPaymentNotiFor = groupActivityState.newPaymentMadeToMe;
           UserModel? payer = groupActivityState.userIdToUserMap?[
               groupActivityState.newPaymentMadeToMe?.payer.id];
           AwesomeNotifications().createNotification(
@@ -534,6 +555,8 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           );
         }
         if (groupActivityState.newSpendingIParticipatedIn != null &&
+            groupActivityState.newSpendingIParticipatedIn !=
+                lastSpendingNotiFor &&
             BlocProvider.of<NotificationsBloc>(context)
                 .state
                 .spendingNotificationsEnabled) {
@@ -551,6 +574,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               notificationLayout: NotificationLayout.BigText,
             ),
           );
+          lastSpendingNotiFor = groupActivityState.newSpendingIParticipatedIn;
         }
         groupActivityState
                 .userIdToUserMap?[context.read<MeBloc>().state.me!.uid] =
