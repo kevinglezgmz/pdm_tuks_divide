@@ -124,6 +124,7 @@ class _DivideSpendingPageState extends State<DivideSpendingPage>
     if (distributionType == DistributionType.equal) {
       if (widget.equalTabController.isValidDistribution()) {
         Navigator.of(context).pop(distributionType);
+        return;
       } else {
         _showDistributionErrorDialog(
           context,
@@ -137,6 +138,7 @@ class _DivideSpendingPageState extends State<DivideSpendingPage>
     if (distributionType == DistributionType.unequal) {
       if (widget.unequalTabController.isValidDistribution(widget.totalAmount)) {
         Navigator.of(context).pop(distributionType);
+        return;
       } else {
         _showDistributionErrorDialog(
           context,
@@ -150,6 +152,7 @@ class _DivideSpendingPageState extends State<DivideSpendingPage>
     if (distributionType == DistributionType.percentage) {
       if (widget.percentageTabController.isValidDistribution()) {
         Navigator.of(context).pop(distributionType);
+        return;
       } else {
         _showDistributionErrorDialog(
           context,

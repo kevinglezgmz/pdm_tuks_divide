@@ -382,14 +382,14 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
                   if (state is UploadingImageState) {
                     return const SizedBox(
                       height: 148,
-                      width: 106,
+                      width: 100,
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
                   if (state is UploadingSuccessfulState) {
                     return SizedBox(
                       height: 148,
-                      width: 106,
+                      width: 100,
                       child: Image.network(
                         BlocProvider.of<UploadImageBloc>(context)
                             .uploadedImageUrl!,
@@ -397,11 +397,9 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
                       ),
                     );
                   }
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 54,
-                      horizontal: 28,
-                    ),
+                  return const SizedBox(
+                    height: 148,
+                    width: 100,
                     child: Icon(
                       Icons.add_a_photo_outlined,
                       size: 40,

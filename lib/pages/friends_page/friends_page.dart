@@ -112,79 +112,99 @@ class _FriendsPageState extends State<FriendsPage> {
     TextEditingController emailController = TextEditingController();
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Agregar un amigo'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Buscar por correo electrónico:'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextInputField(
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Agregar un amigo',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Buscar por correo electrónico:',
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              TextInputField(
                 inputController: emailController,
                 label: 'Correo',
               ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            child: const Text('Cancelar'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          BlocListener<FriendsBloc, FriendsUseState>(
-            listener: (context, state) {
-              if (state.isAddingFriend && isAddingFriend == false) {
-                isAddingFriend = true;
-                return;
-              }
-              if (state.errorMessage != "" && isAddingFriend) {
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Error añadiendo ${emailController.text} a tu lista de amigos: ${state.errorMessage}',
-                      ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.white),
                     ),
-                  );
-                isAddingFriend = false;
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-                return;
-              }
-              if (state.isAddingFriend == false && isAddingFriend) {
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Se añadió ${emailController.text} a tu lista de amigos',
-                      ),
-                    ),
-                  );
-                isAddingFriend = false;
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-            child: ElevatedButton(
-              child: const Text('Agregar'),
-              onPressed: () {
-                BlocProvider.of<FriendsBloc>(context).add(
-                  AddNewFriendByMailEvent(
-                    email: emailController.text,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
-                );
-              },
-            ),
+                  const SizedBox(width: 16),
+                  BlocListener<FriendsBloc, FriendsUseState>(
+                    listener: (context, state) {
+                      if (state.isAddingFriend && isAddingFriend == false) {
+                        isAddingFriend = true;
+                        return;
+                      }
+                      if (state.errorMessage != "" && isAddingFriend) {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error añadiendo ${emailController.text} a tu lista de amigos: ${state.errorMessage}',
+                              ),
+                            ),
+                          );
+                        isAddingFriend = false;
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                        return;
+                      }
+                      if (state.isAddingFriend == false && isAddingFriend) {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Se añadió ${emailController.text} a tu lista de amigos',
+                              ),
+                            ),
+                          );
+                        isAddingFriend = false;
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    },
+                    child: ElevatedButton(
+                      child: const Text('Agregar',
+                          style: TextStyle(color: Colors.white)),
+                      onPressed: () {
+                        BlocProvider.of<FriendsBloc>(context).add(
+                          AddNewFriendByMailEvent(
+                            email: emailController.text,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              )
+            ],
           ),
-          const SizedBox(width: 12),
-        ],
+        ),
       ),
     );
   }

@@ -104,6 +104,7 @@ class SpendingsBloc extends Bloc<SpendingsEvent, SpendingsUseState> {
         userToEqualDistributionAmount: userToEqualDistributionAmount,
         userToUnEqualDistributionAmount: userToUnEqualDistributionAmount,
         userToPercentDistributionAmount: userToPercentDistributionAmount,
+        spendingDistributionType: DistributionType.equal,
       ),
     );
   }

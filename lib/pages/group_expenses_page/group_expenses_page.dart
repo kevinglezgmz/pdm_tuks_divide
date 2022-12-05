@@ -651,7 +651,8 @@ class SelectPayeeSearchDelegate
             .where((user) => user != me)
             .map((user) => UserAndHowMuchIOweThem(
                 user: user,
-                howMuchDoIOweThem: _getHowMuchIOweToFriend(user, context)))
+                howMuchDoIOweThem: double.parse(
+                    _getHowMuchIOweToFriend(user, context).toStringAsFixed(2))))
             .where((userAndHowMuchIOweThem) =>
                 userAndHowMuchIOweThem.howMuchDoIOweThem > 0)
             .toList();
