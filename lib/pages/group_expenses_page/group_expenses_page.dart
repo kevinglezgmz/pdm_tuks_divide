@@ -526,7 +526,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
       onTap: onTap,
       child: ListTile(
         leading: SizedBox(
-          width: 28,
+          width: 38,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

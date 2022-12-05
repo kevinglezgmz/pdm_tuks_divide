@@ -648,9 +648,9 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         child: InkWell(
       onTap: onTap,
       child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: SizedBox(
-          width: 28,
+          width: 38,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
