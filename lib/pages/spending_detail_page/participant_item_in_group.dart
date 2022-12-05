@@ -49,7 +49,7 @@ class ParticipantItemInGroup extends StatelessWidget {
     }
     GroupModel? currentGroup =
         BlocProvider.of<GroupsBloc>(context).state.selectedGroup;
-    double howMuchDoIMyFriend = 0;
+    double howMuchDoIOweMyFriend = 0;
 
     for (final GroupSpendingModel spendingDetail in state.spendingsDetails) {
       if (spendingDetail.user.id == me.uid) {
@@ -62,9 +62,9 @@ class ParticipantItemInGroup extends StatelessWidget {
                 spendingWhereIDidNotPay.group.id == currentGroup?.groupId,
           );
           spending.paidBy;
-          howMuchDoIMyFriend += spendingDetail.amountToPay;
+          howMuchDoIOweMyFriend += spendingDetail.amountToPay;
         } catch (e) {
-          howMuchDoIMyFriend;
+          howMuchDoIOweMyFriend;
         }
       }
     }
@@ -72,13 +72,14 @@ class ParticipantItemInGroup extends StatelessWidget {
     for (final PaymentModel paymentMadeByMe in state.paymentsMadeByMe) {
       if (paymentMadeByMe.receiver.id == friend.uid &&
           currentGroup?.groupId == paymentMadeByMe.group.id) {
-        howMuchDoIMyFriend -= paymentMadeByMe.amount;
+        howMuchDoIOweMyFriend -= paymentMadeByMe.amount;
       }
     }
-    if (howMuchDoIMyFriend <= 0) {
+    howMuchDoIOweMyFriend = double.parse(howMuchDoIOweMyFriend.toStringAsFixed(2));
+    if (howMuchDoIOweMyFriend <= 0) {
       return const Text("No le debes ningún monto a este usuario.");
     }
     return Text(
-        "Le debes un total de \$${howMuchDoIMyFriend.toStringAsFixed(2)}");
+        "Le debes un total de \$${howMuchDoIOweMyFriend.toStringAsFixed(2)}");
   }
 }

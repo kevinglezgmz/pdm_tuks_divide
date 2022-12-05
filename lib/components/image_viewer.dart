@@ -10,7 +10,7 @@ class ImageViewerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Visualizar imagen")),
+      appBar: AppBar(title: const Text("Visualizar comprobante")),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.max,

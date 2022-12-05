@@ -7,16 +7,23 @@ import 'package:tuks_divide/components/basic_elevated_button.dart';
 import 'package:tuks_divide/components/text_input_field.dart';
 import 'package:tuks_divide/models/user_model.dart';
 
-class SignupPage extends StatelessWidget {
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
   String? pictureUrl;
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _repeatPasswordController =
       TextEditingController();
+
   RegExp regex =
       RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
-  SignupPage({super.key});
 
   @override
   Widget build(BuildContext context) {

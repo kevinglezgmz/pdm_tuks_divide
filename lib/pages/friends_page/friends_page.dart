@@ -314,6 +314,9 @@ class _FriendsPageState extends State<FriendsPage> {
         howMuchDoIOweHim -= paymentMadeByMe.amount;
       }
     }
+    howMuchDoIOweHim = double.parse(howMuchDoIOweHim.toStringAsFixed(2));
+    howMuchDoesFriendOweMe =
+        double.parse(howMuchDoesFriendOweMe.toStringAsFixed(2));
     if (howMuchDoIOweHim <= 0 && howMuchDoesFriendOweMe <= 0) {
       return const Text("No tienen deudas pendientes.\nHurra!");
     }

@@ -26,13 +26,21 @@ class UserProfileActivityPage extends StatefulWidget {
       _UserProfileActivityPageState();
 }
 
+enum FilterType {
+  all,
+  paymentsMadeToMe,
+  paymentsMadeByMe,
+  spendingsWhereIPaid,
+  spendingsWhereIDidNotPay,
+}
+
 class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   late final StreamSubscription<NullableUserActivityUseState>
       _userActivityStreamSubscription;
   late final AuthBloc authBloc;
   late final UserActivityBloc userActivityBloc;
   final dateFormat = DateFormat.MMMM('es');
-  int filterType = 0;
+  FilterType filterType = FilterType.all;
 
   @override
   void initState() {
@@ -155,7 +163,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           children: [
             const SizedBox(width: double.infinity, height: double.infinity),
             Container(
-              height: 128,
+              height: 96,
               width: double.infinity,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -177,7 +185,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               ),
             ),
             Positioned(
-                top: 128 - 48,
+                top: 48,
                 right: 0,
                 left: 0,
                 child: Center(
@@ -196,7 +204,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
             BlocBuilder<MeBloc, MeUseState>(
               builder: (context, meState) {
                 return Positioned(
-                  top: 128 + 48,
+                  top: 142,
                   right: 0,
                   left: 0,
                   child: Column(
@@ -219,6 +227,8 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                             state,
                             meState.me!,
                           );
+                          amountIOwe =
+                              double.parse(amountIOwe.toStringAsFixed(2));
                           if (amountIOwe <= 0.00) {
                             return const Text(
                               "No tienes ninguna deuda!",
@@ -240,6 +250,8 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                         builder: (context) {
                           double amountTheyOweMe =
                               _howMuchDoTheyOweMe(state, meState.me!);
+                          amountTheyOweMe =
+                              double.parse(amountTheyOweMe.toStringAsFixed(2));
                           if (amountTheyOweMe <= 0.00) {
                             return const Text(
                               "Nadie tiene deudas contigo!",
@@ -249,7 +261,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                             );
                           }
                           return Text(
-                            'Te deben un total de: $amountTheyOweMe',
+                            'Te deben un total de: ${amountTheyOweMe.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 16,
                             ),
@@ -262,65 +274,127 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               },
             ),
             Positioned(
-              top: 294,
+              top: 265,
               left: 0,
               right: 0,
-              bottom: 0,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Column(
+              child: SizedBox(
+                height: 40,
+                width: double.infinity,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              filterType = 0;
-                            });
-                          },
-                          child: const Text('Todo'),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          filterType == FilterType.all
+                              ? const Color.fromARGB(255, 42, 42, 42)
+                              : const Color.fromARGB(255, 78, 77, 77),
                         ),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              filterType = 1;
-                            });
-                          },
-                          child: const Text('Yo pagué'),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          filterType = FilterType.all;
+                        });
+                      },
+                      child: const Text(
+                        'Todo',
+                        style: TextStyle(
+                          color: Colors.white,
                         ),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              filterType = 2;
-                            });
-                          },
-                          child: const Text('Me pagaron'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              filterType = 3;
-                            });
-                          },
-                          child: const Text('Gasto hecho por mí'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              filterType = 4;
-                            });
-                          },
-                          child: const Text('Gasto hecho por otros'),
-                        )
-                      ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          filterType == FilterType.paymentsMadeByMe
+                              ? const Color.fromARGB(255, 42, 42, 42)
+                              : const Color.fromARGB(255, 78, 77, 77),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          filterType = FilterType.paymentsMadeByMe;
+                        });
+                      },
+                      child: const Text(
+                        'Pagos enviados por mi',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          filterType == FilterType.paymentsMadeToMe
+                              ? const Color.fromARGB(255, 42, 42, 42)
+                              : const Color.fromARGB(255, 78, 77, 77),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          filterType = FilterType.paymentsMadeToMe;
+                        });
+                      },
+                      child: const Text(
+                        'Pagos enviados a mí',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          filterType == FilterType.spendingsWhereIPaid
+                              ? const Color.fromARGB(255, 42, 42, 42)
+                              : const Color.fromARGB(255, 78, 77, 77),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          filterType = FilterType.spendingsWhereIPaid;
+                        });
+                      },
+                      child: const Text(
+                        'Gastos realizados por mí',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          filterType == FilterType.spendingsWhereIDidNotPay
+                              ? const Color.fromARGB(255, 42, 42, 42)
+                              : const Color.fromARGB(255, 78, 77, 77),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          filterType = FilterType.spendingsWhereIDidNotPay;
+                        });
+                      },
+                      child: const Text(
+                        'Gastos realizados por otros',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                   ],
                 ),
               ),
             ),
             Positioned(
-                top: 330,
+                top: 315,
                 left: 0,
                 right: 0,
                 bottom: 0,
@@ -396,7 +470,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   }
 
   List<Widget> _createActivityList(UserActivityUseState state, UserModel me,
-      BuildContext context, int filterType) {
+      BuildContext context, FilterType filterType) {
     List<Widget> activityList = [];
     Set<SpendingModel> spendingsIPaid = Set.from(state.spendingsWhereIPaid);
     Set<SpendingModel> spendingsIDidNotPay =
@@ -404,19 +478,19 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
     Set<PaymentModel> paymentsMadeByMe = Set.from(state.paymentsMadeByMe);
     Set<PaymentModel> paymentsMadeToMe = Set.from(state.paymentsMadeToMe);
     List<dynamic> allUserActivity;
-    if (filterType == 1) {
+    if (filterType == FilterType.paymentsMadeByMe) {
       allUserActivity = [
         ...state.paymentsMadeByMe,
       ];
-    } else if (filterType == 2) {
+    } else if (filterType == FilterType.paymentsMadeToMe) {
       allUserActivity = [
         ...state.paymentsMadeToMe,
       ];
-    } else if (filterType == 3) {
+    } else if (filterType == FilterType.spendingsWhereIPaid) {
       allUserActivity = [
         ...state.spendingsWhereIPaid,
       ];
-    } else if (filterType == 4) {
+    } else if (filterType == FilterType.spendingsWhereIDidNotPay) {
       allUserActivity = [
         ...state.spendingsWhereIDidNotPay,
       ];
@@ -558,6 +632,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
         child: InkWell(
       onTap: onTap,
       child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: SizedBox(
           width: 28,
           child: Column(
@@ -583,7 +658,11 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(subtitle),
+        subtitle: Text(
+          "$subtitle\n",
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         trailing: const Icon(Icons.attach_money),
       ),
     ));
