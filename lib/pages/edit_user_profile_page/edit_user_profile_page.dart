@@ -196,7 +196,7 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
             onPressed: () {
               Navigator.of(context).pop();
               BlocProvider.of<UploadImageBloc>(context)
-                  .add(const UploadNewImageEvent("groupImg", "gallery"));
+                  .add(const UploadNewImageEvent("users", "gallery"));
             },
             child: Container(
               color: Theme.of(context).colorScheme.primary,
@@ -214,7 +214,7 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
             onPressed: () {
               Navigator.of(context).pop();
               BlocProvider.of<UploadImageBloc>(context)
-                  .add(const UploadNewImageEvent("groupImg", "camera"));
+                  .add(const UploadNewImageEvent("users", "camera"));
             },
             child: Container(
               alignment: Alignment.center,

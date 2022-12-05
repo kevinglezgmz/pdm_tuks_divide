@@ -17,6 +17,20 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Tuks Divide')),
       body: SingleChildScrollView(
+          child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthNotLoggedInState) {
+            if (state.isLogIn) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Ocurrió un error al iniciar sesión, intenta de nuevo",
+                  ),
+                ),
+              );
+            }
+          }
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -38,6 +52,27 @@ class LoginPage extends StatelessWidget {
                 BasicElevatedButton(
                   label: "INICIAR SESIÓN",
                   onPressed: () {
+                    if (_emailController.text.trim() == '' &&
+                        _passwordController.text.trim() == '') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Ingresa tus datos para iniciar sesión",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    if (_passwordController.text.trim() == '') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Ingresa la contraseña para iniciar sesión",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     context.read<AuthBloc>().add(AuthEmailLoginEvent(
                           email: _emailController.text.trim(),
                           password: _passwordController.text.trim(),
@@ -93,7 +128,7 @@ class LoginPage extends StatelessWidget {
             )
           ],
         ),
-      ),
+      )),
     );
   }
 
