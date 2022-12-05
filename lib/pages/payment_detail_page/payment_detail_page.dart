@@ -30,7 +30,7 @@ class PaymentDetailPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
               child: Text(
-                "Total: \$${payment.amount}",
+                "Total: \$${payment.amount.toStringAsFixed(2)}",
                 style:
                     const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,

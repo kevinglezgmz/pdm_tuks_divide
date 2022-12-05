@@ -399,12 +399,12 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           title = activity.description;
           user = userIdToUserMap[activity.receiver.id];
           subtitle =
-              "Realizaste un pago de \$${activity.amount} a ${user?.displayName ?? user?.fullName ?? "<Sin nombre>"}";
+              "Realizaste un pago de \$${activity.amount.toStringAsFixed(2)} a ${user?.displayName ?? user?.fullName ?? "<Sin nombre>"}";
         } else if (paymentsMadeToMe.contains(activity)) {
           title = activity.description;
           user = userIdToUserMap[activity.payer.id];
           subtitle =
-              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te hizo un pago de \$${activity.amount}";
+              "${user?.displayName ?? user?.fullName ?? "<Sin nombre>"} te hizo un pago de \$${activity.amount.toStringAsFixed(2)}";
         }
         onTap = () {
           Navigator.of(context).push(
