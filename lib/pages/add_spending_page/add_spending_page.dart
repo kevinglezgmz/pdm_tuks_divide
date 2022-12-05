@@ -78,7 +78,7 @@ class _AddSpendingPageState extends State<AddSpendingPage> {
           padding: const EdgeInsets.all(16.0),
           child: BlocConsumer<SpendingsBloc, SpendingsUseState>(
             listener: (context, state) {
-              if (state.saved) {
+              if (state.saved && Navigator.of(context).canPop()) {
                 Navigator.pop(context);
               }
             },

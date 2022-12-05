@@ -133,7 +133,7 @@ class GroupsRepository {
         group.groupId,
       ),
     };
-    final spendingRef = await spendingsCollection.add(spendingModel);
+    final spendingRef = spendingsCollection.doc();
     await Future.wait(
       userToAmountToPay.entries.map((entry) {
         GroupSpendingModel newRecord = GroupSpendingModel(
@@ -147,6 +147,7 @@ class GroupsRepository {
         );
       }).toList(),
     );
+    await spendingRef.set(spendingModel);
   }
 
   Future<List<SpendingModel>> _getSpendings(

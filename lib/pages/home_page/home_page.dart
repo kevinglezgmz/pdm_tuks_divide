@@ -24,8 +24,9 @@ class _HomePageState extends State<HomePage> {
   String windowTitle = "Tuks Divide";
   int index = 0;
   List<Widget> actions = [];
+
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     actions = [
       IconButton(
         onPressed: () {
@@ -34,6 +35,11 @@ class _HomePageState extends State<HomePage> {
         icon: const Icon(Icons.search),
       )
     ];
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (details) => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
