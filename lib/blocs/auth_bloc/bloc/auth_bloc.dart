@@ -12,7 +12,8 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
-  AuthBloc({required this.authRepository}) : super(AuthNotLoggedInState()) {
+  AuthBloc({required this.authRepository})
+      : super(const AuthNotLoggedInState(isLogIn: false)) {
     on<AuthEmailLoginEvent>(_initiatePasswordLoginEvent);
     on<AuthGoogleLoginEvent>(_initiateGoogleLoginEvent);
     on<AuthEmailSignupEvent>(_initiateEmailSignupEvent);
@@ -27,7 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (user != null) {
       emit(AuthLoggedInState(user: user));
     } else {
-      emit(AuthNotLoggedInState());
+      emit(const AuthNotLoggedInState(isLogIn: false));
     }
   }
 
@@ -39,7 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Signup Error State
-      emit(AuthNotLoggedInState());
+      emit(const AuthNotLoggedInState(isLogIn: true));
     }
   }
 
@@ -51,7 +52,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Error State
-      emit(AuthNotLoggedInState());
+      emit(const AuthNotLoggedInState(isLogIn: true));
     }
   }
 
@@ -63,14 +64,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoggedInState(user: user));
     } catch (e) {
       // To Do Create Signup Error State
-      emit(AuthNotLoggedInState());
+      emit(const AuthNotLoggedInState(isLogIn: false));
     }
   }
 
   FutureOr<void> _signoutStatusEvent(event, emit) async {
     try {
       await FirebaseAuth.instance.signOut();
-      emit(AuthNotLoggedInState());
+      emit(const AuthNotLoggedInState(isLogIn: false));
     } catch (e) {
       emit(AuthNotSignedOutState());
     }
