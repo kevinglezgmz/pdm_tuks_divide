@@ -37,6 +37,12 @@ class GroupExpensesPage extends StatefulWidget {
   State<GroupExpensesPage> createState() => _GroupExpensesPageState();
 }
 
+enum GroupActivityFilterType {
+  all,
+  spendings,
+  payments,
+}
+
 class _GroupExpensesPageState extends State<GroupExpensesPage> {
   late final StreamSubscription<GroupActivityModel>
       _groupActivityStreamSubscription;
@@ -44,6 +50,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   late final SpendingsBloc spendingsBloc;
   late final MeBloc meBloc;
   late final GroupsBloc groupsBloc;
+  GroupActivityFilterType filterType = GroupActivityFilterType.all;
 
   @override
   void initState() {
@@ -150,6 +157,80 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 ],
               ),
             ),
+            SizedBox(
+              height: 40,
+              width: double.infinity,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        filterType == GroupActivityFilterType.all
+                            ? const Color.fromARGB(255, 42, 42, 42)
+                            : const Color.fromARGB(255, 78, 77, 77),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        filterType = GroupActivityFilterType.all;
+                      });
+                    },
+                    child: const Text(
+                      'Todo',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        filterType == GroupActivityFilterType.spendings
+                            ? const Color.fromARGB(255, 42, 42, 42)
+                            : const Color.fromARGB(255, 78, 77, 77),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        filterType = GroupActivityFilterType.spendings;
+                      });
+                    },
+                    child: const Text(
+                      'Gastos del grupo',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        filterType == GroupActivityFilterType.payments
+                            ? const Color.fromARGB(255, 42, 42, 42)
+                            : const Color.fromARGB(255, 78, 77, 77),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        filterType = GroupActivityFilterType.payments;
+                      });
+                    },
+                    child: const Text(
+                      'Pagos del grupo',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Expanded(
               child: state.isLoadingActivity || state.groupUsers.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -322,7 +403,15 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
     BuildContext context,
   ) {
     List<Widget> activityWidgetsList = [];
-    final List<dynamic> spendingsAndPayments = [...spendings, ...payments];
+    late final List<dynamic> spendingsAndPayments;
+    if (filterType == GroupActivityFilterType.payments) {
+      spendingsAndPayments = [...payments];
+    } else if (filterType == GroupActivityFilterType.spendings) {
+      spendingsAndPayments = [...spendings];
+    } else {
+      spendingsAndPayments = [...spendings, ...payments];
+    }
+
     spendingsAndPayments.sort((itemA, itemB) {
       late final Timestamp timestampA;
       late final Timestamp timestampB;

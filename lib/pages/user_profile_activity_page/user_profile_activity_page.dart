@@ -26,7 +26,7 @@ class UserProfileActivityPage extends StatefulWidget {
       _UserProfileActivityPageState();
 }
 
-enum FilterType {
+enum UserActivityFilterType {
   all,
   paymentsMadeToMe,
   paymentsMadeByMe,
@@ -40,7 +40,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   late final AuthBloc authBloc;
   late final UserActivityBloc userActivityBloc;
   final dateFormat = DateFormat.MMMM('es');
-  FilterType filterType = FilterType.all;
+  UserActivityFilterType filterType = UserActivityFilterType.all;
 
   @override
   void initState() {
@@ -287,14 +287,14 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          filterType == FilterType.all
+                          filterType == UserActivityFilterType.all
                               ? const Color.fromARGB(255, 42, 42, 42)
                               : const Color.fromARGB(255, 78, 77, 77),
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          filterType = FilterType.all;
+                          filterType = UserActivityFilterType.all;
                         });
                       },
                       child: const Text(
@@ -308,14 +308,14 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          filterType == FilterType.paymentsMadeByMe
+                          filterType == UserActivityFilterType.paymentsMadeByMe
                               ? const Color.fromARGB(255, 42, 42, 42)
                               : const Color.fromARGB(255, 78, 77, 77),
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          filterType = FilterType.paymentsMadeByMe;
+                          filterType = UserActivityFilterType.paymentsMadeByMe;
                         });
                       },
                       child: const Text(
@@ -329,14 +329,14 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          filterType == FilterType.paymentsMadeToMe
+                          filterType == UserActivityFilterType.paymentsMadeToMe
                               ? const Color.fromARGB(255, 42, 42, 42)
                               : const Color.fromARGB(255, 78, 77, 77),
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          filterType = FilterType.paymentsMadeToMe;
+                          filterType = UserActivityFilterType.paymentsMadeToMe;
                         });
                       },
                       child: const Text(
@@ -350,14 +350,16 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          filterType == FilterType.spendingsWhereIPaid
+                          filterType ==
+                                  UserActivityFilterType.spendingsWhereIPaid
                               ? const Color.fromARGB(255, 42, 42, 42)
                               : const Color.fromARGB(255, 78, 77, 77),
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          filterType = FilterType.spendingsWhereIPaid;
+                          filterType =
+                              UserActivityFilterType.spendingsWhereIPaid;
                         });
                       },
                       child: const Text(
@@ -371,14 +373,17 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          filterType == FilterType.spendingsWhereIDidNotPay
+                          filterType ==
+                                  UserActivityFilterType
+                                      .spendingsWhereIDidNotPay
                               ? const Color.fromARGB(255, 42, 42, 42)
                               : const Color.fromARGB(255, 78, 77, 77),
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          filterType = FilterType.spendingsWhereIDidNotPay;
+                          filterType =
+                              UserActivityFilterType.spendingsWhereIDidNotPay;
                         });
                       },
                       child: const Text(
@@ -470,7 +475,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   }
 
   List<Widget> _createActivityList(UserActivityUseState state, UserModel me,
-      BuildContext context, FilterType filterType) {
+      BuildContext context, UserActivityFilterType filterType) {
     List<Widget> activityList = [];
     Set<SpendingModel> spendingsIPaid = Set.from(state.spendingsWhereIPaid);
     Set<SpendingModel> spendingsIDidNotPay =
@@ -478,19 +483,19 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
     Set<PaymentModel> paymentsMadeByMe = Set.from(state.paymentsMadeByMe);
     Set<PaymentModel> paymentsMadeToMe = Set.from(state.paymentsMadeToMe);
     List<dynamic> allUserActivity;
-    if (filterType == FilterType.paymentsMadeByMe) {
+    if (filterType == UserActivityFilterType.paymentsMadeByMe) {
       allUserActivity = [
         ...state.paymentsMadeByMe,
       ];
-    } else if (filterType == FilterType.paymentsMadeToMe) {
+    } else if (filterType == UserActivityFilterType.paymentsMadeToMe) {
       allUserActivity = [
         ...state.paymentsMadeToMe,
       ];
-    } else if (filterType == FilterType.spendingsWhereIPaid) {
+    } else if (filterType == UserActivityFilterType.spendingsWhereIPaid) {
       allUserActivity = [
         ...state.spendingsWhereIPaid,
       ];
-    } else if (filterType == FilterType.spendingsWhereIDidNotPay) {
+    } else if (filterType == UserActivityFilterType.spendingsWhereIDidNotPay) {
       allUserActivity = [
         ...state.spendingsWhereIDidNotPay,
       ];
