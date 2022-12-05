@@ -11,9 +11,11 @@ import 'package:tuks_divide/blocs/me_bloc/bloc/me_bloc.dart';
 import 'package:tuks_divide/blocs/spending_detail_bloc/bloc/spending_detail_bloc.dart';
 import 'package:tuks_divide/blocs/spendings_bloc/bloc/spendings_bloc.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
+import 'package:tuks_divide/blocs/user_activity_bloc/bloc/user_activity_bloc.dart';
 import 'package:tuks_divide/components/avatar_widget.dart';
 import 'package:tuks_divide/models/group_activity_model.dart';
 import 'package:tuks_divide/models/group_model.dart';
+import 'package:tuks_divide/models/group_spending_model.dart';
 import 'package:tuks_divide/models/payment_model.dart';
 import 'package:tuks_divide/models/spending_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
@@ -139,7 +141,8 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                         "Gastos totales del grupo: ",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                      Text("\$${_getGroupTotalSpendings(state.spendings)}",
+                      Text(
+                          "\$${_getGroupTotalSpendings(state.spendings).toStringAsFixed(2)}",
                           style:
                               const TextStyle(fontSize: 16, color: Colors.blue))
                     ],
@@ -209,6 +212,20 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
                 ).then(
                   (selectedUser) {
                     if (selectedUser != null) {
+                      if (selectedUser.user ==
+                              BlocProvider.of<MeBloc>(context).state.me &&
+                          selectedUser.howMuchDoIOweThem == 0) {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "No tienes ningún saldo pendiente en este grupo.",
+                              ),
+                            ),
+                          );
+                        return;
+                      }
                       Navigator.of(context)
                           .push(
                         MaterialPageRoute(
@@ -340,7 +357,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         }
         final user = userRefToUserModelMap[activity.paidBy]!;
         subtitle =
-            "${user.displayName ?? user.fullName ?? '<No username>'} realizó un pago de \$${activity.amount}";
+            "${user.displayName ?? user.fullName ?? '<No username>'} realizó un pago de \$${activity.amount.toStringAsFixed(2)}";
         onTap = () {
           BlocProvider.of<SpendingDetailBloc>(context)
               .add(GetSpendingDetailEvent(spending: activity));
@@ -362,7 +379,7 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
         final payer = userRefToUserModelMap[activity.payer]!;
         final receiver = userRefToUserModelMap[activity.receiver]!;
         subtitle =
-            "${payer.displayName ?? payer.fullName ?? '<No username>'} pagó a ${receiver.displayName ?? receiver.fullName ?? '<No username>'} \$${activity.amount}";
+            "${payer.displayName ?? payer.fullName ?? '<No username>'} pagó a ${receiver.displayName ?? receiver.fullName ?? '<No username>'} \$${activity.amount.toStringAsFixed(2)}";
         onTap = () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -450,7 +467,18 @@ class _GroupExpensesPageState extends State<GroupExpensesPage> {
   }
 }
 
-class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
+class UserAndHowMuchIOweThem {
+  final UserModel user;
+  final double howMuchDoIOweThem;
+
+  UserAndHowMuchIOweThem({
+    required this.user,
+    required this.howMuchDoIOweThem,
+  });
+}
+
+class SelectPayeeSearchDelegate
+    extends SearchDelegate<UserAndHowMuchIOweThem?> {
   SelectPayeeSearchDelegate() : super(searchFieldLabel: "Registrar pago a...");
 
   @override
@@ -477,14 +505,14 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
 
   @override
   Widget buildResults(BuildContext context) {
-    List<UserModel> queryResult = getResults(context);
+    List<UserAndHowMuchIOweThem> queryResult = getResults(context);
     return ListView.builder(
       itemCount: queryResult.length + 1,
       itemBuilder: (BuildContext context, int index) {
         if (index == 0) {
           return const SizedBox(height: 16);
         }
-        UserModel user = queryResult[index - 1];
+        UserAndHowMuchIOweThem user = queryResult[index - 1];
         return getUserTile(context, user);
       },
     );
@@ -492,7 +520,7 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    List<UserModel> queryResult = getResults(context);
+    List<UserAndHowMuchIOweThem> queryResult = getResults(context);
     queryResult = queryResult.sublist(
       0,
       queryResult.length > 10 ? 10 : queryResult.length,
@@ -500,36 +528,48 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
     return ListView.builder(
       itemCount: queryResult.length,
       itemBuilder: (BuildContext context, int index) {
-        UserModel user = queryResult[index];
+        UserAndHowMuchIOweThem user = queryResult[index];
         return getUserTile(context, user);
       },
     );
   }
 
-  List<UserModel> getResults(BuildContext context) {
+  List<UserAndHowMuchIOweThem> getResults(BuildContext context) {
     UserModel me = BlocProvider.of<MeBloc>(context).state.me!;
-    List<UserModel> membersInGroup = BlocProvider.of<GroupsBloc>(context)
-        .state
-        .groupUsers
-        .where((element) => element != me)
-        .toList();
+    List<UserAndHowMuchIOweThem> membersInGroup =
+        BlocProvider.of<GroupsBloc>(context)
+            .state
+            .groupUsers
+            .where((user) => user != me)
+            .map((user) => UserAndHowMuchIOweThem(
+                user: user,
+                howMuchDoIOweThem: _getHowMuchIOweToFriend(user, context)))
+            .where((userAndHowMuchIOweThem) =>
+                userAndHowMuchIOweThem.howMuchDoIOweThem > 0)
+            .toList();
+
+    if (membersInGroup.isEmpty) {
+      close(context, UserAndHowMuchIOweThem(user: me, howMuchDoIOweThem: 0));
+      return [];
+    }
+
     String queryLC = query.toLowerCase();
     return queryLC == ""
         ? membersInGroup
         : membersInGroup
             .where(
               (element) =>
-                  ((element.displayName
+                  ((element.user.displayName
                               ?.toLowerCase()
                               .indexOf(queryLC.toLowerCase()) ??
                           -1) >=
                       0) ||
-                  ((element.firstName
+                  ((element.user.firstName
                               ?.toLowerCase()
                               .indexOf(queryLC.toLowerCase()) ??
                           -1) >=
                       0) ||
-                  ((element.lastName
+                  ((element.user.lastName
                               ?.toLowerCase()
                               .indexOf(queryLC.toLowerCase()) ??
                           -1) >=
@@ -538,26 +578,72 @@ class SelectPayeeSearchDelegate extends SearchDelegate<UserModel?> {
             .toList();
   }
 
-  Widget getUserTile(BuildContext context, UserModel user) {
+  Widget getUserTile(BuildContext context, UserAndHowMuchIOweThem userAndDebt) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Card(
         child: InkWell(
           onTap: () {
-            close(context, user);
+            close(context, userAndDebt);
           },
           child: ListTile(
-            title: Text(user.displayName ?? user.fullName ?? '<Sin Nombre>'),
+            title: Text(userAndDebt.user.displayName ??
+                userAndDebt.user.fullName ??
+                '<Sin Nombre>'),
+            subtitle: Text(
+                "Le debes un total de \$${userAndDebt.howMuchDoIOweThem.toStringAsFixed(2)}"),
             leading: CircleAvatar(
-              backgroundImage: user.pictureUrl == null || user.pictureUrl == ""
+              backgroundImage: userAndDebt.user.pictureUrl == null ||
+                      userAndDebt.user.pictureUrl == ""
                   ? const NetworkImage(
                       "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png",
                     )
-                  : NetworkImage(user.pictureUrl!),
+                  : NetworkImage(userAndDebt.user.pictureUrl!),
             ),
           ),
         ),
       ),
     );
+  }
+
+  double _getHowMuchIOweToFriend(
+    UserModel friend,
+    BuildContext context,
+  ) {
+    UserModel? me = BlocProvider.of<MeBloc>(context).state.me!;
+    if (friend == me) {
+      return 0;
+    }
+    UserActivityUseState state =
+        BlocProvider.of<UserActivityBloc>(context).state;
+    GroupModel? currentGroup =
+        BlocProvider.of<GroupsBloc>(context).state.selectedGroup;
+    double howMuchDoIMyFriend = 0;
+
+    for (final GroupSpendingModel spendingDetail in state.spendingsDetails) {
+      if (spendingDetail.user.id == me.uid) {
+        try {
+          SpendingModel spending = state.spendingsWhereIDidNotPay.firstWhere(
+            (spendingWhereIDidNotPay) =>
+                spendingWhereIDidNotPay.spendingId ==
+                    spendingDetail.spending.id &&
+                spendingWhereIDidNotPay.paidBy.id == friend.uid &&
+                spendingWhereIDidNotPay.group.id == currentGroup?.groupId,
+          );
+          spending.paidBy;
+          howMuchDoIMyFriend += spendingDetail.amountToPay;
+        } catch (e) {
+          howMuchDoIMyFriend;
+        }
+      }
+    }
+
+    for (final PaymentModel paymentMadeByMe in state.paymentsMadeByMe) {
+      if (paymentMadeByMe.receiver.id == friend.uid &&
+          paymentMadeByMe.group.id == currentGroup?.groupId) {
+        howMuchDoIMyFriend -= paymentMadeByMe.amount;
+      }
+    }
+    return howMuchDoIMyFriend;
   }
 }

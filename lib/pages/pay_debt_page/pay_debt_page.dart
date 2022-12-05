@@ -4,11 +4,12 @@ import 'package:tuks_divide/blocs/payments_bloc/bloc/payments_repository.dart';
 import 'package:tuks_divide/blocs/upload_image_bloc/bloc/upload_image_bloc.dart';
 import 'package:tuks_divide/models/group_model.dart';
 import 'package:tuks_divide/models/user_model.dart';
+import 'package:tuks_divide/pages/group_expenses_page/group_expenses_page.dart';
 import 'package:tuks_divide/utils/text_input_utils.dart';
 
 class PayDebtPage extends StatefulWidget {
   final UserModel sender;
-  final UserModel receiver;
+  final UserAndHowMuchIOweThem receiver;
   final GroupModel group;
   const PayDebtPage({
     super.key,
@@ -46,6 +47,13 @@ class _PayDebtPageState extends State<PayDebtPage> {
                     message: "Por favor introduce un concepto para el pago.");
                 return;
               }
+              if (amount > widget.receiver.howMuchDoIOweThem) {
+                _showDetailsErrorDialog(context,
+                    title: "Monto no válido",
+                    message:
+                        "El monto tiene que ser menor o igual a la cantidad que le debes al usuario.");
+                return;
+              }
               String? picture =
                   BlocProvider.of<UploadImageBloc>(context).uploadedImageUrl;
               if (picture == null || picture == "") {
@@ -53,7 +61,7 @@ class _PayDebtPageState extends State<PayDebtPage> {
                   context,
                   title: "Añade una imagen del pago",
                   message:
-                      "Ayuda a ${widget.receiver.displayName ?? widget.receiver.fullName ?? '<Sin Nombre>'} añadiendo una imagen del pago que realizaste.",
+                      "Ayuda a ${widget.receiver.user.displayName ?? widget.receiver.user.fullName ?? '<Sin Nombre>'} añadiendo una imagen del pago que realizaste.",
                 );
                 return;
               }
@@ -62,7 +70,7 @@ class _PayDebtPageState extends State<PayDebtPage> {
                 amount,
                 _descriptionController.text,
                 widget.sender,
-                widget.receiver,
+                widget.receiver.user,
                 picture,
                 widget.group,
               )
@@ -102,18 +110,24 @@ class _PayDebtPageState extends State<PayDebtPage> {
               ),
               const SizedBox(width: 16),
               CircleAvatar(
-                backgroundImage: widget.receiver.pictureUrl == null ||
-                        widget.receiver.pictureUrl == ""
+                backgroundImage: widget.receiver.user.pictureUrl == null ||
+                        widget.receiver.user.pictureUrl == ""
                     ? const NetworkImage(
                         "https://www.unfe.org/wp-content/uploads/2019/04/SM-placeholder.png")
-                    : NetworkImage(widget.receiver.pictureUrl!),
+                    : NetworkImage(widget.receiver.user.pictureUrl!),
                 radius: 48,
               ),
             ],
           ),
           const SizedBox(height: 36),
           Text(
-            'Registrando pago a ${widget.receiver.displayName ?? widget.receiver.fullName ?? '<Sin Nombre>'}',
+            'Registrando pago a ${widget.receiver.user.displayName ?? widget.receiver.user.fullName ?? '<Sin Nombre>'}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '(Le debes un total de \$${widget.receiver.howMuchDoIOweThem.toStringAsFixed(2)})',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 18),
           ),

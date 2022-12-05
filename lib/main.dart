@@ -76,8 +76,8 @@ void main() async {
       ],
       debug: true,
     );
-    await NotificationController.initializeRemoteNotifications(debug: true);
-    await NotificationController.getFirebaseMessagingToken();
+    //await NotificationController.initializeRemoteNotifications(debug: true);
+    //await NotificationController.getFirebaseMessagingToken();
   }
   await Firebase.initializeApp();
   await initializeDateFormatting();
