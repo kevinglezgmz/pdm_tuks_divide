@@ -70,12 +70,13 @@ class ParticipantItemInGroup extends StatelessWidget {
     }
 
     for (final PaymentModel paymentMadeByMe in state.paymentsMadeByMe) {
-      if (paymentMadeByMe.receiver.id == friend.uid) {
+      if (paymentMadeByMe.receiver.id == friend.uid &&
+          currentGroup?.groupId == paymentMadeByMe.group.id) {
         howMuchDoIMyFriend -= paymentMadeByMe.amount;
       }
     }
     if (howMuchDoIMyFriend <= 0) {
-      return const Text("No tienen deudas pendientes.");
+      return const Text("No le debes ningún monto a este usuario.");
     }
     return Text(
         "Le debes un total de \$${howMuchDoIMyFriend.toStringAsFixed(2)}");
