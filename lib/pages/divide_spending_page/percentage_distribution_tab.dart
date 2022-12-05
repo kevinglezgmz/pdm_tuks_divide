@@ -73,14 +73,22 @@ class _PercentageDistributionTabState extends State<PercentageDistributionTab> {
                 Text(
                     '${widget.controller.accumulatedPercent().toStringAsFixed(2)}% de 100%'),
                 const SizedBox(height: 4),
-                Text(
-                    '${(percentTarget - widget.controller.accumulatedPercent()).toStringAsFixed(2)}% restante'),
+                Text(_getRemainingText),
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  String get _getRemainingText {
+    double remainingAmount =
+        percentTarget - widget.controller.accumulatedPercent();
+    if (remainingAmount < 0) {
+      return '${remainingAmount.abs().toStringAsFixed(2)}% de más';
+    }
+    return '${remainingAmount.abs().toStringAsFixed(2)}% restante';
   }
 
   ListTile _getPercentageTile(

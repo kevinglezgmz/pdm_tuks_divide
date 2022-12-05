@@ -65,14 +65,22 @@ class _UnequalDistributionTabState extends State<UnequalDistributionTab> {
                 Text(
                     '\$${widget.controller.totalValueOfDistribution().toStringAsFixed(2)} de \$${widget.totalAmount.toStringAsFixed(2)}'),
                 const SizedBox(height: 4),
-                Text(
-                    '${(widget.totalAmount - widget.controller.totalValueOfDistribution()) < 0 ? '-' : ''}\$${(widget.totalAmount - widget.controller.totalValueOfDistribution()).abs().toStringAsFixed(2)} restante'),
+                Text(_remainingText),
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  String get _remainingText {
+    double remainingAmount =
+        widget.totalAmount - widget.controller.totalValueOfDistribution();
+    if (remainingAmount < 0) {
+      return '\$${remainingAmount.abs().toStringAsFixed(2)} de más';
+    }
+    return '\$${remainingAmount.abs().toStringAsFixed(2)} restante';
   }
 
   ListTile _getUnequalPriceTile(
