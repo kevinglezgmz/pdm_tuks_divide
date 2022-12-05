@@ -600,9 +600,6 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
           currMonth = activity.createdAt.toDate();
           activityList.add(_getActivityDateDivider(
               dateFormat.format(currMonth), currMonth.year));
-          activityList.add(
-            const SizedBox(height: 8),
-          );
         }
       }
 
