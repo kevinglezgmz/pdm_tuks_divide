@@ -32,6 +32,7 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
   late final AuthBloc authBloc;
   late final UserActivityBloc userActivityBloc;
   final dateFormat = DateFormat.MMMM('es');
+  int filterType = 0;
 
   @override
   void initState() {
@@ -261,17 +262,72 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
               },
             ),
             Positioned(
-                top: 294,
+              top: 294,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              filterType = 0;
+                            });
+                          },
+                          child: const Text('Todo'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              filterType = 1;
+                            });
+                          },
+                          child: const Text('Yo pagué'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              filterType = 2;
+                            });
+                          },
+                          child: const Text('Me pagaron'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              filterType = 3;
+                            });
+                          },
+                          child: const Text('Gasto hecho por mí'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              filterType = 4;
+                            });
+                          },
+                          child: const Text('Gasto hecho por otros'),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+                top: 330,
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: BlocBuilder<MeBloc, MeUseState>(
                   builder: (context, meState) {
                     final List<Widget> activityList = _createActivityList(
-                      state,
-                      meState.me!,
-                      context,
-                    );
+                        state, meState.me!, context, filterType);
                     if (activityList.isNotEmpty) {
                       return SingleChildScrollView(
                         child: Column(
@@ -339,23 +395,39 @@ class _UserProfileActivityPageState extends State<UserProfileActivityPage> {
     return double.parse(totalTheyOweMe.toStringAsFixed(2));
   }
 
-  List<Widget> _createActivityList(
-    UserActivityUseState state,
-    UserModel me,
-    BuildContext context,
-  ) {
+  List<Widget> _createActivityList(UserActivityUseState state, UserModel me,
+      BuildContext context, int filterType) {
     List<Widget> activityList = [];
     Set<SpendingModel> spendingsIPaid = Set.from(state.spendingsWhereIPaid);
     Set<SpendingModel> spendingsIDidNotPay =
         Set.from(state.spendingsWhereIDidNotPay);
     Set<PaymentModel> paymentsMadeByMe = Set.from(state.paymentsMadeByMe);
     Set<PaymentModel> paymentsMadeToMe = Set.from(state.paymentsMadeToMe);
-    List<dynamic> allUserActivity = [
-      ...state.paymentsMadeByMe,
-      ...state.paymentsMadeToMe,
-      ...state.spendingsWhereIPaid,
-      ...state.spendingsWhereIDidNotPay,
-    ];
+    List<dynamic> allUserActivity;
+    if (filterType == 1) {
+      allUserActivity = [
+        ...state.paymentsMadeByMe,
+      ];
+    } else if (filterType == 2) {
+      allUserActivity = [
+        ...state.paymentsMadeToMe,
+      ];
+    } else if (filterType == 3) {
+      allUserActivity = [
+        ...state.spendingsWhereIPaid,
+      ];
+    } else if (filterType == 4) {
+      allUserActivity = [
+        ...state.spendingsWhereIDidNotPay,
+      ];
+    } else {
+      allUserActivity = [
+        ...state.paymentsMadeByMe,
+        ...state.paymentsMadeToMe,
+        ...state.spendingsWhereIPaid,
+        ...state.spendingsWhereIDidNotPay,
+      ];
+    }
     Map<String, UserModel> userIdToUserMap = state.userIdToUserMap;
     allUserActivity.sort((activityA, activityB) {
       late final Timestamp timestampA;
